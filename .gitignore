@@ -1,13 +1,30 @@
 .DS_Store
 .idea
+.vscode
 *.vcd
 *.fst
 *.fst.hier
 runs
 tt_submission
+src/user_config.tcl
 src/user_config.json
 src/config_merged.json
 test/sim_build
 test/__pycache__/
 test/results.xml
 test/gate_level_netlist.v
+
+# Visual Studio debris
+**/.vs
+
+# ULX3S specific build and other files
+/ulx3s/obj_dir
+/ulx3s/error.log
+/ulx3s/project.json
+/ulx3s/ulx3s_out.config
+/ulx3s/ulx3s.bit
+/ulx3s/Makefile.12F
+/ulx3s/Makefile.85f
+/ulx3s/putty.log
+
+**/*.bak

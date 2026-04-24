@@ -1,27 +1,74 @@
 /*
- * Copyright (c) 2024 Your Name
+ * Copyright (c) 2026 gojimmypi
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * file: project.v
+ *
+ * Top-level wrapper for the Tiny Tapeout project.
  */
 
-`default_nettype none
+`ifdef ULX3S
+    /* Makefile includes references to needed files */
+`else
+    /* Tiny Tapeout needs to include all the files directly since it doesn't support Makefiles. */
+    `include "tt_um_uart_trng_ascii.v"
+    `include "UART/uart_rx_min.v"
+    `include "UART/uart_tx_min.v"
+    `include "UART/uart_trng_ascii_core.v"
+    `include "UART/TRNG/trng_cfg_ascii_core.v"
+    `include "UART/TRNG/trng_stub.v"
+`endif /* ULX3S */
 
-module tt_um_example (
+`default_nettype none
+`timescale 1ns/1ps
+
+/* Assume TT needs this file to be called project.v but the module is called tt_um_gojimmypi - so disable warning: */
+/* verilator lint_off DECLFILENAME */
+module tt_um_gojimmypi (
+/* verilator lint_on DECLFILENAME */
+
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
     input  wire [7:0] uio_in,   // IOs: Input path
     output wire [7:0] uio_out,  // IOs: Output path
     output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
+    
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
 
-  // All output pins must be assigned. If not used, assign to 0.
-  assign uo_out  = ui_in + uio_in;  // Example: ou_out is the sum of ui_in and uio_in
-  assign uio_out = 0;
-  assign uio_oe  = 0;
+    wire unused_ok;
 
-  // List all unused inputs to prevent warnings
-  wire _unused = &{ena, clk, rst_n, 1'b0};
+    tt_um_uart_trng_ascii u_core
+    (
+        .ui_in(ui_in),
+        .uo_out(uo_out),
+        .uio_in(uio_in),
+        .uio_out(uio_out),
+        .uio_oe(uio_oe),
+        .ena(ena),
+        .clk(clk),
+        .rst_n(rst_n)
+    );
+
+    assign unused_ok = &{ena, clk, rst_n, uio_in};
+
+    `ifdef ULX3S
+        always @(posedge clk) begin
+            if (rst_n) begin
+                $display("t=%0t ui_in=%h uio_in=%h uo_out=%h",
+                         $time, ui_in, uio_in, uo_out);
+            end
+        end
+    `else
+        /* FORCE_LOOPBACK not supported outside of ULX3S since it relies on specific pin mappings 
+         *  and test features that may not be present in other environments. */
+        `ifdef FORCE_LOOPBACK
+            MODULE_FORCE_LOOPBACK_MUST_NOT_BE_ENABLED u_stop ();
+        `endif
+    `endif /* ULX3S */
 
 endmodule
+
+`default_nettype wire
