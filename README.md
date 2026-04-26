@@ -1,6 +1,13 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# Tiny Tapeout Verilog Project Template
+# ttgf-UART-FSM-TRNG-Lab
+
+See companions projects:
+
+- https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab (Global Foundry 180)
+- https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab (Sky130)
+
+## Tiny Tapeout Verilog Project Template
 
 - [Read the documentation for project](docs/info.md)
 

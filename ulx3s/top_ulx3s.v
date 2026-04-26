@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2026 gojimmypi
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * See ATTRIBUTION.md for third-party sources and credits.
+ *
+ * file: top_ulx3s.v
+ */
 `default_nettype none
 `timescale 1ns/1ps
 
@@ -34,7 +42,7 @@ module top_ulx3s (
 
     assign uio_in = 8'h00;
 
-    tt_um_gojimmypi dut
+    tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab dut
     (
         .ui_in(ui_in),
         .uo_out(uo_out),
