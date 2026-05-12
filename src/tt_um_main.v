@@ -65,6 +65,9 @@ module tt_um_main
     wire       trng_bit;
     wire       uart_tx;
 
+    reg        uart_rx_meta;
+    reg        uart_rx_sync;
+
 `ifdef SPI_ENABLED
     wire spi_sck;
     wire spi_mosi;
@@ -98,6 +101,16 @@ module tt_um_main
     assign unused_ok = &{ena, uio_in};
 `endif
 
+    always @(posedge clk) begin
+        if (!rst_n) begin
+            uart_rx_meta <= 1'b1;
+            uart_rx_sync <= 1'b1;
+        end else begin
+            uart_rx_meta <= ui_in[3];
+            uart_rx_sync <= uart_rx_meta;
+        end
+    end
+
     uart_trng_ascii_core
     #(
         .CLOCK_HZ(CLOCK_HZ),
@@ -107,7 +120,7 @@ module tt_um_main
     (
         .clk(clk),
         .rst_n(rst_n),
-        .uart_rx_i(ui_in[3]),
+        .uart_rx_i(uart_rx_sync),
         .uart_tx_o(uart_tx),
         .reg_ctrl_o(reg_ctrl),
         .reg_src_o(reg_src),
