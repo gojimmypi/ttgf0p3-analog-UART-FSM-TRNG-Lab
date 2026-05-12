@@ -13,7 +13,7 @@
 `default_nettype none
 
 /* Not a TT standard, but we will pick a PDK. Define exactly one: */
-`define PDK_TARGET_SKY130
-// `define PDK_TARGET_GF180
+// `define PDK_TARGET_SKY130
+`define PDK_TARGET_GF180
 
 `default_nettype wire
