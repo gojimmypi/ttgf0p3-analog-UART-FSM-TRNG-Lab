@@ -101,7 +101,16 @@ module tt_um_main
     assign unused_ok = &{ena, uio_in};
 `endif
 
-    always @(posedge clk) begin
+    /* 
+     * Synchronize asynchronous UART RX input to the local clock domain.
+     *
+     * The external UART RX pin (ui_in[3]) is asynchronous to clk and can
+     * violate setup/hold timing if sampled directly by synchronous logic.
+     *
+     * A two-stage synchronizer reduces metastability risk and prevents
+     * X propagation/glitches observed during GF180 gate-level simulation.
+     */
+     always @(posedge clk) begin
         if (!rst_n) begin
             uart_rx_meta <= 1'b1;
             uart_rx_sync <= 1'b1;
