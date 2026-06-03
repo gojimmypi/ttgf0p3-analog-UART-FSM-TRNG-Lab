@@ -267,7 +267,6 @@ module trng_ro_inverter_cell
         //    /* if a macro, we found it, success! for GF180 detection*/
         //    PROJECT_FOUND_PDK u_stop ();
         //`endif
-        PROJECT_FOUND_PDK u_stop ();
         /* See https://github.com/google/globalfoundries-pdk-libs-gf180mcu_fd_sc_mcu7t5v0/blob/main/cells/inv/gf180mcu_fd_sc_mcu7t5v0__inv_1.functional.v */
         (* keep_hierarchy *) gf180mcu_fd_sc_mcu7t5v0__inv_1 u_inv
         (
