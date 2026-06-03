@@ -2,14 +2,14 @@
 
 # Tiny Tapeout Project: ttgf-UART-FSM-TRNG-Lab
 
-<!-- breadcrumb for testing workflows 1.0b, testing end-to-end build -->
+<!-- breadcrumb for testing workflows 1.0b, testing end-to-end build, release v0.1.5 -->
 
 Details of this project are located in [docs/info.md](./docs/info.md)
 
 See companions projects:
 
-- This https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab (Global Foundry 180)
-- Companion https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab (Sky130)
+- This https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab (Global Foundry 180: milestone copy here from dev)
+- Companion https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab (Sky130: active development here)
 
 ## Files and Directories
 
