@@ -21,6 +21,6 @@ Version 0.1.6
 
 ## TODO
 
-- sample scripts should have generic `PROJECT` variable instead of hardcoding `ttsky-UART-FSM-TRNG-Lab`.
+- sample scripts should have generic `PROJECT` variable instead of hardcoding `ttgf-UART-FSM-TRNG-Lab`.
 - Remove ttsy references from ttgf project.
 - Test JTAG on hardware. See [ULX3S ESP32 Demo](../ulx3s/ESP32/README.md) for SPI testing on ULX3S.
