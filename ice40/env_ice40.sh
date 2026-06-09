@@ -6,9 +6,13 @@
 # file: ice40/run_tests.sh
 #
 
+echo "**************************************************************************"
+echo "**  Begin ${BASH_SOURCE[0]} from ${PWD}"
+echo "**************************************************************************"
+
 MY_TT_PORT="/dev/ttyS6"
 MY_WORKSPACE="/mnt/c/workspace"
-MY_PROJECT_NAME="ttgf-UART-FSM-TRNG-Lab"
+MY_PROJECT_NAME="ttsky-UART-FSM-TRNG-Lab"
 
 # Run shell check to ensure this a good script.
 # Specify the executable shell checker you want to use:
@@ -32,20 +36,20 @@ echo  "TT_PORT:              ${TT_PORT}"
 export WORKSPACE=${MY_WORKSPACE}
 echo  "WORKSPACE:            ${WORKSPACE}"
 
-# Typically the name of the repo, for example: ttgf-UART-FSM-TRNG-Lab"
+# Typically the name of the repo, for example: ttsky-UART-FSM-TRNG-Lab"
 # See the src/project.v for the top module name
 export TT_PROJECT_NAME=${MY_PROJECT_NAME}
 echo  "TT_PROJECT_NAME:      ${TT_PROJECT_NAME}"
 
-# For example "ttgf_UART_FSM_TRNG_Lab" (replace dashes with underscores)
+# For example "ttsky_UART_FSM_TRNG_Lab" (replace dashes with underscores)
 export TT_PROJECT_NAME_ALT="${TT_PROJECT_NAME//-/_}"
 echo  "TT_PROJECT_NAME_ALT:  ${TT_PROJECT_NAME_ALT}"
 
-# For example: /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab
+# For example: /mnt/c/workspace/ttsky-UART-FSM-TRNG-Lab
 export TT_PROJECT_ROOT="${WORKSPACE}/${TT_PROJECT_NAME}"
 echo  "TT_PROJECT_ROOT:      ${TT_PROJECT_ROOT}"
 
-# For example:  "tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab"
+# For example:  "tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab"
 export TT_TOP_NAME="tt_um_${USER}_${TT_PROJECT_NAME_ALT}"
 echo  "TT_TOP_NAME:          ${TT_TOP_NAME}"
 

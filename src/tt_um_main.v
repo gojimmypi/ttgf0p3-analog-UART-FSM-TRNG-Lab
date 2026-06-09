@@ -90,6 +90,26 @@ module tt_um_main
     wire       trng_bit;
     wire       uart_tx;
 
+    wire [7:0] uo_out_normal;
+    wire [7:0] uio_out_normal;
+    wire [7:0] uio_oe_normal;
+
+`ifdef PIN_DIAG
+    wire       pin_id_enable;
+    wire [1:0] pin_id_mode;
+    wire [4:0] pin_id_sel;
+    wire [7:0] pin_id_uo_override;
+    wire [7:0] pin_id_uo_override_en;
+    wire [7:0] pin_id_uio_override;
+    wire [7:0] pin_id_uio_override_oe;
+    wire       pin_id_active;
+    wire       pin_id_invalid_sel;
+`endif /* PIN_DIAG */
+
+    /* don't use raw reset rst_n */
+    reg        rst_meta_n;
+    reg        rst_sync_n;
+
     reg        uart_rx_meta;
     reg        uart_rx_sync;
 
@@ -147,9 +167,17 @@ module tt_um_main
     wire _unused_debug_regs = &{
         reg_ctrl,
         reg_src,
+`ifdef PIN_DIAG
+        reg_div[7:5],
+        reg_mode[4:0],
+        reg_oscen,
+        pin_id_active,
+        pin_id_invalid_sel,
+`else
         reg_div,
         reg_mode,
         reg_oscen,
+`endif
         reg_status[7:3],
         reg_rawlo[7:3], 
         reg_rawhi[3:0]
@@ -170,6 +198,20 @@ module tt_um_main
         assign unused_ok = &{ena, uio_in};
     `endif
 `endif
+    
+    /*
+     * Synchronize global reset, rst_n wire to rst_sync_n reg.
+     */
+    always @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            rst_meta_n <= 1'b0;
+            rst_sync_n <= 1'b0;
+        end else begin
+            rst_meta_n <= 1'b1;
+            rst_sync_n <= rst_meta_n;
+        end
+    end /* reset sync */
+
 
     /* 
      * Synchronize asynchronous UART RX input to the local clock domain.
@@ -190,6 +232,19 @@ module tt_um_main
         end
     end
 
+`ifdef PIN_DIAG
+    /*
+     * Pin-ID diagnostic control reuses the existing UART/SPI register bank:
+     * - reg_oscen must be 0xA5 as a magic arm value
+     * - reg_div[4:0] selects the logical TT pin
+     * - reg_mode[7] enables pin-ID mode
+     * - reg_mode[6:5] selects clock, pulse-count, or ASCII UART stream
+     */
+    assign pin_id_enable = (reg_oscen == 8'hA5) && reg_mode[7];
+    assign pin_id_mode   = reg_mode[6:5];
+    assign pin_id_sel    = reg_div[4:0];
+`endif /* PIN_DIAG */
+
     uart_trng_ascii_core
     #(
         .CLOCK_HZ(CLOCK_HZ),
@@ -198,7 +253,7 @@ module tt_um_main
     u_core
     (
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(rst_sync_n),
         .uart_rx_i(uart_rx_sync),
         .uart_tx_o(uart_tx),
         .reg_ctrl_o(reg_ctrl),
@@ -219,19 +274,41 @@ module tt_um_main
 `endif
     );
 
+`ifdef PIN_DIAG
+    pin_id_core
+    #(
+        .CLOCK_HZ(CLOCK_HZ),
+        .UART_BAUD(UART_BAUD)
+    )
+    u_pin_id_core
+    (
+        .clk(clk),
+        .rst_n(rst_sync_n),
+        .enable(pin_id_enable),
+        .mode(pin_id_mode),
+        .pin_sel(pin_id_sel),
+        .uo_override(pin_id_uo_override),
+        .uo_override_en(pin_id_uo_override_en),
+        .uio_override(pin_id_uio_override),
+        .uio_override_oe(pin_id_uio_override_oe),
+        .active(pin_id_active),
+        .invalid_sel(pin_id_invalid_sel)
+    );
+`endif /* PIN_DIAG */
+
     /*
      * Export one UART pin plus a few convenient status/data bits.
      * This is handy during bring-up because it gives visual/logic-analyzer
      * access to internal state without changing the core.
      */
-    assign uo_out[4] = uart_tx;
-    assign uo_out[0] = trng_bit;
-    assign uo_out[1] = reg_status[0];
-    assign uo_out[2] = reg_status[1];
-    assign uo_out[3] = reg_status[2];
-    assign uo_out[5] = reg_rawlo[0];
-    assign uo_out[6] = reg_rawlo[1];
-    assign uo_out[7] = reg_rawlo[2];
+    assign uo_out_normal[4] = uart_tx;
+    assign uo_out_normal[0] = trng_bit;
+    assign uo_out_normal[1] = reg_status[0];
+    assign uo_out_normal[2] = reg_status[1];
+    assign uo_out_normal[3] = reg_status[2];
+    assign uo_out_normal[5] = reg_rawlo[0];
+    assign uo_out_normal[6] = reg_rawlo[1];
+    assign uo_out_normal[7] = reg_rawlo[2];
 
 `ifdef JTAG_ENABLED
     /* ui_in[4] = 1: ESP32 SPI owns uio[3:0] (default, unconnected = 1: PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;)
@@ -247,7 +324,7 @@ module tt_um_main
     jtag_core u_jtag_core
     (
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(rst_sync_n),
         .ena(ena & debug_is_jtag),
         .tck_i(jtag_tck),
         .tms_i(jtag_tms),
@@ -292,7 +369,7 @@ module tt_um_main
     tt_spi_slave u_spi_slave
     (
         .clk(clk),
-        .rst_n(rst_n),
+        .rst_n(rst_sync_n),
         .spi_sck(spi_sck),
         .spi_cs_n(spi_cs_n),
         .spi_mosi(spi_mosi),
@@ -311,20 +388,21 @@ module tt_um_main
     `endif
     );
 
-    assign uio_out[0]   = 1'b0;
-    assign uio_out[1]   = 1'b0;
+    /* There's an optional PIN_DIAG mode that may override I/O, otherwise it is the [io wire name]_normal */
+    assign uio_out_normal[0]   = 1'b0;
+    assign uio_out_normal[1]   = 1'b0;
 
     `ifdef JTAG_ENABLED
-        assign uio_out[2]   = debug_is_jtag ? jtag_tdo : spi_miso;
+        assign uio_out_normal[2]   = debug_is_jtag ? jtag_tdo : spi_miso;
     `else
-        assign uio_out[2]   = spi_miso;
+        assign uio_out_normal[2]   = spi_miso;
     `endif
 
-    assign uio_out[3]   = 1'b0;
+    assign uio_out_normal[3]   = 1'b0;
 
-    assign uio_out[7:4] = reg_rawhi[7:4];
+    assign uio_out_normal[7:4] = reg_rawhi[7:4];
 
-    assign uio_oe = 8'hF4;
+    assign uio_oe_normal = 8'hF4;
 
     `ifndef SPI_REG_ACCESS
         wire _unused_spi_reg_outputs = &{
@@ -338,18 +416,36 @@ module tt_um_main
 `else
     /* not SPI_ENABLED */
     `ifdef JTAG_ENABLED
-        assign uio_out[0]   = 1'b0;
-        assign uio_out[1]   = 1'b0;
-        assign uio_out[2]   = jtag_tdo;
-        assign uio_out[3]   = 1'b0;
-        assign uio_out[7:4] = reg_rawhi[7:4];
+        assign uio_out_normal[0]   = 1'b0;
+        assign uio_out_normal[1]   = 1'b0;
+        assign uio_out_normal[2]   = jtag_tdo;
+        assign uio_out_normal[3]   = 1'b0;
+        assign uio_out_normal[7:4] = reg_rawhi[7:4];
 
-        assign uio_oe = 8'hF4;
+        assign uio_oe_normal = 8'hF4;
     `else
-        assign uio_out = reg_rawhi;
-        assign uio_oe  = 8'hFF;
+        assign uio_out_normal = reg_rawhi;
+        assign uio_oe_normal  = 8'hFF;
     `endif
 `endif /* not SPI_ENABLED */
+
+`ifdef PIN_DIAG
+    assign uo_out = pin_id_active ?
+                    ((uo_out_normal & ~pin_id_uo_override_en) | pin_id_uo_override) :
+                    uo_out_normal;
+
+    assign uio_out = pin_id_active ?
+                     pin_id_uio_override :
+                     uio_out_normal;
+
+    assign uio_oe = pin_id_active ?
+                    pin_id_uio_override_oe :
+                    uio_oe_normal;
+`else
+    assign uo_out  = uo_out_normal;
+    assign uio_out = uio_out_normal;
+    assign uio_oe  = uio_oe_normal;
+`endif /* PIN_DIAG */
 
 endmodule
 

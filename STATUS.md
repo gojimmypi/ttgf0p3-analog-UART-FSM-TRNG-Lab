@@ -18,6 +18,7 @@ Version 0.1.7
 - Functional SPI; See [ULX3S ESP32 Demo](../ulx3s/ESP32/README.md)
 - Untested actual ASIC [TRNG](./src/TRNG/) for SKY130 and GF180, as well as a stub for testing.
 - [JTAG WIP](./src/JTAG/)
+- [PIN Diagnostics WIP](./src/PINS/)
 
 ## TODO
 
@@ -33,3 +34,4 @@ Version 0.1.7
 - https://github.com/TinyTapeout/tinytapeout_www/pull/229
 - https://github.com/TinyTapeout/tinytapeout_www/pull/230
 - https://github.com/TinyTapeout/tinytapeout_www/pull/231
+- Create timeout PR. See https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27152683035
