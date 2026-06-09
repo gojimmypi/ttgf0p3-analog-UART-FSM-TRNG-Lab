@@ -39,8 +39,8 @@ These changes have been applied / added to `src\config.json`:
   "RUN_POST_GRT_DESIGN_REPAIR": "true",
   "RUN_POST_GPL_DESIGN_REPAIR": "true",
 
-  "DESIGN_REPAIR_MAX_SLEW_PCT": 32,
-  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 32,
+  "DESIGN_REPAIR_MAX_SLEW_PCT": 30,
+  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 30,
 ```
 
 First GDS Post Design Repair log in GF180: [GRT / GPL Design Repair Test #49](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27211329394/job/80340895326) 
@@ -56,8 +56,11 @@ GF180 was not better at 35/40: [Decrease DESIGN_REPAIR_MAX_SLEW_PCT to 35 #53](h
 
 GF180 mixed result at 30/35: [Decrease Design/GRT to 30/35 #54](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27226761526/job/80395909787)
 
+GF180 mixed result at 32/32: [Test Design/GRT repairs to 32/32 #55](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27228008872/job/80400293219)
+
 ```text
 30/30 = best balanced GF180 result
+32/32 = better slew count, slightly worse setup
 30/35 = slightly better slew, worse timing/cap
 35/40 = much worse timing
 40/40 = flow failure
