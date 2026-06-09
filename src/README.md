@@ -39,7 +39,7 @@ These changes have been applied / added to `src\config.json`:
   "RUN_POST_GRT_DESIGN_REPAIR": "true",
   "RUN_POST_GPL_DESIGN_REPAIR": "true",
 
-  "DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+  "DESIGN_REPAIR_MAX_SLEW_PCT": 35,
   "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 40,
 ```
 
@@ -51,7 +51,9 @@ in [commit b7862a0](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/commit/b
 
 SKY130 JTAG-enabled build: setup/hold clean at 50 MHz, DRC/LVS/antenna/lint clean, with remaining slow-corner max-slew and CTS clock-leaf fanout violations.
 
+SKY130 success: [Increase slew repair to 40 percent #191](https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27223286366)
 
+GF180 failure: [Increase slew repair to 40 percent #52](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27223337383)
 
 References:
 
