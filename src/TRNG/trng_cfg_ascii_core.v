@@ -115,6 +115,15 @@ module trng_cfg_ascii_core
     reg [2:0] read_addr;
     reg [7:0] reply_value;
 
+    /*
+     * UART writes are staged for one clk before updating configuration
+     * registers. This breaks the long path from rx_byte/CR decode through
+     * command decode directly into reg_div/reg_ctrl/etc.
+     */
+    reg       uart_wr_pending;
+    reg [7:0] uart_wr_cmd;
+    reg [7:0] uart_wr_value;
+
     /* This is a GDC linting hack */
     wire [3:0] decoded_hex;
     assign decoded_hex = hex_value(rx_byte);
@@ -139,6 +148,7 @@ module trng_cfg_ascii_core
     reg [5:0] str_index;
     reg [5:0] str_len;
 `else
+    /* no long strings */
 `endif
 
     function is_hex;
@@ -244,6 +254,7 @@ module trng_cfg_ascii_core
         end
     endfunction
 `else
+    /* no long strings */
 `endif
 
     /*
@@ -307,6 +318,7 @@ module trng_cfg_ascii_core
         end
     endtask
 `else
+    /* no long strings */
 `endif
 
     always @(posedge clk) begin
@@ -319,6 +331,9 @@ module trng_cfg_ascii_core
             need_two_digits       <= 1'b0;
             read_addr             <= 3'd0;
             reply_value           <= 8'h00;
+            uart_wr_pending       <= 1'b0;
+            uart_wr_cmd           <= 8'h00;
+            uart_wr_value         <= 8'h00;
 
             queued_tx_byte        <= 8'h00;
             queued_tx_valid       <= 1'b0;
@@ -330,6 +345,7 @@ module trng_cfg_ascii_core
             str_index             <= 6'd0;
             str_len               <= 6'd0;
 `else
+    /* no long strings */
 `endif
 
             /* Default power-on register values for bring-up. */
@@ -344,6 +360,11 @@ module trng_cfg_ascii_core
 
             if (spi_reg_wr_en) begin
                 do_spi_write(spi_reg_addr, spi_reg_wdata);
+            end
+
+            if (uart_wr_pending) begin
+                do_write(uart_wr_cmd, uart_wr_value);
+                uart_wr_pending <= 1'b0;
             end
 
             /*
@@ -395,11 +416,12 @@ module trng_cfg_ascii_core
                         if ((cmd == "V") && (rx_byte == 8'h0A)) begin
                             state <= ST_ARG1;
                         end else if ((cmd == "V") && (rx_byte == 8'h0D)) begin
-`ifdef USE_LONG_STRINGS
-                            start_string(VERSION_STR, VERSION_LEN[5:0]);
-`else
-    state <= ST_Q_ERR;/* */
-`endif
+                            `ifdef USE_LONG_STRINGS
+                                start_string(VERSION_STR, VERSION_LEN[5:0]);
+                            `else
+                                state <= ST_Q_ERR;/* */
+                            `endif
+
                         end else if (is_hex(rx_byte)) begin
                             hex1 <= hex_value(rx_byte);
 
@@ -447,11 +469,15 @@ module trng_cfg_ascii_core
                                 reply_value <= read_reg(read_addr);
                                 state <= ST_Q_R;
                             end else begin
+                                uart_wr_pending <= 1'b1;
+                                uart_wr_cmd     <= cmd;
+
                                 if (need_two_digits) begin
-                                    do_write(cmd, {hex1, hex2});
+                                    uart_wr_value <= {hex1, hex2};
                                 end else begin
-                                    do_write(cmd, {4'h0, hex1});
+                                    uart_wr_value <= {4'h0, hex1};
                                 end
+
                                 state <= ST_Q_O;
                             end
                         end else begin
@@ -535,7 +561,7 @@ module trng_cfg_ascii_core
                     end
                 end
 
-`ifdef USE_LONG_STRINGS
+            `ifdef USE_LONG_STRINGS
                 /*
                  * Generic packed-string sender.
                  * Characters are emitted one at a time through the normal queue
@@ -555,8 +581,9 @@ module trng_cfg_ascii_core
                         end
                     end
                 end
-`else
-`endif
+            `else
+                /* no long strings */
+            `endif
 
                 /*
                  * Stay here until the queued byte has been accepted and the UART
@@ -576,6 +603,6 @@ module trng_cfg_ascii_core
         end
     end
 
-endmodule
+endmodule /* trng_cfg_ascii_core */
 
 `default_nettype wire
