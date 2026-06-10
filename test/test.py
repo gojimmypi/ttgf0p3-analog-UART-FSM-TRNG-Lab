@@ -70,13 +70,28 @@ async def uart_recv_byte(dut, idle_timeout_ns: int | None = None) -> int:
     bit_time_ns = CLK_PERIOD_NS * CLKS_PER_BIT
     half_bit_time_ns = bit_time_ns // 2
 
-    prev_tx = get_uart_tx_bit(dut)
+    prev_tx = None
     waited_ns = 0
 
     while True:
         await Timer(CLK_PERIOD_NS, unit="ns")
         await Timer(SETTLE_TIME_NS, unit="ns")
-        curr_tx = get_uart_tx_bit(dut)
+
+        uo_value = dut.uo_out.value
+        tx_value = uo_value[UART_TX_BIT]
+        tx_text = str(tx_value)
+
+        if tx_text == "0":
+            curr_tx = 0
+        elif tx_text == "1":
+            curr_tx = 1
+        elif tx_text.upper() == "X":
+            waited_ns += CLK_PERIOD_NS
+            if idle_timeout_ns is not None and waited_ns >= idle_timeout_ns:
+                raise TimeoutError("UART receive timeout waiting for start bit")
+            continue
+        else:
+            raise ValueError(f"UART TX bit is not 0 or 1: {tx_text}")
 
         if prev_tx == 1 and curr_tx == 0:
             break
@@ -106,8 +121,6 @@ async def uart_recv_byte(dut, idle_timeout_ns: int | None = None) -> int:
     assert stop_bit == 1, f"Expected UART stop bit 1, got {stop_bit}"
 
     return result
-
-
 async def uart_recv_until_timeout(dut, max_bytes: int = 64, idle_timeout_bits: int = 20) -> bytes:
     bit_time_ns = CLK_PERIOD_NS * CLKS_PER_BIT
     idle_timeout_ns = bit_time_ns * idle_timeout_bits
