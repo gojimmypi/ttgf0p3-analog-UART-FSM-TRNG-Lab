@@ -23,8 +23,8 @@
     `define USE_LONG_STRINGS
 
     `ifdef USE_LONG_STRINGS
-        `define VERSION_STRING_LEN 23 /* 123456789012345678901234 */   
-        `define VERSION_STRING          "Version 0.1.7a 6/8/2026"   
+        `define VERSION_STRING_LEN 24 /* 123456789012345678901234 */   
+        `define VERSION_STRING          "Version 0.1.7b 6/10/2026"   
     `else
         /* no long strings */
     `endif
