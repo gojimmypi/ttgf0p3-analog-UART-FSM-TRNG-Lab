@@ -311,6 +311,38 @@ module uart_trng_ascii_core
     wire [7:0] reg_rawlo;
     wire [7:0] reg_rawhi;
     wire       trng_bit;
+
+    /*
+     * Register the config boundary before the TRNG block.
+     *
+     * This keeps UART/SPI-visible config registers immediate at this wrapper
+     * boundary, but gives the TRNG core local one-cycle-delayed copies. The
+     * extra register stage breaks long config/reset/control paths from the
+     * ASCII/SPI config block into TRNG sample counter, LFSR, and raw-register
+     * update logic.
+     */
+    reg  [7:0] trng_reg_ctrl;
+    reg  [7:0] trng_reg_src;
+    reg  [7:0] trng_reg_div;
+    reg  [7:0] trng_reg_mode;
+    reg  [7:0] trng_reg_oscen;
+
+    always @(posedge clk) begin
+        if (!rst_trng_sync_n) begin
+            trng_reg_ctrl  <= 8'h00;
+            trng_reg_src   <= 8'h00;
+            trng_reg_div   <= 8'h10;
+            trng_reg_mode  <= 8'h00;
+            trng_reg_oscen <= 8'h01;
+        end else begin
+            trng_reg_ctrl  <= reg_ctrl;
+            trng_reg_src   <= reg_src;
+            trng_reg_div   <= reg_div;
+            trng_reg_mode  <= reg_mode;
+            trng_reg_oscen <= reg_oscen;
+        end
+    end
+
 `ifndef SPI_REG_ACCESS
     wire [7:0] unused_spi_reg_rdata;
     wire       unused_spi_reg_rdata_ok;
@@ -358,11 +390,11 @@ module uart_trng_ascii_core
     (
         .clk(clk),
         .rst_n(rst_trng_sync_n),
-        .reg_ctrl(reg_ctrl),
-        .reg_src(reg_src),
-        .reg_div(reg_div),
-        .reg_mode(reg_mode),
-        .reg_oscen(reg_oscen),
+        .reg_ctrl(trng_reg_ctrl),
+        .reg_src(trng_reg_src),
+        .reg_div(trng_reg_div),
+        .reg_mode(trng_reg_mode),
+        .reg_oscen(trng_reg_oscen),
         .reg_status(reg_status),
         .reg_rawlo(reg_rawlo),
         .reg_rawhi(reg_rawhi),
@@ -374,11 +406,11 @@ module uart_trng_ascii_core
     (
         .clk(clk),
         .rst_n(rst_trng_sync_n),
-        .reg_ctrl(reg_ctrl),
-        .reg_src(reg_src),
-        .reg_div(reg_div),
-        .reg_mode(reg_mode),
-        .reg_oscen(reg_oscen[0]),
+        .reg_ctrl(trng_reg_ctrl),
+        .reg_src(trng_reg_src),
+        .reg_div(trng_reg_div),
+        .reg_mode(trng_reg_mode),
+        .reg_oscen(trng_reg_oscen[0]),
         .reg_status(reg_status),
         .reg_rawlo(reg_rawlo),
         .reg_rawhi(reg_rawhi),
