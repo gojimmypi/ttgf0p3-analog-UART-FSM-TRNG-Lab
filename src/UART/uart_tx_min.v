@@ -78,13 +78,12 @@ module uart_tx_min
         end
     endgenerate
 
-    localparam integer CLKS_PER_BIT = CLOCK_HZ / UART_BAUD;
-
 `ifdef ADJUSTABLE_BAUD_ENABLED
     wire [15:0] clks_per_bit_m1;
 
     assign clks_per_bit_m1 = baud_div - 16'd1;
 `else
+    localparam integer CLKS_PER_BIT     = CLOCK_HZ / UART_BAUD;
     localparam integer CLKS_PER_BIT_M1  = CLKS_PER_BIT - 1;
  // localparam [15:0] CLKS_PER_HALF_M1 = (CLKS_PER_BIT >> 1) - 16'd1;
  // localparam [15:0] CLKS_PER_BIT_16    = CLKS_PER_BIT[15:0];
