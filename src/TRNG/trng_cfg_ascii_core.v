@@ -71,7 +71,9 @@ module trng_cfg_ascii_core
     input  wire [7:0] reg_status,
     input  wire [7:0] reg_rawlo,
     input  wire [7:0] reg_rawhi,
+
 `ifdef TRNG_CONDITIONED_STREAM
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
     input  wire [7:0] reg_cond0,
     input  wire [7:0] reg_cond1,
     input  wire [7:0] reg_cond2,
@@ -80,7 +82,11 @@ module trng_cfg_ascii_core
     input  wire [7:0] reg_cond5,
     input  wire [7:0] reg_cond6,
     input  wire [7:0] reg_cond7,
-`endif
+    `else
+    input  wire [7:0] reg_condlo,
+    input  wire [7:0] reg_condhi,
+    `endif /* !TRNG_CONDITIONED_STREAM_64_XOR */
+`endif /* TRNG_CONDITIONED_STREAM */
 
     input  wire       spi_reg_wr_en,
     input  wire [2:0] spi_reg_addr,
@@ -149,7 +155,9 @@ module trng_cfg_ascii_core
     reg       stream_hi;
 `ifdef TRNG_CONDITIONED_STREAM
     reg       stream_conditioned;
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
     reg [2:0] stream_cond_index;
+    `endif
 `endif
 `endif
 
@@ -257,6 +265,7 @@ module trng_cfg_ascii_core
     endfunction
 
 `ifdef TRNG_CONDITIONED_STREAM
+`ifdef TRNG_CONDITIONED_STREAM_64_XOR
     function [7:0] read_cond_byte;
         input [2:0] index;
         begin
@@ -273,6 +282,7 @@ module trng_cfg_ascii_core
             endcase
         end
     endfunction
+`endif /* TRNG_CONDITIONED_STREAM_64_XOR */
 `endif
 
 `ifdef JTAG_ENABLED
@@ -427,9 +437,11 @@ module trng_cfg_ascii_core
             stream_hi             <= 1'b0;
             `ifdef TRNG_CONDITIONED_STREAM
             stream_conditioned    <= 1'b0;
-            stream_cond_index     <= 3'd0;
-            `endif
-        `endif
+            `ifdef TRNG_CONDITIONED_STREAM_64_XOR
+                stream_cond_index     <= 3'd0;
+            `endif /* TRNG_CONDITIONED_STREAM_64_XOR */
+            `endif /* TRNG_CONDITIONED_STREAM */
+        `endif /* TRNG_BINARY_STREAM */
 
         `ifdef USE_LONG_STRINGS
             active_str            <= {(8 * VERSION_LEN){1'b0}};
@@ -638,7 +650,9 @@ module trng_cfg_ascii_core
                                     stream_count <= {hex1, hex2};
                                     stream_hi    <= 1'b0;
     `ifdef TRNG_CONDITIONED_STREAM
+                                `ifdef TRNG_CONDITIONED_STREAM_64_XOR
                                     stream_cond_index <= 3'd0;
+                                `endif                
         `ifdef CASE_INSENSITIVE_ALT
                                     stream_conditioned <= (cmd == "C") || (cmd == "c");
         `else
@@ -657,7 +671,7 @@ module trng_cfg_ascii_core
                             end else if ((cmd == "U") || (cmd == "u")) begin
     `else
                             end else if (cmd == "U") begin
-    `endif
+    `endif /* CASE_INSENSITIVE_ALT */
                                 if (hex1 < 4'd4) begin
                                     pending_baud_valid <= 1'b1;
                                     pending_baud_sel   <= hex1[1:0];
@@ -666,6 +680,7 @@ module trng_cfg_ascii_core
                                     state <= ST_Q_ERR;
                                 end
 `endif /* ADJUSTABLE_BAUD_ENABLED */
+
                             end else begin
                                 if (need_two_digits) begin
                                     do_write(cmd, {hex1, hex2});
@@ -784,11 +799,11 @@ module trng_cfg_ascii_core
                 ST_Q_BIN: begin
                     if (!queued_tx_valid && !tx_busy) begin
 `ifdef TRNG_CONDITIONED_STREAM
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
                         if (stream_conditioned) begin
                             queue_tx(read_cond_byte(stream_cond_index));
                             stream_cond_index <= stream_cond_index + 3'd1;
                         end else begin
-`endif
                             if (stream_hi) begin
                                 queue_tx(reg_rawhi);
                                 stream_hi <= 1'b0;
@@ -796,9 +811,33 @@ module trng_cfg_ascii_core
                                 queue_tx(reg_rawlo);
                                 stream_hi <= 1'b1;
                             end
-`ifdef TRNG_CONDITIONED_STREAM
                         end
-`endif
+    `else
+                        if (stream_hi) begin
+                            if (stream_conditioned) begin
+                                queue_tx(reg_condhi);
+                            end else begin
+                                queue_tx(reg_rawhi);
+                            end
+                            stream_hi <= 1'b0;
+                        end else begin
+                            if (stream_conditioned) begin
+                                queue_tx(reg_condlo);
+                            end else begin
+                                queue_tx(reg_rawlo);
+                            end
+                            stream_hi <= 1'b1;
+                        end
+    `endif /* ! TRNG_CONDITIONED_STREAM_64_XOR */
+`else
+                        if (stream_hi) begin
+                            queue_tx(reg_rawhi);
+                            stream_hi <= 1'b0;
+                        end else begin
+                            queue_tx(reg_rawlo);
+                            stream_hi <= 1'b1;
+                        end
+`endif /* ! TRNG_CONDITIONED_STREAM */
 
                         if (stream_count == 8'h01) begin
                             stream_count <= 8'h00;

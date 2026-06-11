@@ -242,7 +242,9 @@ module uart_trng_ascii_core
     wire [7:0] reg_status;
     wire [7:0] reg_rawlo;
     wire [7:0] reg_rawhi;
+
 `ifdef TRNG_CONDITIONED_STREAM
+`ifdef TRNG_CONDITIONED_STREAM_64_XOR
     wire [7:0] reg_cond0;
     wire [7:0] reg_cond1;
     wire [7:0] reg_cond2;
@@ -251,7 +253,12 @@ module uart_trng_ascii_core
     wire [7:0] reg_cond5;
     wire [7:0] reg_cond6;
     wire [7:0] reg_cond7;
-`endif
+`else
+    wire [7:0] reg_condlo;
+    wire [7:0] reg_condhi;
+`endif /* ! TRNG_CONDITIONED_STREAM_64_XOR */
+`endif /* TRNG_CONDITIONED_STREAM */ 
+
     wire       trng_bit;
 
     assign rx_valid_pulse = rx_valid && !rx_valid_d;
@@ -351,7 +358,9 @@ module uart_trng_ascii_core
     wire [7:0] reg_status;
     wire [7:0] reg_rawlo;
     wire [7:0] reg_rawhi;
+
 `ifdef TRNG_CONDITIONED_STREAM
+`ifdef TRNG_CONDITIONED_STREAM_64_XOR
     wire [7:0] reg_cond0;
     wire [7:0] reg_cond1;
     wire [7:0] reg_cond2;
@@ -360,7 +369,12 @@ module uart_trng_ascii_core
     wire [7:0] reg_cond5;
     wire [7:0] reg_cond6;
     wire [7:0] reg_cond7;
-`endif
+`else
+    wire [7:0] reg_condlo;
+    wire [7:0] reg_condhi;
+`endif /* ! TRNG_CONDITIONED_STREAM_64_XOR */
+`endif /* TRNG_CONDITIONED_STREAM */
+
     wire       trng_bit;
 
     /*
@@ -427,6 +441,7 @@ module uart_trng_ascii_core
         .reg_rawlo(reg_rawlo),
         .reg_rawhi(reg_rawhi),
 `ifdef TRNG_CONDITIONED_STREAM
+`ifdef TRNG_CONDITIONED_STREAM_64_XOR
         .reg_cond0(reg_cond0),
         .reg_cond1(reg_cond1),
         .reg_cond2(reg_cond2),
@@ -435,6 +450,10 @@ module uart_trng_ascii_core
         .reg_cond5(reg_cond5),
         .reg_cond6(reg_cond6),
         .reg_cond7(reg_cond7),
+`else
+        .reg_condlo(reg_condlo),
+        .reg_condhi(reg_condhi),
+`endif
 `endif
 
 `ifdef SPI_REG_ACCESS
@@ -464,6 +483,7 @@ module uart_trng_ascii_core
         .reg_rawlo(reg_rawlo),
         .reg_rawhi(reg_rawhi),
 `ifdef TRNG_CONDITIONED_STREAM
+`ifdef TRNG_CONDITIONED_STREAM_64_XOR
         .reg_cond0(reg_cond0),
         .reg_cond1(reg_cond1),
         .reg_cond2(reg_cond2),
@@ -472,11 +492,16 @@ module uart_trng_ascii_core
         .reg_cond5(reg_cond5),
         .reg_cond6(reg_cond6),
         .reg_cond7(reg_cond7),
+`else
+        .reg_condlo(reg_condlo),
+        .reg_condhi(reg_condhi),
+`endif
 `endif
         .trng_bit(trng_bit)
     );
 `else
 `ifdef TRNG_CONDITIONED_STREAM
+`ifdef TRNG_CONDITIONED_STREAM_64_XOR
     assign reg_cond0 = reg_rawlo;
     assign reg_cond1 = reg_rawhi;
     assign reg_cond2 = reg_rawlo;
@@ -485,6 +510,10 @@ module uart_trng_ascii_core
     assign reg_cond5 = reg_rawhi;
     assign reg_cond6 = reg_rawlo;
     assign reg_cond7 = reg_rawhi;
+`else
+    assign reg_condlo = reg_rawlo;
+    assign reg_condhi = reg_rawhi;
+`endif
 `endif
     /* use only the stub when TRNG is not enabled, so we can still test the ASCII parser and UART path */
     trng_stub u_trng

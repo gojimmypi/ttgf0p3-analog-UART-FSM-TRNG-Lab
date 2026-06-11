@@ -65,7 +65,9 @@ module trng_lab_core
     output reg  [7:0] reg_status,
     output reg  [7:0] reg_rawlo,
     output reg  [7:0] reg_rawhi,
+
 `ifdef TRNG_CONDITIONED_STREAM
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
     output wire [7:0] reg_cond0,
     output wire [7:0] reg_cond1,
     output wire [7:0] reg_cond2,
@@ -74,7 +76,12 @@ module trng_lab_core
     output wire [7:0] reg_cond5,
     output wire [7:0] reg_cond6,
     output wire [7:0] reg_cond7,
+    `else
+    output wire [7:0] reg_condlo,
+    output wire [7:0] reg_condhi,
+    `endif
 `endif
+
     output wire       trng_bit
 );
 
@@ -87,7 +94,11 @@ module trng_lab_core
     reg  [15:0] lfsr;
     reg  [15:0] sample_shift;
 `ifdef TRNG_CONDITIONED_STREAM
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
     reg  [63:0] stream_mix;
+    `else
+    reg  [31:0] stream_mix;
+    `endif
 `endif
 
     reg         ro0_sample_meta;
@@ -112,7 +123,9 @@ module trng_lab_core
     wire        lfsr_next_bit;
 `ifdef TRNG_CONDITIONED_STREAM
     wire        stream_feedback;
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
     wire [63:0] stream_scrambled;
+    `endif
 `endif
 
     wire        unused_reg_ctrl;
@@ -141,6 +154,7 @@ module trng_lab_core
     assign trng_bit = sample_shift[0];
 
 `ifdef TRNG_CONDITIONED_STREAM
+`ifdef TRNG_CONDITIONED_STREAM_64_XOR
     assign stream_feedback =
         stream_mix[63] ^
         stream_mix[62] ^
@@ -169,7 +183,21 @@ module trng_lab_core
     assign reg_cond5 = stream_scrambled[47:40] ^ stream_scrambled[15:8]  ^ stream_scrambled[31:24];
     assign reg_cond6 = stream_scrambled[55:48] ^ stream_scrambled[23:16] ^ stream_scrambled[39:32];
     assign reg_cond7 = stream_scrambled[63:56] ^ stream_scrambled[31:24] ^ stream_scrambled[47:40];
-`endif
+`else
+    assign stream_feedback =
+        stream_mix[31] ^
+        stream_mix[21] ^
+        stream_mix[1]  ^
+        stream_mix[0]  ^
+        selected_bit   ^
+        lfsr[0]        ^
+        lfsr[7]        ^
+        lfsr[15];
+
+    assign reg_condlo = stream_mix[7:0]  ^ stream_mix[31:24];
+    assign reg_condhi = stream_mix[15:8] ^ stream_mix[23:16];
+`endif /* !TRNG_CONDITIONED_STREAM_64_XOR */
+`endif /* TRNG_CONDITIONED_STREAM */
 
     assign unused_reg_ctrl = &reg_ctrl[7:3];
     assign unused_reg_src  = &reg_src[7:2];
@@ -258,10 +286,14 @@ module trng_lab_core
             lfsr            <= 16'h1ACE;
             sample_shift    <= 16'h0000;
 `ifdef TRNG_CONDITIONED_STREAM
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
             /* Nonzero fixed conditioner seed. This is not a secret key and does not
              * provide entropy. It only prevents the conditioner from starting at zero. 
              * ASCII "gojimmy!" makes the value traceable and intentional. */
             stream_mix <= 64'h676F_6A69_6D6D_7921; // "gojimmy!"
+    `else
+            stream_mix      <= 32'hA5C3_1F2D;
+    `endif
 `endif
             ro0_sample_meta <= 1'b0;
             ro0_sample_sync <= 1'b0;
@@ -294,6 +326,7 @@ module trng_lab_core
                 reg_rawlo    <= {sample_shift[6:0], selected_bit};
                 reg_rawhi    <= sample_shift[14:7];
 `ifdef TRNG_CONDITIONED_STREAM
+`ifdef TRNG_CONDITIONED_STREAM_64_XOR
                 stream_mix   <= {
                     stream_mix[62:0],
                     stream_feedback
@@ -307,9 +340,22 @@ module trng_lab_core
                     ro_raw,
                     {7'b0000000, selected_bit}
                 };
-`endif
+`else
+                stream_mix   <= {
+                    stream_mix[30:0],
+                    stream_feedback
+                } ^ {
+                    reg_rawhi,
+                    reg_rawlo,
+                    sample_shift[15:8],
+                    sample_shift[7:0]
+                };
+`endif /* !TRNG_CONDITIONED_STREAM_64_XOR */
+`endif /* TRNG_CONDITIONED_STREAM */
+
             end else if (trng_enable) begin
                 sample_ctr <= sample_ctr + 16'h0001;
+
             end else begin
                 sample_ctr <= 16'h0000;
             end
