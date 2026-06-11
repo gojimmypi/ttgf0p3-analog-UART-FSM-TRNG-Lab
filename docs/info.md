@@ -11,19 +11,21 @@ Ensure full URL paths are included for files outside this directory, as the full
 
 ## How it works
 
-There's a [ring oscillator](https://en.wikipedia.org/wiki/Ring_oscillator) implemented at the core of this project for a TRNG (True Random Number Generator.
+A [ring oscillator](https://en.wikipedia.org/wiki/Ring_oscillator) is implemented at the core of this project as an entropy source for a TRNG (True Random Number Generator).
 
 ![ttgf-UART-FSM-TRNG-Lab-block-diagram.png](./ttgf-UART-FSM-TRNG-Lab-block-diagram.jpg)
 
-This design exposes a UART-controlled interface to a ring-oscillator-based entropy source (TRNG). 
-A host (PC, ESP32, etc.) sends simple ASCII commands over UART to configure internal 
-registers, control the oscillator network, and read back raw entropy data.
+This project exposes a UART-controlled interface to a ring-oscillator-based entropy source. 
+A host such as a PC, ESP32, or test script can send simple ASCII commands over UART to configure internal 
+registers, control the oscillator network, and read back raw entropy samples.
 
 At a high level:
 - A bank of ring oscillators generates jitter-based entropy
 - A sampling clock (controlled by a divider) captures this behavior
 - Control and configuration are managed through memory-mapped registers
 - Data and status are read back over the same UART interface
+- 
+The raw output is intended for experimentation and characterization. It is not a certified cryptographic random number generator.
 
 ---
 
@@ -39,11 +41,11 @@ Most of the scripts to test assume the external UART. Testing and interactive co
 
 The TT projects usually start in a reset mode = `True`. Connect to TT [Breakout](https://tinytapeout.com/guides/get-started-demoboard-etr/) (or [Demoboard](https://tinytapeout.com/guides/get-started-demoboard/)) USB.
 
-Once connected, there should be a [Python repl command prompt](https://tinytapeout.com/guides/get-started-demoboard-etr/#accessing-the-repl). 
+Once connected, there should be a [Python REPL command prompt](https://tinytapeout.com/guides/get-started-demoboard-etr/#accessing-the-repl). 
 
 Don't confuse the TT board serial connection with the external UART.
 
-Select project, set clock to 25MHZ, and reset:
+Select project, set clock to 25 MHZ, and reset:
 
 ```
 # select project and reset ttsky
@@ -73,15 +75,19 @@ Project config:
 - `define PROJECT_CLOCK_HZ 32'd25_000_000` in `src/project_config.v`
 - `define PROJECT_UART_BAUD 32'd115_200` in `src/project_config.v`
 
-At 25MHz: Terminal is 115,200 baud
+At a 25 MHz project clock with `PROJECT_UART_BAUD = 115_200`:
 
-- `CLKS_PER_BIT = CLOCK_HZ / UART_BAUD` = 217
+- `CLKS_PER_BIT = 25_000_000 / 115_200` = 217
+- Terminal baud rate: 115,200
 
-At 50MHz: Terminal is 230,400 baud
+At a 50 MHz project clock, if the design is rebuilt with `PROJECT_CLOCK_HZ = 50_000_000`:
 
-- `CLKS_PER_BIT = CLOCK_HZ / UART_BAUD` = 434   
+- `CLKS_PER_BIT = 50_000_000 / 115_200` = 434
+- Terminal baud rate: 115,200
 
-Terminal session at 25MHz clock is
+If the bitstream was built for 25 MHz but the board is actually clocked at 50 MHz, the effective UART baud rate doubles to approximately 230,400.
+
+Terminal session at 25 MHz clock is
 
 - 115,200 baud
 - 8 data bits
@@ -95,7 +101,7 @@ Or:
 stty -F "$PORT" "$BAUD" cs8 -cstopb -parenb -ixon -ixoff -crtscts raw -echo min 0 time 5
 ```
 
-Press type `V` and then press `Enter` to query the version string (if enabled in the build). 
+Press type `V` and press `Enter` to query the version string (if enabled in the build). 
 Then you can send commands to configure the TRNG and read back entropy samples.
 
 Although there are case-insensitive settings available for local builds, they have been disabled 
@@ -280,25 +286,10 @@ Connect with your favorite terminal program such as putty.
 
 For the ULX3S FPGA, the UART is connected to pins `gp0` and `gp1` The default baud rate is 115200.
 
-See the [default reference ULX3S ulx3s_v20.lpf restraint file](https://github.com/emard/ulx3s/blob/master/doc/constraints/ulx3s_v20.lpf).
+See the [default reference ULX3S `ulx3s_v20.lpf` restraint file](https://github.com/emard/ulx3s/blob/master/doc/constraints/ulx3s_v20.lpf).
 
-Disabled:
-
-```
-# FREQUENCY PORT "gn[12]" 50 MHZ;
-# FREQUENCY PORT "gn12" 50 MHZ;
-```
-
-Previously:
-
-The `B11` and `A10` pins were updated with new names:
-
-```
-LOCATE COMP "gp[0]" SITE "B11"; # J1_5+  GP0 PCLK
-LOCATE COMP "gp[1]" SITE "A10"; # J1_7+  GP1 PCLK
-```
-
-These
+The `B11` (aka `gp[0]` or `gp0`) is Rx, to UART Tx. 
+The `A10` (aka `gp[1]` or `gp1`) is Tx, to UART Rx. 
 
 ```
 # UART pins for testing

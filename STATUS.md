@@ -23,6 +23,8 @@ Version 0.1.7
 ## TODO
 
 - Final submission version check
+- Review IO pin documentation vs code
+- Check for stray TODO text
 - sample scripts should have generic `PROJECT` variable instead of hardcoding `ttgf-UART-FSM-TRNG-Lab`.
 - Remove ttsy references from ttgf project.
 - Test JTAG on hardware. See [ULX3S ESP32 Demo](../ulx3s/ESP32/README.md) for SPI testing on ULX3S.
