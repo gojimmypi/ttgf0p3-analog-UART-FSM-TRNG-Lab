@@ -96,6 +96,27 @@ module uart_trng_ascii_core
     wire       tx_busy;
     wire       uart_tx_raw;
 
+`ifdef ADJUSTABLE_BAUD_ENABLED
+    wire [1:0] uart_baud_sel;
+
+    localparam integer UART_DIV_115200 = CLOCK_HZ / 32'd115_200;
+    localparam integer UART_DIV_230400 = CLOCK_HZ / 32'd230_400;
+    localparam integer UART_DIV_460800 = CLOCK_HZ / 32'd460_800;
+    localparam integer UART_DIV_921600 = CLOCK_HZ / 32'd921_600;
+
+    localparam [15:0] UART_DIV_115200_16 = UART_DIV_115200[15:0];
+    localparam [15:0] UART_DIV_230400_16 = UART_DIV_230400[15:0];
+    localparam [15:0] UART_DIV_460800_16 = UART_DIV_460800[15:0];
+    localparam [15:0] UART_DIV_921600_16 = UART_DIV_921600[15:0];
+
+    wire [15:0] uart_baud_div;
+
+    assign uart_baud_div = (uart_baud_sel == 2'd3) ? UART_DIV_921600_16 :
+                           (uart_baud_sel == 2'd2) ? UART_DIV_460800_16 :
+                           (uart_baud_sel == 2'd1) ? UART_DIV_230400_16 :
+                                                       UART_DIV_115200_16;
+`endif
+
     /*
      * Locally replicate the incoming reset inside this integration block.
      *
@@ -155,6 +176,9 @@ module uart_trng_ascii_core
         .clk(clk),
         .rst_n(rst_uart_sync_n),
         .rx(uart_rx_i),
+`ifdef ADJUSTABLE_BAUD_ENABLED
+        .baud_div(uart_baud_div),
+`endif
         .data_out(rx_byte),
         .data_valid(rx_valid)
     );
@@ -170,6 +194,9 @@ module uart_trng_ascii_core
         .rst_n(rst_uart_sync_n),
         .data_in(tx_byte),
         .start(tx_start),
+`ifdef ADJUSTABLE_BAUD_ENABLED
+        .baud_div(uart_baud_div),
+`endif
         .tx(uart_tx_raw),
         .busy(tx_busy)
     );
@@ -218,6 +245,10 @@ module uart_trng_ascii_core
     wire       trng_bit;
 
     assign rx_valid_pulse = rx_valid && !rx_valid_d;
+
+`ifdef ADJUSTABLE_BAUD_ENABLED
+    assign uart_baud_sel = 2'd0;
+`endif
 
     assign tx_byte  = tx_byte_r;
     assign tx_start = tx_start_r;
@@ -361,6 +392,10 @@ module uart_trng_ascii_core
         .tx_byte(tx_byte),
         .tx_start(tx_start),
         .tx_busy(tx_busy),
+
+`ifdef ADJUSTABLE_BAUD_ENABLED
+        .uart_baud_sel(uart_baud_sel),
+`endif
 
         .reg_ctrl(reg_ctrl),
         .reg_src(reg_src),

@@ -57,6 +57,8 @@
         `define PROJECT_UART_BAUD 32'd115_200
     `endif
 
+    // `define ADJUSTABLE_BAUD_ENABLED
+
     /* Some project features, typically only changed during development and debugging: */
 
     // `define ANALOG_ENABLED

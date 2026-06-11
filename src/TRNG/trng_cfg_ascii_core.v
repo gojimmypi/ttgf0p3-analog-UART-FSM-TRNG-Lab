@@ -17,7 +17,7 @@
  * - Generates ASCII replies using uart_tx_min.
  *
  * High-level command format:
- * - Single-nibble write commands: Ex, Sx, Vx, Wx followed by CR
+ * - Single-nibble write commands: Ex, Sx, Ux, Vx, Wx followed by CR
  * - Two-nibble write commands: Dxxy, Mxy, Oxy followed by CR
  * - Register reads: Rx followed by CR, where x is 0..7
  * - Binary raw stream: Bxy followed by CR, where xy is 01..FF bytes
@@ -28,6 +28,7 @@
  * - D10<CR>    : set divider register to 0x10
  * - R6<CR>     : read register 6, replies R6=hh<CR>
  * - B10<CR>    : stream 16 raw binary bytes from R6/R7
+ * - U3<CR>     : select 921600 UART baud after OK<CR> completes
  * - V<CR>      : replies Version 1.2.0 4/23/2026<CR>
  *
  * Reply format:
@@ -53,6 +54,10 @@ module trng_cfg_ascii_core
     output reg  [7:0] tx_byte,
     output reg        tx_start,
     input  wire       tx_busy,
+
+`ifdef ADJUSTABLE_BAUD_ENABLED
+    output reg  [1:0] uart_baud_sel,
+`endif 
 
     output reg  [7:0] reg_ctrl,
     output reg  [7:0] reg_src,
@@ -120,6 +125,11 @@ module trng_cfg_ascii_core
     reg       need_two_digits;
     reg [2:0] read_addr;
     reg [7:0] reply_value;
+
+`ifdef ADJUSTABLE_BAUD_ENABLED
+    reg       pending_baud_valid;
+    reg [1:0] pending_baud_sel;
+`endif 
 
 `ifdef TRNG_BINARY_STREAM
     reg [7:0] stream_count;
@@ -366,6 +376,10 @@ module trng_cfg_ascii_core
             need_two_digits       <= 1'b0;
             read_addr             <= 3'd0;
             reply_value           <= 8'h00;
+`ifdef ADJUSTABLE_BAUD_ENABLED
+            pending_baud_valid    <= 1'b0;
+            pending_baud_sel      <= 2'd0;
+`endif 
 
             queued_tx_byte        <= 8'h00;
             queued_tx_valid       <= 1'b0;
@@ -385,7 +399,11 @@ module trng_cfg_ascii_core
             /* no long strings */
         `endif
 
+`ifdef ADJUSTABLE_BAUD_ENABLED
             /* Default power-on register values for bring-up. */
+            uart_baud_sel         <= 2'd0;
+`endif 
+
             reg_ctrl              <= 8'h00;
             reg_src               <= 8'h00;
             reg_div               <= 8'h10;
@@ -418,6 +436,9 @@ module trng_cfg_ascii_core
 `ifdef CASE_INSENSITIVE_ALT
                         end else if ((rx_cmd == "E") || (rx_cmd == "e") ||
                                      (rx_cmd == "S") || (rx_cmd == "s") ||
+                            `ifdef ADJUSTABLE_BAUD_ENABLED
+                                     (rx_cmd == "U") || (rx_cmd == "u") ||
+                            `endif 
                                      (rx_cmd == "V") || (rx_cmd == "v") ||
                                      (rx_cmd == "W") || (rx_cmd == "w")) begin
                             cmd             <= rx_cmd;
@@ -439,6 +460,9 @@ module trng_cfg_ascii_core
 `else
                         end else if ((rx_cmd == "E") ||
                                      (rx_cmd == "S") ||
+                            `ifdef ADJUSTABLE_BAUD_ENABLED
+                                     (rx_cmd == "U") ||
+                            `endif 
                                      (rx_cmd == "V") ||
                                      (rx_cmd == "W")) begin
                             cmd             <= rx_cmd;
@@ -564,6 +588,21 @@ module trng_cfg_ascii_core
                                 end
 `endif /* TRNG_BINARY_STREAM */
 
+`ifdef ADJUSTABLE_BAUD_ENABLED
+
+    `ifdef CASE_INSENSITIVE_ALT
+                            end else if ((cmd == "U") || (cmd == "u")) begin
+    `else
+                            end else if (cmd == "U") begin
+    `endif
+                                if (hex1 < 4'd4) begin
+                                    pending_baud_valid <= 1'b1;
+                                    pending_baud_sel   <= hex1[1:0];
+                                    state              <= ST_Q_O;
+                                end else begin
+                                    state <= ST_Q_ERR;
+                                end
+`endif /* ADJUSTABLE_BAUD_ENABLED */
                             end else begin
                                 if (need_two_digits) begin
                                     do_write(cmd, {hex1, hex2});
@@ -706,6 +745,16 @@ module trng_cfg_ascii_core
                  */
                 ST_WAIT_SEND: begin
                     if (!queued_tx_valid && !tx_busy) begin
+
+            `ifdef ADJUSTABLE_BAUD_ENABLED
+                        if (next_state_after_send == ST_IDLE) begin
+                            if (pending_baud_valid) begin
+                                uart_baud_sel      <= pending_baud_sel;
+                                pending_baud_valid <= 1'b0;
+                            end
+                        end
+            `endif /* ADJUSTABLE_BAUD_ENABLED */
+
                         state <= next_state_after_send;
                     end
                 end
