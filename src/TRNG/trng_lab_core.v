@@ -65,6 +65,12 @@ module trng_lab_core
     output reg  [7:0] reg_status,
     output reg  [7:0] reg_rawlo,
     output reg  [7:0] reg_rawhi,
+
+`ifdef TRNG_CONDITIONED_STREAM
+    output wire [7:0] reg_condlo,
+    output wire [7:0] reg_condhi,
+`endif
+
     output wire       trng_bit
 );
 
@@ -76,6 +82,10 @@ module trng_lab_core
     reg  [15:0] sample_ctr;
     reg  [15:0] lfsr;
     reg  [15:0] sample_shift;
+
+`ifdef TRNG_CONDITIONED_STREAM
+    reg  [31:0] stream_mix;
+`endif
 
     reg         ro0_sample_meta;
     reg         ro0_sample_sync;
@@ -97,6 +107,10 @@ module trng_lab_core
     wire [7:0]  ro_raw;
     wire        ro_xor;
     wire        lfsr_next_bit;
+
+`ifdef TRNG_CONDITIONED_STREAM
+    wire        stream_feedback;
+`endif
 
     wire        unused_reg_ctrl;
     wire        unused_reg_src;
@@ -122,6 +136,21 @@ module trng_lab_core
                     ro_raw[4] ^ ro_raw[5] ^ ro_raw[6] ^ ro_raw[7];
 
     assign trng_bit = sample_shift[0];
+
+`ifdef TRNG_CONDITIONED_STREAM
+    assign stream_feedback =
+        stream_mix[31] ^
+        stream_mix[21] ^
+        stream_mix[1]  ^
+        stream_mix[0]  ^
+        selected_bit   ^
+        lfsr[0]        ^
+        lfsr[7]        ^
+        lfsr[15];
+
+    assign reg_condlo = stream_mix[7:0]  ^ stream_mix[31:24];
+    assign reg_condhi = stream_mix[15:8] ^ stream_mix[23:16];
+`endif
 
     assign unused_reg_ctrl = &reg_ctrl[7:3];
     assign unused_reg_src  = &reg_src[7:2];
@@ -209,6 +238,10 @@ module trng_lab_core
             sample_ctr      <= 16'h0000;
             lfsr            <= 16'h1ACE;
             sample_shift    <= 16'h0000;
+
+`ifdef TRNG_CONDITIONED_STREAM
+            stream_mix      <= 32'hA5C3_1F2D;
+`endif
             ro0_sample_meta <= 1'b0;
             ro0_sample_sync <= 1'b0;
             rox_sample_meta <= 1'b0;
@@ -239,8 +272,22 @@ module trng_lab_core
                 sample_shift <= {sample_shift[14:0], selected_bit};
                 reg_rawlo    <= {sample_shift[6:0], selected_bit};
                 reg_rawhi    <= sample_shift[14:7];
+
+`ifdef TRNG_CONDITIONED_STREAM
+                stream_mix   <= {
+                    stream_mix[30:0],
+                    stream_feedback
+                } ^ {
+                    reg_rawhi,
+                    reg_rawlo,
+                    sample_shift[15:8],
+                    sample_shift[7:0]
+                };
+`endif
+
             end else if (trng_enable) begin
                 sample_ctr <= sample_ctr + 16'h0001;
+
             end else begin
                 sample_ctr <= 16'h0000;
             end

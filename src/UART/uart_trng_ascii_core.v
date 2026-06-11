@@ -242,6 +242,10 @@ module uart_trng_ascii_core
     wire [7:0] reg_status;
     wire [7:0] reg_rawlo;
     wire [7:0] reg_rawhi;
+`ifdef TRNG_CONDITIONED_STREAM
+    wire [7:0] reg_condlo;
+    wire [7:0] reg_condhi;
+`endif
     wire       trng_bit;
 
     assign rx_valid_pulse = rx_valid && !rx_valid_d;
@@ -341,6 +345,10 @@ module uart_trng_ascii_core
     wire [7:0] reg_status;
     wire [7:0] reg_rawlo;
     wire [7:0] reg_rawhi;
+`ifdef TRNG_CONDITIONED_STREAM
+    wire [7:0] reg_condlo;
+    wire [7:0] reg_condhi;
+`endif
     wire       trng_bit;
 
     /*
@@ -406,6 +414,10 @@ module uart_trng_ascii_core
         .reg_status(reg_status),
         .reg_rawlo(reg_rawlo),
         .reg_rawhi(reg_rawhi),
+`ifdef TRNG_CONDITIONED_STREAM
+        .reg_condlo(reg_condlo),
+        .reg_condhi(reg_condhi),
+`endif
 
 `ifdef SPI_REG_ACCESS
         .spi_reg_wr_en(spi_reg_wr_en),
@@ -433,9 +445,17 @@ module uart_trng_ascii_core
         .reg_status(reg_status),
         .reg_rawlo(reg_rawlo),
         .reg_rawhi(reg_rawhi),
+`ifdef TRNG_CONDITIONED_STREAM
+        .reg_condlo(reg_condlo),
+        .reg_condhi(reg_condhi),
+`endif
         .trng_bit(trng_bit)
     );
 `else
+`ifdef TRNG_CONDITIONED_STREAM
+    assign reg_condlo = reg_rawlo;
+    assign reg_condhi = reg_rawhi;
+`endif
     /* use only the stub when TRNG is not enabled, so we can still test the ASCII parser and UART path */
     trng_stub u_trng
     (

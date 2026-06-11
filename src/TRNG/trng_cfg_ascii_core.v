@@ -21,6 +21,8 @@
  * - Two-nibble write commands: Dxxy, Mxy, Oxy followed by CR
  * - Register reads: Rx followed by CR, where x is 0..7
  * - Binary raw stream: Bxy followed by CR, where xy is 01..FF bytes
+ * - Conditioned binary stream: Cxy followed by CR, where xy is 01..FF bytes
+ *   when TRNG_CONDITIONED_STREAM is enabled
  * - Version query: V followed by CR
  *
  * Example transactions:
@@ -28,6 +30,7 @@
  * - D10<CR>    : set divider register to 0x10
  * - R6<CR>     : read register 6, replies R6=hh<CR>
  * - B10<CR>    : stream 16 raw binary bytes from R6/R7
+ * - C10<CR>    : stream 16 conditioned binary bytes if TRNG_CONDITIONED_STREAM is enabled
  * - U3<CR>     : select 921600 UART baud after OK<CR> completes
  * - V<CR>      : replies Version 1.2.0 4/23/2026<CR>
  *
@@ -68,6 +71,11 @@ module trng_cfg_ascii_core
     input  wire [7:0] reg_status,
     input  wire [7:0] reg_rawlo,
     input  wire [7:0] reg_rawhi,
+
+`ifdef TRNG_CONDITIONED_STREAM
+    input  wire [7:0] reg_condlo,
+    input  wire [7:0] reg_condhi,
+`endif
 
     input  wire       spi_reg_wr_en,
     input  wire [2:0] spi_reg_addr,
@@ -134,7 +142,10 @@ module trng_cfg_ascii_core
 `ifdef TRNG_BINARY_STREAM
     reg [7:0] stream_count;
     reg       stream_hi;
+`ifdef TRNG_CONDITIONED_STREAM
+    reg       stream_conditioned;
 `endif
+`endif /* TRNG_BINARY_STREAM */
 
     /* This is a GDC linting hack */
     wire [3:0] decoded_hex;
@@ -389,7 +400,12 @@ module trng_cfg_ascii_core
         `ifdef TRNG_BINARY_STREAM
             stream_count          <= 8'h00;
             stream_hi             <= 1'b0;
-        `endif
+
+            `ifdef TRNG_CONDITIONED_STREAM
+            stream_conditioned    <= 1'b0;
+            `endif
+
+        `endif /* TRNG_BINARY_STREAM */
 
         `ifdef USE_LONG_STRINGS
             active_str            <= {(8 * VERSION_LEN){1'b0}};
@@ -447,6 +463,9 @@ module trng_cfg_ascii_core
                         end else if ((rx_cmd == "D") || (rx_cmd == "d") ||
                             `ifdef TRNG_BINARY_STREAM
                                      (rx_cmd == "B") || (rx_cmd == "b") ||
+                                `ifdef TRNG_CONDITIONED_STREAM
+                                     (rx_cmd == "C") || (rx_cmd == "c") ||
+                                `endif
                             `endif
                                      (rx_cmd == "M") || (rx_cmd == "m") ||
                                      (rx_cmd == "O") || (rx_cmd == "o")) begin
@@ -471,6 +490,9 @@ module trng_cfg_ascii_core
                         end else if ((rx_cmd == "D") ||
                             `ifdef TRNG_BINARY_STREAM
                                      (rx_cmd == "B") ||
+                                `ifdef TRNG_CONDITIONED_STREAM
+                                     (rx_cmd == "C") ||
+                                `endif
                             `endif                                     
                                      (rx_cmd == "M") ||
                                      (rx_cmd == "O")) begin
@@ -573,15 +595,31 @@ module trng_cfg_ascii_core
 
 `ifdef TRNG_BINARY_STREAM
 
-    `ifdef CASE_INSENSITIVE_ALT
-                            end else if ((cmd == "B") || (cmd == "b")) begin
+    `ifdef TRNG_CONDITIONED_STREAM
+        `ifdef CASE_INSENSITIVE_ALT
+                            end else if ((cmd == "B") || (cmd == "b") ||
+                                         (cmd == "C") || (cmd == "c")) begin
+        `else
+                            end else if ((cmd == "B") || (cmd == "C")) begin
+        `endif /* CASE_INSENSITIVE_ALT */
     `else
+        `ifdef CASE_INSENSITIVE_ALT
+                            end else if ((cmd == "B") || (cmd == "b")) begin
+        `else
                             end else if (cmd == "B") begin
-    `endif /* CASE_INSENSITIVE_ALT */
+        `endif /* CASE_INSENSITIVE_ALT */
+    `endif /* TRNG_CONDITIONED_STREAM */
 
                                 if ({hex1, hex2} != 8'h00) begin
                                     stream_count <= {hex1, hex2};
                                     stream_hi    <= 1'b0;
+    `ifdef TRNG_CONDITIONED_STREAM
+        `ifdef CASE_INSENSITIVE_ALT
+                                    stream_conditioned <= (cmd == "C") || (cmd == "c");
+        `else
+                                    stream_conditioned <= (cmd == "C");
+        `endif /* CASE_INSENSITIVE_ALT */
+    `endif /* TRNG_CONDITIONED_STREAM */
                                     state        <= ST_Q_BIN;
                                 end else begin
                                     state <= ST_Q_ERR;
@@ -594,7 +632,7 @@ module trng_cfg_ascii_core
                             end else if ((cmd == "U") || (cmd == "u")) begin
     `else
                             end else if (cmd == "U") begin
-    `endif
+    `endif /* CASE_INSENSITIVE_ALT */
                                 if (hex1 < 4'd4) begin
                                     pending_baud_valid <= 1'b1;
                                     pending_baud_sel   <= hex1[1:0];
@@ -603,6 +641,7 @@ module trng_cfg_ascii_core
                                     state <= ST_Q_ERR;
                                 end
 `endif /* ADJUSTABLE_BAUD_ENABLED */
+
                             end else begin
                                 if (need_two_digits) begin
                                     do_write(cmd, {hex1, hex2});
@@ -721,10 +760,28 @@ module trng_cfg_ascii_core
                 ST_Q_BIN: begin
                     if (!queued_tx_valid && !tx_busy) begin
                         if (stream_hi) begin
+`ifdef TRNG_CONDITIONED_STREAM
+                            if (stream_conditioned) begin
+                                queue_tx(reg_condhi);
+                            end else begin
+                                queue_tx(reg_rawhi);
+                            end
+`else
                             queue_tx(reg_rawhi);
+`endif
                             stream_hi <= 1'b0;
+
                         end else begin
+`ifdef TRNG_CONDITIONED_STREAM
+                            if (stream_conditioned) begin
+                                queue_tx(reg_condlo);
+                            end else begin
+                                queue_tx(reg_rawlo);
+                            end
+`else
                             queue_tx(reg_rawlo);
+`endif
+                            /* regardless of conditioned stream: */
                             stream_hi <= 1'b1;
                         end
 

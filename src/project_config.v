@@ -67,6 +67,7 @@
     `define SPI_REG_ACCESS
     `define TRNG_ENABLED
     `define TRNG_BINARY_STREAM
+    // `define TRNG_CONDITIONED_STREAM
     // `define JTAG_ENABLED
 
     /* Note that with all UART_ENABLED, SPI_ENABLED, SPI_REG_ACCESS, TRNG_ENABLED, JTAG_ENABLED
@@ -91,6 +92,12 @@
 
 
     /* Some final config sanity checks */
+    `ifdef TRNG_CONDITIONED_STREAM
+        `ifndef TRNG_BINARY_STREAM
+            PROJECT_TRNG_CONDITIONED_STREAM_REQUIRES_BINARY_STREAM u_stop (); /* TRNG_CONDITIONED_STREAM requires TRNG_BINARY_STREAM */
+        `endif
+    `endif
+
     `ifdef CASE_INSENSITIVE
         `ifdef CASE_INSENSITIVE_ALT
             PROJECT_MUST_PICK_ZERO_OR_ONE_CASE_INSENSITIVE_ALT u_stop (); /* Cannot use both CASE_INSENSITIVE and CASE_INSENSITIVE_ALT */
