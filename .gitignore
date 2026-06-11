@@ -51,3 +51,4 @@ test/gate_level_netlist.v
 
 /my_gh_refresh.sh
 
+/test-hw/trng_raw.bin

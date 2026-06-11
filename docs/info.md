@@ -24,7 +24,17 @@ At a high level:
 - A sampling clock (controlled by a divider) captures this behavior
 - Control and configuration are managed through memory-mapped registers
 - Data and status are read back over the same UART interface
-- 
+
+
+See the [`capture_trng_raw_uart.py`](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/test-hw/capture_trng_raw_uart.py) 
+script to capture a binary file of random data, large enough for 100 runs of 1,000,000-bit [NIST-style tests](https://csrc.nist.gov/projects/random-bit-generation/documentation-and-software):
+
+```
+./capture_trng_raw_uart.py  --port /dev/ttyS12  --bytes 16777216  --out trng_raw.bin
+```
+
+This script requires a build with `TRNG_BINARY_STREAM` enabled.
+
 The raw output is intended for experimentation and characterization. It is not a certified cryptographic random number generator.
 
 Development will continue beyond Tiny Tapeout submission deadline. For future updates, visit:
@@ -107,7 +117,7 @@ Or:
 stty -F "$PORT" "$BAUD" cs8 -cstopb -parenb -ixon -ixoff -crtscts raw -echo min 0 time 5
 ```
 
-Press type `V` and press `Enter` to query the version string (if enabled in the build). 
+Type `V` and press `Enter` to query the version string (if enabled in the build). 
 Then you can send commands to configure the TRNG and read back entropy samples.
 
 Although there are case-insensitive settings available for local builds, they have been disabled 
@@ -215,9 +225,11 @@ This simple interface allows interactive exploration of TRNG behavior directly f
 ## UART TRNG Command Interface
 
 All commands are ASCII and terminated with `\r`.  
-Responses are ASCII, typically:
+Responses are ASCII for normal register/configuration commands, typically:
 
 `` R<n>=<value> ``
+
+The optional `Bxx` raw stream command returns binary bytes and does not append `OK<CR>`.
 
 ---
 
@@ -276,6 +288,19 @@ Read back registers:
 Version query:
 
     V\r -> Version x.x.x <date>
+
+
+Binary raw stream, when enabled:
+
+```text
+B10<CR> -> 16 raw binary bytes
+B64<CR> -> 100 raw binary bytes
+BFF<CR> -> 255 raw binary bytes
+B00<CR> -> ?<CR>
+```
+The `xx` byte count is hexadecimal, not decimal.
+
+Do not use a normal terminal to view `Bxx` output. The response may contain arbitrary byte values, including control characters. Use `capture_trng_raw_uart.py` or another binary-safe capture tool.
 
 ---
 
@@ -1083,6 +1108,7 @@ The `ULX3S_USE_GN12_50MHZ` configuration path can set `PROJECT_CLOCK_HZ` to 50 M
 | `USE_LONG_STRINGS` | Enables the long version string reply path |
 | `TRNG_USE_RO` | Requests the real ring-oscillator TRNG path |
 | `TRNG_ALLOW_REAL_RO` | Explicit guard required with `TRNG_USE_RO` |
+| `TRNG_BINARY_STREAM` | Enables the UART `Bxx` raw binary byte-stream command |
 | `PDK_TARGET_SKY130` | Selects SKY130 inverter cell instantiation |
 | `PDK_TARGET_GF180` | Selects GF180 inverter cell instantiation |
 | `ULX3S` | Selects ULX3S FPGA wrapper/build behavior |
@@ -1198,6 +1224,7 @@ Line feed, `0x0A`, is ignored in command wait states, allowing common CRLF termi
 
 | Command | Arguments | Effect | Reply |
 | --- | --- | --- | --- |
+| `Bxx` | 2 hex nibbles, `01..FF` | Stream `xx` raw binary bytes from `reg_rawlo`/`reg_rawhi` alternately, when `TRNG_BINARY_STREAM` is enabled | Binary bytes, no `OK<CR>` |
 | `E0` / `E1` | 1 hex nibble | Write `reg_ctrl[0]`, TRNG enable | `OK<CR>` |
 | `Sx` | 1 hex nibble | Write `reg_src[1:0]` | `OK<CR>` |
 | `Vx` | 1 hex nibble | Write `reg_ctrl[1]`, deterministic single-step request | `OK<CR>` |
