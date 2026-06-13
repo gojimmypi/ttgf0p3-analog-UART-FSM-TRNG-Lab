@@ -24,7 +24,8 @@
 
     `ifdef USE_LONG_STRINGS
         `define VERSION_STRING_LEN 24 /* 123456789012345678901234 */   
-        `define VERSION_STRING          "Version 0.1.7d 6/11/2026"
+        `define VERSION_STRING          "Version 0.1.7g 6/12/2026"
+        /* GF26a deadline: June 22, 1:00PM PDT */
     `else
         /* no long strings */
     `endif
@@ -67,21 +68,116 @@
     `define SPI_REG_ACCESS
     `define TRNG_ENABLED
     `define TRNG_BINARY_STREAM
+    
+    /* 
+     * --------------------------------------------------------------------------------------------
+     * See trng_lab_core.v for various conditioning options
+     *
+     * With unlimited cell space (or an FPGA!) one could test each of the conditioning options
+     * with a runtime selection. This is not implemented at this time here.
+     *
+
+     * --------------------------------------------------------------------------------------------
+     */
     `define TRNG_CONDITIONED_STREAM
-    `define TRNG_CONDITIONED_STREAM_64_XOR
+
+    /* 
+     * --------------------------------------------------------------------------------------------
+     * Optional 64 bit XOR stream whitening conditioner: TRNG_CONDITIONED_STREAM_64_XOR
+     * --------------------------------------------------------------------------------------------
+     * Enabling TRNG_CONDITIONED_STREAM_64_XOR on sky130, repair 20/20
+     * increases 1x2 cell utilization from 71% to 88% 
+     * See #206 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27421859298
+     *  vs
+     * #205: https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27393236624
+     * --------------------------------------------------------------------------------------------
+     */
+    // `define TRNG_CONDITIONED_STREAM_64_XOR
+
+    /* 
+     * --------------------------------------------------------------------------------------------
+     * Optional 16 bit CRC whitening conditioner: TRNG_CONDITIONED_STREAM_CRC
+     * --------------------------------------------------------------------------------------------
+     * See #206 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27421859298 reference 71.200%
+     *    vs
+     * Update: #207 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27429304557 (in place, not enabled: 71.200%)
+     *    vs
+     * Enable: #208 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27431458941 (smaller!, 66.358%, but fails NIST Rank)
+     * --------------------------------------------------------------------------------------------
+     */
+    // `define TRNG_CONDITIONED_STREAM_CRC
+
+    /* 
+     * --------------------------------------------------------------------------------------------
+     * Optional 32 bit Galois whitening conditioner: TRNG_CONDITIONED_STREAM_GALOIS
+     * --------------------------------------------------------------------------------------------
+     * Baseline default: 71.4% in GDS #212: https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27436129291
+     *    vs
+     * Enable: 73.4% in GDS #213 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27437193873
+     *    vs
+     * Galois V2: 75.708% in GDS #216 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27443295824 
+     *    vs
+     * Galois V3: 84.278% in GDS #217 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27444743537
+     * --------------------------------------------------------------------------------------------
+     * config.json fails:
+     *   "DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+     *   "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 40,
+     * 
+     * Current (default): 20/20
+     * last run #220: 72.978% https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27447050050
+     */
+     `define TRNG_CONDITIONED_STREAM_GALOIS
+
+    /* 
+     * --------------------------------------------------------------------------------------------
+     * Optional selected_bit clean or not: TRNG_RAW_CLEAN_MIX
+     * --------------------------------------------------------------------------------------------
+     * When enabled:     selected_bit = rox_sample_sync;
+     * when not enabled: selected_bit = rox_sample_sync ^ lfsr[0] ^ lfsr[5] ^ sample_shift[3];
+     */
+     `define TRNG_RAW_CLEAN_MIX
+
+    /*
+     * --------------------------------------------------------------------------------------------
+     * Optional 64 bit Galois whitening conditioner: TRNG_CONDITIONED_STREAM_GALOIS
+     * --------------------------------------------------------------------------------------------
+     * Too large for 1x2. See #218 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27445643164
+     */
+    // `define TRNG_CONDITIONED_STREAM_GALOIS_64
+
+    /* TODO: */
+    // `define TRNG_CONDITIONED_STREAM_VON_NEUMANN
+
+    /* 
+     * --------------------------------------------------------------------------------------------
+     *  With all the above features enabled, there's not enough room on 1x2 SKY130 to enable JTAG 
+     * --------------------------------------------------------------------------------------------
+     */
     `define JTAG_ENABLED
+
+    /* FPGA-only: ignore reg_oscen and expose raw deterministic LFSR taps.
+     * Normally leave disabled so the FPGA surrogate respects oscillator enables. */
+    // `define FPGA_BASIC_LFSR_RO_TAPS
 
     /* Note that with all UART_ENABLED, SPI_ENABLED, SPI_REG_ACCESS, TRNG_ENABLED, JTAG_ENABLED
      * also enabling PIN_DIAG pushes design over 80% of 1x2 tiles. GDS aborted after 90 minute run. */
     `ifdef ULX3S
         // `define PIN_DIAG
+
+        /* FPGA only: A practical lightweight candidate is a xoshiro-style 128-bit PRNG. 
+         * It is not cryptographic, but it is much more likely to pass STS than the current 16-bit LFSR tap source */
+        `define FPGA_NIST_PRNG_SOURCE
     
     `elsif IS_MY_IVERILOG_SIMULATION 
         /* This is used by the [project]/test/my_test.sh simulation test script */
         // `define PIN_DIAG
 
     `else
+        /* Typically the TT Demoboard iCE40 */
+
         /* The PIN diag not implemented in 1x2 tile setting for TT at this time. */
+
+        /* The NIST PRNG is not implemented */
     `endif
 
     /* SPI_TEST_BYTE is only used when SPI_TEST_FIXED is enabled. */
@@ -105,6 +201,36 @@
         `endif
     `endif
 
+    `ifdef TRNG_CONDITIONED_STREAM_CRC
+        `ifndef TRNG_CONDITIONED_STREAM
+            PROJECT_TRNG_CONDITIONED_STREAM_CRC_REQUIRES_CONDITIONED_STREAM u_stop (); /* TRNG_CONDITIONED_STREAM_CRC requires TRNG_CONDITIONED_STREAM */
+        `endif
+    `endif
+
+    `ifdef TRNG_CONDITIONED_STREAM_GALOIS
+        `ifndef TRNG_CONDITIONED_STREAM
+            PROJECT_TRNG_CONDITIONED_STREAM_GALOIS_REQUIRES_CONDITIONED_STREAM u_stop (); /* TRNG_CONDITIONED_STREAM_GALOIS requires TRNG_CONDITIONED_STREAM */
+        `endif
+    `endif
+
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
+        `ifdef TRNG_CONDITIONED_STREAM_CRC
+            PROJECT_TRNG_CONDITIONED_STREAM_64_XOR_AND_TRNG_CONDITIONED_STREAM_CRC u_stop ();  /* both TRNG_CONDITIONED_STREAM_64_XOR and TRNG_CONDITIONED_STREAM_CRC enabled. pick one. */
+        `endif
+    `endif
+
+    `ifdef TRNG_CONDITIONED_STREAM_64_XOR
+        `ifdef TRNG_CONDITIONED_STREAM_GALOIS
+            PROJECT_TRNG_CONDITIONED_STREAM_64_XOR_AND_TRNG_CONDITIONED_STREAM_GALOIS u_stop ();  /* both TRNG_CONDITIONED_STREAM_64_XOR and TRNG_CONDITIONED_STREAM_GALOIS enabled. pick one. */
+        `endif
+    `endif
+
+    `ifdef TRNG_CONDITIONED_STREAM_CRC
+        `ifdef TRNG_CONDITIONED_STREAM_GALOIS
+            PROJECT_TRNG_CONDITIONED_STREAM_CRC_AND_TRNG_CONDITIONED_STREAM_GALOIS u_stop ();  /* both TRNG_CONDITIONED_STREAM_CRC and TRNG_CONDITIONED_STREAM_GALOIS enabled. pick one. */
+        `endif
+    `endif
+
     `ifdef CASE_INSENSITIVE
         `ifdef CASE_INSENSITIVE_ALT
             PROJECT_MUST_PICK_ZERO_OR_ONE_CASE_INSENSITIVE_ALT u_stop (); /* Cannot use both CASE_INSENSITIVE and CASE_INSENSITIVE_ALT */
@@ -115,6 +241,10 @@
         `ifdef CASE_INSENSITIVE
             PROJECT_MUST_PICK_ZERO_OR_ONE_CASE_INSENSITIVE u_stop ();  /* Cannot use both CASE_INSENSITIVE and CASE_INSENSITIVE_ALT */
         `endif
+    `endif
+
+    `ifdef FPGA_BASIC_LSFR_RO_TAPS
+         PROJECT_LSFR_NOT_A_VALID_OPTION u_stop ();  /* It is LFSR not LSFR */
     `endif
 
 `endif /* PROJECT_CONFIG_V */
