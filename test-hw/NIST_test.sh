@@ -4,14 +4,71 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-THE_FILE_BASE="trng_conditioned_2MiB"
+DEFAULT_FILE_BASE="trng_conditioned_2MiB"
 PORT="${PORT:-/dev/ttyS12}"
 BYTES=2097152
 BITS_PER_STREAM=1048576
-STREAMS_PER_RUN=16
 RUNS=2
+STREAMS_PER_RUN=16
 
 set -euo pipefail
+
+usage() {
+    cat <<EOF
+Usage:
+  $0 [capture_file_base]
+
+Examples:
+  $0
+  $0 trng_conditioned_2MiB
+  $0 trng_conditioned_2MiB.bin
+
+Arguments:
+  capture_file_base
+      Optional base name for captured TRNG files.
+      Default: trng_conditioned_2MiB
+
+      A trailing .bin is accepted and removed before per-run names are made.
+
+Environment:
+  PORT
+      UART port to use.
+      Default: /dev/ttyS12
+
+Output:
+  Captures:
+      <capture_file_base>.1.bin
+      <capture_file_base>.2.bin
+
+  STS results:
+      ../../sts-2.1.2/experiments/AlgorithmTesting.1
+      ../../sts-2.1.2/experiments/AlgorithmTesting.2
+EOF
+} # usage() 
+
+if [ "$#" -gt 1 ]; then
+    usage
+    exit 2
+fi
+
+case "${1:-}" in
+    -h|--help)
+        usage
+        exit 0
+        ;;
+    --\?)
+        usage
+        exit 0
+        ;;
+esac
+
+THE_FILE_BASE="${1:-$DEFAULT_FILE_BASE}"
+THE_FILE_BASE="${THE_FILE_BASE%.bin}"
+
+if [ -z "$THE_FILE_BASE" ]; then
+    echo "ERROR: capture_file_base must not be empty."
+    exit 2
+fi
 
 # Run shellcheck to ensure this is a good script.
 # Specify the executable shell checker you want to use:
@@ -24,8 +81,6 @@ if command -v "$MY_SHELLCHECK" >/dev/null 2>&1; then
 else
     echo "$MY_SHELLCHECK is not installed. Please install it if changes to this script have been made."
 fi
-
-
 
 TEST_HW_DIR="$(pwd)"
 STS_DIR="$(cd ../../sts-2.1.2 && pwd)"
@@ -169,6 +224,15 @@ EOF_ASSESS
 
     return "$assess_rc"
 } # Run assess
+
+echo "Capture file base: $THE_FILE_BASE"
+echo "Default file base: $DEFAULT_FILE_BASE"
+echo "Port: $PORT"
+echo "Bytes per capture: $BYTES"
+echo "Runs: $RUNS"
+echo "Bits per stream: $BITS_PER_STREAM"
+echo "Streams per run: $STREAMS_PER_RUN"
+echo
 
 ./show_effective_defines.sh
 

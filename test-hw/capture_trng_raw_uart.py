@@ -13,47 +13,117 @@ import time
 import serial
 
 
+DEFAULT_PORT = "/dev/ttyS12"
 DEFAULT_BAUD = 115200
 FAST_BAUD = 921600
 
+DEFAULT_TIMEOUT = 1.0
+SHORT_TIMEOUT = 0.25
 
-def write_cmd(ser, cmd):
+DEFAULT_BYTES = 2097152
+
+CMD_OK = b"OK\r"
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Capture raw or conditioned TRNG bytes over UART."
+    )
+
+    parser.add_argument(
+        "--port",
+        default=DEFAULT_PORT,
+        help=f"UART port. Default: {DEFAULT_PORT}",
+    )
+
+    parser.add_argument(
+        "--baud",
+        type=int,
+        default=DEFAULT_BAUD,
+        help=f"Initial/default UART baud. Default: {DEFAULT_BAUD}",
+    )
+
+    parser.add_argument(
+        "--fast-baud-rate",
+        type=int,
+        default=FAST_BAUD,
+        help=f"Fast UART baud used with --fast-baud. Default: {FAST_BAUD}",
+    )
+
+    parser.add_argument(
+        "--bytes",
+        type=int,
+        default=DEFAULT_BYTES,
+        help=f"Number of bytes to capture. Default: {DEFAULT_BYTES}",
+    )
+
+    parser.add_argument(
+        "--out",
+        required=True,
+        help="Output binary file.",
+    )
+
+    parser.add_argument(
+        "--fast-baud",
+        action="store_true",
+        help="Switch target and host to fast baud for the capture.",
+    )
+
+    parser.add_argument(
+        "--conditioned",
+        action="store_true",
+        help="Capture conditioned TRNG stream.",
+    )
+
+    parser.add_argument(
+        "--raw",
+        action="store_true",
+        help="Capture raw TRNG stream.",
+    )
+
+    parser.add_argument(
+        "--no-baud-recovery",
+        action="store_true",
+        help="Do not try to recover if the target was left at fast baud.",
+    )
+
+    return parser.parse_args()
+
+
+def die(message):
+    print(f"ERROR: {message}", file=sys.stderr)
+    return 1
+
+
+def set_serial_baud(ser, baud):
+    ser.baudrate = baud
+    time.sleep(0.05)
+    ser.reset_input_buffer()
+    ser.reset_output_buffer()
+
+
+def read_exact_or_timeout(ser, size):
+    data = b""
+
+    while len(data) < size:
+        chunk = ser.read(size - len(data))
+        if not chunk:
+            break
+        data += chunk
+
+    return data
+
+
+def send_ascii_cmd(ser, cmd, expected=CMD_OK):
+    ser.reset_input_buffer()
+    ser.reset_output_buffer()
+
     ser.write(cmd)
     ser.flush()
 
+    response = read_exact_or_timeout(ser, len(expected))
 
-def read_exact(ser, count, timeout_retries):
-    data = bytearray()
-    empty_reads = 0
-
-    while len(data) < count:
-        chunk = ser.read(count - len(data))
-
-        if not chunk:
-            if empty_reads >= timeout_retries:
-                raise TimeoutError(
-                    f"timeout after {len(data)} of {count} bytes "
-                    f"after {empty_reads + 1} read timeouts"
-                )
-
-            empty_reads += 1
-            continue
-
-        empty_reads = 0
-        data.extend(chunk)
-
-    return bytes(data)
-
-
-def read_cr_response(ser):
-    return ser.read_until(b"\r")
-
-
-def send_ascii_cmd(ser, cmd, expected=None):
-    write_cmd(ser, cmd)
-    response = read_cr_response(ser)
-
-    if expected is not None and response != expected:
+    if response != expected:
         raise RuntimeError(
             f"unexpected response to {cmd!r}: expected {expected!r}, got {response!r}"
         )
@@ -61,175 +131,306 @@ def send_ascii_cmd(ser, cmd, expected=None):
     return response
 
 
-def send_baud_cmd(ser, baud_sel):
-    cmd = f"U{baud_sel:X}\r".encode("ascii")
+def try_ascii_cmd(ser, cmd, expected=CMD_OK, timeout=SHORT_TIMEOUT):
+    old_timeout = ser.timeout
 
-    ser.reset_input_buffer()
-    write_cmd(ser, cmd)
-    response = read_cr_response(ser)
-
-    # The UART baud command can change baud before the host sees the final CR.
-    # Treat any response beginning with OK as success; extra bytes may be the
-    # trailing CR or stale binary-stream data seen at the wrong baud.
-    if not response.startswith(b"OK"):
-        raise RuntimeError(
-            f"unexpected response to {cmd!r}: expected response starting with b'OK', got {response!r}"
-        )
-
-    return response
-
-
-def set_uart_baud(ser, baud_sel, new_baud):
-    response = send_baud_cmd(ser, baud_sel)
-
-    ser.baudrate = new_baud
-    ser.reset_input_buffer()
-    ser.reset_output_buffer()
-    time.sleep(0.1)
-
-    return response
-
-
-def configure_trng(ser):
-    # Recommended raw capture setup:
-    # E0: freeze while configuring
-    # S3: mixed source
-    # OFF: enable all oscillator bits
-    # D01: fast sample divider
-    # E1: enable free-running sampling
-    for cmd in (b"E0\r", b"S3\r", b"OFF\r", b"D0F\r", b"E1\r"):
-        send_ascii_cmd(ser, cmd, b"OK\r")
-
-    # for cmd in (b"E0\r", b"S3\r", b"OFF\r", b"D1F\r", b"E1\r"):
-    #    send_ascii_cmd(ser, cmd, b"OK\r")
-
-def capture_binary_stream(ser, byte_count, out_path, conditioned, timeout_retries):
-    remaining = byte_count
-    stream_cmd = "C" if conditioned else "B"
-
-    with open(out_path, "wb") as f:
-        while remaining:
-            chunk_len = min(remaining, 255)
-            cmd = f"{stream_cmd}{chunk_len:02X}\r".encode("ascii")
-
-            write_cmd(ser, cmd)
-
-            data = read_exact(ser, chunk_len, timeout_retries)
-            f.write(data)
-
-            remaining -= chunk_len
-
-
-def remove_file_quietly(path):
     try:
-        os.remove(path)
-    except FileNotFoundError:
-        pass
-
-
-def capture_with_retries(ser, args):
-    out_tmp = f"{args.out}.tmp"
-    fast_baud_active = False
-
-    for attempt in range(1, args.capture_retries + 1):
-        if attempt > 1:
-            print(
-                f"retrying capture attempt {attempt} of {args.capture_retries}",
-                file=sys.stderr,
-            )
-
+        ser.timeout = timeout
         ser.reset_input_buffer()
         ser.reset_output_buffer()
 
-        time.sleep(0.1)
+        ser.write(cmd)
+        ser.flush()
 
-        configure_trng(ser)
+        response = read_exact_or_timeout(ser, len(expected))
+        return response == expected, response
 
-        if args.fast_baud and not fast_baud_active:
-            set_uart_baud(ser, 3, FAST_BAUD)
-            fast_baud_active = True
+    finally:
+        ser.timeout = old_timeout
 
-        try:
-            capture_binary_stream(
-                ser,
-                args.bytes,
-                out_tmp,
-                args.conditioned,
-                args.read_timeout_retries,
-            )
-            os.replace(out_tmp, args.out)
-            return fast_baud_active
-        except TimeoutError as exc:
-            remove_file_quietly(out_tmp)
 
-            if attempt >= args.capture_retries:
-                raise
+def safe_send_ascii_cmd(ser, cmd, expected=CMD_OK):
+    try:
+        send_ascii_cmd(ser, cmd, expected)
+        return True
 
-            print(f"warning: capture attempt {attempt} failed: {exc}", file=sys.stderr)
-            time.sleep(1.0)
+    except RuntimeError as exc:
+        print(f"WARNING: cleanup command {cmd!r} failed: {exc}")
+        return False
+
+    except serial.SerialException as exc:
+        print(f"WARNING: cleanup command {cmd!r} failed: {exc}")
+        return False
+
+
+def verify_ascii_link(ser):
+    ok, response = try_ascii_cmd(ser, b"E0\r", CMD_OK)
+
+    if ok:
+        return True, response
+
+    ok, response = try_ascii_cmd(ser, b"V\r", None if False else CMD_OK)
+    return ok, response
+
+
+def recover_baud_if_needed(ser, default_baud, fast_baud):
+    print(f"Checking UART command link at {default_baud} baud...")
+
+    ok, response = try_ascii_cmd(ser, b"E0\r", CMD_OK)
+    if ok:
+        print("UART command link is OK at default baud.")
+        return
+
+    print(
+        "Default baud did not respond cleanly. "
+        f"Expected {CMD_OK!r}, got {response!r}."
+    )
+    print(f"Trying stale fast-baud recovery at {fast_baud} baud...")
+
+    set_serial_baud(ser, fast_baud)
+
+    ok, response = try_ascii_cmd(ser, b"E0\r", CMD_OK)
+    if not ok:
+        set_serial_baud(ser, default_baud)
+        raise RuntimeError(
+            "Unable to communicate at default baud or fast baud. "
+            f"Fast baud response was {response!r}."
+        )
+
+    print("Device responded at fast baud.")
+    print("Restoring target UART to default baud with U0...")
+
+    ok, response = try_ascii_cmd(ser, b"U0\r", CMD_OK)
+    if not ok:
+        set_serial_baud(ser, default_baud)
+        raise RuntimeError(
+            "Device responded at fast baud, but U0 default-baud restore failed. "
+            f"Expected {CMD_OK!r}, got {response!r}."
+        )
+
+    set_serial_baud(ser, default_baud)
+
+    ok, response = try_ascii_cmd(ser, b"E0\r", CMD_OK)
+    if not ok:
+        raise RuntimeError(
+            "U0 was accepted, but default baud did not verify afterward. "
+            f"Expected {CMD_OK!r}, got {response!r}."
+        )
+
+    print("Default baud restored and verified.")
+
+
+def configure_trng(ser):
+    print("Disable/freezes TRNG sampling with E0")
+    send_ascii_cmd(ser, b"E0\r", CMD_OK)
+    print("Done!")
+
+    print("Clear TRNG/read path with C0")
+    send_ascii_cmd(ser, b"C0\r", CMD_OK)
+    print("Done!")
+
+    print("Enable TRNG sampling with E1")
+    send_ascii_cmd(ser, b"E1\r", CMD_OK)
+    print("Done!")
+
+
+def select_capture_mode(ser, args):
+    if args.raw and args.conditioned:
+        raise RuntimeError("Do not use both --raw and --conditioned.")
+
+    if args.conditioned:
+        print("Select conditioned TRNG stream")
+        send_ascii_cmd(ser, b"B1\r", CMD_OK)
+        print("Done!")
+        return
+
+    if args.raw:
+        print("Select raw TRNG stream")
+        send_ascii_cmd(ser, b"B0\r", CMD_OK)
+        print("Done!")
+        return
+
+    print("No stream mode specified; using device current/default stream mode.")
+
+
+def set_fast_baud(ser, fast_baud):
+    print(f"Switching target UART to fast baud {fast_baud}")
+
+    if fast_baud == 921600:
+        cmd = b"U3\r"
+    elif fast_baud == 460800:
+        cmd = b"U2\r"
+    elif fast_baud == 230400:
+        cmd = b"U1\r"
+    elif fast_baud == 115200:
+        cmd = b"U0\r"
+    else:
+        raise RuntimeError(f"Unsupported fast baud: {fast_baud}")
+
+    send_ascii_cmd(ser, cmd, CMD_OK)
+    set_serial_baud(ser, fast_baud)
+
+    print("Fast baud enabled.")
+
+
+def restore_default_baud(ser, default_baud, fast_baud_active):
+    if not fast_baud_active:
+        return True
+
+    print(f"Restoring target UART to default baud {default_baud}")
+
+    ok = safe_send_ascii_cmd(ser, b"U0\r", CMD_OK)
+
+    set_serial_baud(ser, default_baud)
+
+    if not ok:
+        print("WARNING: target default-baud restore command did not verify.")
+        return False
+
+    ok, response = try_ascii_cmd(ser, b"E0\r", CMD_OK)
+    if not ok:
+        print(
+            "WARNING: target did not verify at default baud after restore. "
+            f"Expected {CMD_OK!r}, got {response!r}."
+        )
+        return False
+
+    print("Default baud restored.")
+    return True
+
+
+def read_capture_bytes(ser, byte_count, out_file):
+    remaining = byte_count
+    total = 0
+    last_report = time.monotonic()
+
+    with open(out_file, "wb") as fout:
+        while remaining > 0:
+            chunk_size = min(4096, remaining)
+            chunk = ser.read(chunk_size)
+
+            if not chunk:
+                raise RuntimeError(
+                    f"timeout while reading capture data after {total} bytes"
+                )
+
+            fout.write(chunk)
+            total += len(chunk)
+            remaining -= len(chunk)
+
+            now = time.monotonic()
+            if now - last_report >= 2.0:
+                print(f"Captured {total} of {byte_count} bytes...")
+                last_report = now
+
+    print(f"Captured {total} bytes.")
+
+
+def start_binary_capture(ser, args):
+    if args.conditioned:
+        cmd = b"BC\r"
+    elif args.raw:
+        cmd = b"BR\r"
+    else:
+        cmd = b"B\r"
+
+    print(f"Starting binary capture with {cmd!r}")
+    ser.reset_input_buffer()
+    ser.reset_output_buffer()
+    ser.write(cmd)
+    ser.flush()
+
+
+def capture_once(ser, args):
+    configure_trng(ser)
+    select_capture_mode(ser, args)
+    start_binary_capture(ser, args)
+    read_capture_bytes(ser, args.bytes, args.out)
+
+
+def capture_with_retries(ser, args):
+    fast_baud_active = False
+
+    if args.fast_baud:
+        set_fast_baud(ser, args.fast_baud_rate)
+        fast_baud_active = True
+
+    capture_once(ser, args)
 
     return fast_baud_active
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--port", required=True)
-    parser.add_argument("--baud", type=int, default=DEFAULT_BAUD)
-    parser.add_argument("--fast-baud", action="store_true",
-                        help="switch to 921600 baud during binary capture using U3")
-    parser.add_argument("--conditioned", action="store_true",
-                        help="capture conditioned stream using Cxx instead of raw Bxx")
-    parser.add_argument("--bytes", type=int, default=1024)
-    parser.add_argument("--out", required=True)
-    parser.add_argument("--timeout", type=float, default=2.0)
-    parser.add_argument("--read-timeout-retries", type=int, default=3,
-                        help="additional serial read timeouts before failing a chunk")
-    parser.add_argument("--capture-retries", type=int, default=3,
-                        help="retry the whole capture from byte zero after a timeout")
-    args = parser.parse_args()
+    args = parse_args()
 
-    if args.bytes < 1:
-        print("error: --bytes must be at least 1", file=sys.stderr)
-        return 1
+    if args.bytes <= 0:
+        return die("--bytes must be greater than zero.")
 
-    if args.read_timeout_retries < 0:
-        print("error: --read-timeout-retries must be at least 0", file=sys.stderr)
-        return 1
+    out_dir = os.path.dirname(os.path.abspath(args.out))
+    if out_dir and not os.path.isdir(out_dir):
+        return die(f"output directory does not exist: {out_dir}")
 
-    if args.capture_retries < 1:
-        print("error: --capture-retries must be at least 1", file=sys.stderr)
-        return 1
-
-    original_baud = args.baud
     fast_baud_active = False
 
-    with serial.Serial(args.port, args.baud, timeout=args.timeout) as ser:
-        ser.reset_input_buffer()
-        ser.reset_output_buffer()
+    print("Begin capture...")
 
-        time.sleep(0.1)
-
-        try:
-            print("Begin capture...")
-            fast_baud_active = capture_with_retries(ser, args)
-
-        finally:
-            print("Disable/freezes TRNG sampling with E0")
-            print("Done!")
-            # TODO: add command-line option: --stop-after-capture
+    try:
+        with serial.Serial(
+            port=args.port,
+            baudrate=args.baud,
+            timeout=DEFAULT_TIMEOUT,
+            write_timeout=DEFAULT_TIMEOUT,
+        ) as ser:
             ser.reset_input_buffer()
             ser.reset_output_buffer()
-            send_ascii_cmd(ser, b"E0\r", b"OK\r")
 
-            if fast_baud_active:
-                try:
-                    # Send U0 at the current fast baud. The RTL replies OK at the
-                    # current baud, then switches back to the default baud.
-                    set_uart_baud(ser, 0, original_baud)
-                except Exception as exc:
-                    print(f"warning: failed to restore default UART baud: {exc}", file=sys.stderr)
-                    print("warning: reset the project or reconnect at the expected baud", file=sys.stderr)
+            if not args.no_baud_recovery:
+                recover_baud_if_needed(
+                    ser,
+                    default_baud=args.baud,
+                    fast_baud=args.fast_baud_rate,
+                )
 
+            fast_baud_active = capture_with_retries(ser, args)
+
+            restore_default_baud(
+                ser,
+                default_baud=args.baud,
+                fast_baud_active=fast_baud_active,
+            )
+
+    except KeyboardInterrupt:
+        print()
+        print("Interrupted.")
+        return 130
+
+    except Exception as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+
+        try:
+            with serial.Serial(
+                port=args.port,
+                baudrate=args.fast_baud_rate if args.fast_baud else args.baud,
+                timeout=SHORT_TIMEOUT,
+                write_timeout=SHORT_TIMEOUT,
+            ) as ser:
+                if fast_baud_active or args.fast_baud:
+                    print("Attempting best-effort fast-baud cleanup...")
+                    safe_send_ascii_cmd(ser, b"E0\r", CMD_OK)
+                    safe_send_ascii_cmd(ser, b"U0\r", CMD_OK)
+
+                    set_serial_baud(ser, args.baud)
+                    safe_send_ascii_cmd(ser, b"E0\r", CMD_OK)
+                else:
+                    print("Attempting best-effort default-baud cleanup...")
+                    safe_send_ascii_cmd(ser, b"E0\r", CMD_OK)
+
+        except Exception as cleanup_exc:
+            print(f"WARNING: cleanup failed: {cleanup_exc}", file=sys.stderr)
+
+        return 1
+
+    print("Done!")
     return 0
 
 
