@@ -15,6 +15,34 @@ import serial
 
 READ_RE = re.compile(rb"R([0-7])=([0-9A-F]{2})\r")
 
+R5_TRNG_ENABLE = 0x01
+R5_SAMPLE_TICK = 0x02
+R5_ANY_OSC_EN = 0x04
+R5_HEALTH_VALID = 0x08
+R5_ACTIVITY_SEEN = 0x10
+R5_REPETITION_FAIL = 0x20
+R5_STUCK_FAIL = 0x40
+R5_HEALTH_FAIL = 0x80
+
+R5_HEALTH_MASK = (
+    R5_HEALTH_VALID
+    | R5_ACTIVITY_SEEN
+    | R5_REPETITION_FAIL
+    | R5_STUCK_FAIL
+    | R5_HEALTH_FAIL
+)
+
+R5_FLAG_NAMES = (
+    (R5_TRNG_ENABLE, "trng_enable"),
+    (R5_SAMPLE_TICK, "sample_tick"),
+    (R5_ANY_OSC_EN, "any_osc_en"),
+    (R5_HEALTH_VALID, "health_valid"),
+    (R5_ACTIVITY_SEEN, "activity_seen"),
+    (R5_REPETITION_FAIL, "repetition_fail"),
+    (R5_STUCK_FAIL, "stuck_fail"),
+    (R5_HEALTH_FAIL, "health_fail"),
+)
+
 
 def read_until_idle(ser, idle_time, max_time):
     data = bytearray()
@@ -135,6 +163,83 @@ def read_reg(ser, args, reg_num):
 def write_ok(ser, args, name, command):
     response = send_command(ser, command, args)
     return expect_exact(name, response, b"OK\r")
+
+
+def format_r5_status(value):
+    flags = []
+
+    for mask, name in R5_FLAG_NAMES:
+        if value & mask:
+            flags.append(name)
+
+    if not flags:
+        return f"0x{value:02X} (no flags set)"
+
+    return f"0x{value:02X} (" + ", ".join(flags) + ")"
+
+
+def check_status_bits(name, value, set_mask=0, clear_mask=0):
+    ok = True
+
+    if (value & set_mask) != set_mask:
+        print(f"FAIL: {name}")
+        print(f"  Missing set bits: 0x{set_mask & ~value:02X}")
+        print(f"  Status:           {format_r5_status(value)}")
+        ok = False
+
+    if value & clear_mask:
+        print(f"FAIL: {name}")
+        print(f"  Unexpected bits:  0x{value & clear_mask:02X}")
+        print(f"  Status:           {format_r5_status(value)}")
+        ok = False
+
+    if ok:
+        print(f"PASS: {name}: {format_r5_status(value)}")
+
+    return ok
+
+
+def wait_for_status_bits(ser, args, name, set_mask=0, clear_mask=0):
+    last_status = None
+
+    for _ in range(args.health_poll_attempts):
+        status = read_reg(ser, args, 5)
+
+        if status is None:
+            return None
+
+        last_status = status
+
+        if (status & set_mask) == set_mask and (status & clear_mask) == 0:
+            print(f"PASS: {name}: {format_r5_status(status)}")
+            return status
+
+        time.sleep(args.health_poll_delay)
+
+    print(f"FAIL: {name}")
+
+    if last_status is None:
+        print("  No R5 status value was read")
+    else:
+        print(f"  Last status: {format_r5_status(last_status)}")
+        if (last_status & set_mask) != set_mask:
+            print(f"  Missing set bits: 0x{set_mask & ~last_status:02X}")
+        if last_status & clear_mask:
+            print(f"  Unexpected bits:  0x{last_status & clear_mask:02X}")
+
+    return None
+
+
+def clear_trng_health_state(ser, args):
+    ok = True
+
+    # E0 stops sampling. W1 asserts the TRNG reset/health clear path.
+    # W0 releases it again before the health test starts.
+    ok = write_ok(ser, args, "Health clear E0", b"E0\r") and ok
+    ok = write_ok(ser, args, "Health clear W1", b"W1\r") and ok
+    ok = write_ok(ser, args, "Health clear W0", b"W0\r") and ok
+
+    return ok
 
 
 def reset_config_registers(ser, args):
@@ -261,6 +366,72 @@ def collect_samples(ser, args, name, source_cmd, osc_cmd, div_cmd):
     return evaluate_samples(name, samples)
 
 
+def test_health_status_reset_clear(ser, args):
+    ok = True
+
+    print("")
+    print("Running: TRNG health status reset/clear")
+
+    ok = reset_config_registers(ser, args) and ok
+
+    # Disable oscillators before clearing so the post-clear status is stable.
+    ok = write_ok(ser, args, "Health reset O00 oscillators", b"O00\r") and ok
+    ok = clear_trng_health_state(ser, args) and ok
+
+    status = read_reg(ser, args, 5)
+
+    if status is None:
+        return False
+
+    ok = check_status_bits(
+        "R5 health bits clear after W reset",
+        status,
+        clear_mask=(R5_TRNG_ENABLE | R5_ANY_OSC_EN | R5_HEALTH_MASK),
+    ) and ok
+
+    return ok
+
+
+def test_health_status_active_oscillator(ser, args):
+    ok = True
+
+    print("")
+    print("Running: TRNG health status active oscillator")
+
+    ok = reset_config_registers(ser, args) and ok
+    ok = clear_trng_health_state(ser, args) and ok
+
+    # Use one enabled oscillator so rox_sample_sync should follow real RO activity.
+    ok = configure_source(ser, args, b"S1\r", b"O01\r", b"D01\r") and ok
+    ok = write_ok(ser, args, "Health E1 enable", b"E1\r") and ok
+
+    status = wait_for_status_bits(
+        ser,
+        args,
+        "R5 active oscillator health",
+        set_mask=(
+            R5_TRNG_ENABLE
+            | R5_ANY_OSC_EN
+            | R5_HEALTH_VALID
+            | R5_ACTIVITY_SEEN
+        ),
+        clear_mask=(R5_STUCK_FAIL | R5_HEALTH_FAIL),
+    )
+
+    if status is None:
+        ok = False
+    else:
+        ok = check_status_bits(
+            "R5 active oscillator failure bits",
+            status,
+            clear_mask=(R5_STUCK_FAIL | R5_HEALTH_FAIL),
+        ) and ok
+
+    ok = write_ok(ser, args, "Health cleanup E0", b"E0\r") and ok
+
+    return ok
+
+
 def test_binary_stream_exact_length(ser, args):
     ok = True
 
@@ -354,6 +525,9 @@ def main():
     parser.add_argument("--idle-time", type=float, default=0.05)
     parser.add_argument("--extra-timeout", type=float, default=0.25)
     parser.add_argument("--samples", type=int, default=8)
+    parser.add_argument("--skip-health-status", action="store_true")
+    parser.add_argument("--health-poll-attempts", type=int, default=20)
+    parser.add_argument("--health-poll-delay", type=float, default=0.005)
     args = parser.parse_args()
 
     ser = serial.Serial(args.port, args.baud, timeout=0.01)
@@ -365,6 +539,11 @@ def main():
         time.sleep(0.1)
 
         ok = True
+
+        if not args.skip_health_status:
+            ok = test_health_status_reset_clear(ser, args) and ok
+            ok = test_health_status_active_oscillator(ser, args) and ok
+
         ok = test_binary_stream_exact_length(ser, args) and ok
         ok = test_lfsr_frozen_samples(ser, args) and ok
         ok = test_source_select_paths(ser, args) and ok

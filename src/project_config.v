@@ -68,6 +68,10 @@
     `define SPI_REG_ACCESS
     `define TRNG_ENABLED
     `define TRNG_BINARY_STREAM
+
+    /* Lightweight TRNG health status. Reuses R5 status bits rather than adding
+     * new UART/SPI registers. Disable only if final area/timing needs the space. */
+    `define TRNG_HEALTH_STATUS
     
     /* 
      * --------------------------------------------------------------------------------------------
