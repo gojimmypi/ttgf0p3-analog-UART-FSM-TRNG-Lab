@@ -10,6 +10,8 @@ BYTES=2097152
 BITS_PER_STREAM=1048576
 RUNS=2
 STREAMS_PER_RUN=16
+# USE_FAST_BAUD="${USE_FAST_BAUD:-0}"
+USE_FAST_BAUD=1
 
 set -euo pipefail
 
@@ -22,6 +24,7 @@ Examples:
   $0
   $0 trng_conditioned_2MiB
   $0 trng_conditioned_2MiB.bin
+  USE_FAST_BAUD=1 $0 trng_conditioned_2MiB
 
 Arguments:
   capture_file_base
@@ -35,6 +38,10 @@ Environment:
       UART port to use.
       Default: /dev/ttyS12
 
+  USE_FAST_BAUD
+      Set to 1 to add --fast-baud to capture_trng_raw_uart.py.
+      Default: 0
+
 Output:
   Captures:
       <capture_file_base>.1.bin
@@ -44,7 +51,7 @@ Output:
       ../../sts-2.1.2/experiments/AlgorithmTesting.1
       ../../sts-2.1.2/experiments/AlgorithmTesting.2
 EOF
-} # usage() 
+} # usage()
 
 if [ "$#" -gt 1 ]; then
     usage
@@ -69,6 +76,15 @@ if [ -z "$THE_FILE_BASE" ]; then
     echo "ERROR: capture_file_base must not be empty."
     exit 2
 fi
+
+case "$USE_FAST_BAUD" in
+    0|1)
+        ;;
+    *)
+        echo "ERROR: USE_FAST_BAUD must be 0 or 1."
+        exit 2
+        ;;
+esac
 
 # Run shellcheck to ensure this is a good script.
 # Specify the executable shell checker you want to use:
@@ -225,6 +241,12 @@ EOF_ASSESS
     return "$assess_rc"
 } # Run assess
 
+capture_args=(--port "$PORT" --bytes "$BYTES" --conditioned)
+
+if [ "$USE_FAST_BAUD" -eq 1 ]; then
+    capture_args+=(--fast-baud)
+fi
+
 echo "Capture file base: $THE_FILE_BASE"
 echo "Default file base: $DEFAULT_FILE_BASE"
 echo "Port: $PORT"
@@ -232,6 +254,7 @@ echo "Bytes per capture: $BYTES"
 echo "Runs: $RUNS"
 echo "Bits per stream: $BITS_PER_STREAM"
 echo "Streams per run: $STREAMS_PER_RUN"
+echo "Fast baud: $USE_FAST_BAUD"
 echo
 
 ./show_effective_defines.sh
@@ -246,13 +269,15 @@ for x in $(seq 1 "$RUNS"); do
 
     cd "$TEST_HW_DIR"
 
-    echo "Capturing $BYTES bytes to $capture_file from $PORT (fast baud, conditioned)"
+    if [ "$USE_FAST_BAUD" -eq 1 ]; then
+        echo "Capturing $BYTES bytes to $capture_file from $PORT (fast baud, conditioned)"
+    else
+        echo "Capturing $BYTES bytes to $capture_file from $PORT (default baud, conditioned)"
+    fi
+
     ./capture_trng_raw_uart.py \
-        --port "$PORT" \
-        --bytes "$BYTES" \
-        --out "$capture_file" \
-        --fast-baud \
-        --conditioned
+        "${capture_args[@]}" \
+        --out "$capture_file"
 done
 
 pids=()

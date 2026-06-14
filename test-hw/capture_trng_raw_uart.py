@@ -4,6 +4,16 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # file: test-hw/capture_trng_raw_uart.py
+#
+# UART capture helper for the TT TRNG binary stream.
+#
+# Conservative protocol assumptions for the current bitstream:
+#   - ASCII commands return OK\r or ?\r.
+#   - Binary stream reads use Bxx\r, where xx is a hex byte count from 01..FF.
+#   - The RTL build decides whether Bxx returns raw or conditioned data.
+#   - U0/U1/U2/U3 may change baud before the trailing CR is fully received,
+#     so baud-change commands accept an OK prefix and then verify separately.
+#
 
 import argparse
 import os
@@ -22,7 +32,6 @@ SHORT_TIMEOUT = 0.25
 DEFAULT_READ_TIMEOUT_RETRIES = 3
 DEFAULT_CAPTURE_RETRIES = 1
 DEFAULT_CHUNK_SIZE = 255
-
 DEFAULT_BYTES = 2097152
 
 CMD_OK = b"OK\r"
@@ -33,9 +42,13 @@ class CaptureTimeoutError(TimeoutError):
     pass
 
 
+class LinkRecoveryError(RuntimeError):
+    pass
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="Capture TRNG bytes over the UART binary stream command."
+        description="Capture TRNG bytes using the UART Bxx binary stream command."
     )
 
     parser.add_argument(
@@ -48,7 +61,7 @@ def parse_args():
         "--baud",
         type=int,
         default=DEFAULT_BAUD,
-        help=f"Initial/default UART baud. Default: {DEFAULT_BAUD}",
+        help=f"Default UART baud. Default: {DEFAULT_BAUD}",
     )
 
     parser.add_argument(
@@ -74,15 +87,19 @@ def parse_args():
     parser.add_argument(
         "--fast-baud",
         action="store_true",
-        help="Switch target and host to fast baud for the binary capture.",
+        help=(
+            "Switch target and host to fast baud before configuring and "
+            "capturing. Disabled by default because aborted fast-baud captures "
+            "can leave the target in a bad state."
+        ),
     )
 
     parser.add_argument(
         "--conditioned",
         action="store_true",
         help=(
-            "Capture the configured TRNG binary stream. The RTL build decides "
-            "whether Bxx returns conditioned or raw data."
+            "Label the capture as conditioned. No runtime stream-select command "
+            "is sent; the RTL build decides what Bxx returns."
         ),
     )
 
@@ -90,8 +107,8 @@ def parse_args():
         "--raw",
         action="store_true",
         help=(
-            "Capture the configured TRNG binary stream. The RTL build decides "
-            "whether Bxx returns conditioned or raw data."
+            "Label the capture as raw. No runtime stream-select command is sent; "
+            "the RTL build decides what Bxx returns."
         ),
     )
 
@@ -107,7 +124,7 @@ def parse_args():
         type=int,
         default=DEFAULT_READ_TIMEOUT_RETRIES,
         help=(
-            "Additional serial read timeouts before failing one binary chunk. "
+            "Additional empty serial reads before failing one binary chunk. "
             f"Default: {DEFAULT_READ_TIMEOUT_RETRIES}"
         ),
     )
@@ -118,8 +135,7 @@ def parse_args():
         default=DEFAULT_CAPTURE_RETRIES,
         help=(
             "Retry the whole capture from byte zero after a binary read timeout. "
-            "Default is 1 to avoid repeatedly reconfiguring a target that may be "
-            "stuck in a partial stream."
+            "Default: 1."
         ),
     )
 
@@ -249,29 +265,6 @@ def try_ascii_cmd_prefix(ser, cmd, expected_prefix, timeout=SHORT_TIMEOUT):
         ser.timeout = old_timeout
 
 
-def try_version_cmd(ser, timeout=SHORT_TIMEOUT):
-    old_timeout = ser.timeout
-
-    try:
-        ser.timeout = timeout
-        ser.reset_input_buffer()
-        ser.reset_output_buffer()
-
-        write_cmd(ser, b"V\r")
-        response = read_cr_response(ser)
-
-        if not response:
-            return False, response
-
-        if response == CMD_UNKNOWN:
-            return False, response
-
-        return response.endswith(b"\r"), response
-
-    finally:
-        ser.timeout = old_timeout
-
-
 def safe_send_ascii_cmd(ser, cmd, expected=CMD_OK):
     try:
         send_ascii_cmd(ser, cmd, expected)
@@ -306,39 +299,46 @@ def set_target_baud(ser, baud_sel, new_baud):
     set_serial_baud(ser, new_baud)
 
 
-def verify_command_link(ser, label):
-    ok, response = try_version_cmd(ser)
+def verify_with_e0(ser, label):
+    ok, response = try_ascii_cmd(ser, b"E0\r", CMD_OK)
     if ok:
-        print(f"UART command link is OK at {label}: {response!r}")
+        print(f"UART command link is OK at {label}.")
         return True
 
+    print(f"UART command link failed at {label}: got {response!r}.")
     return False
 
 
 def recover_baud_if_needed(ser, default_baud, fast_baud):
     print(f"Checking UART command link at {default_baud} baud...")
 
-    if verify_command_link(ser, f"{default_baud} baud"):
-        return
+    if verify_with_e0(ser, f"{default_baud} baud"):
+        return default_baud
 
-    print("Default baud did not respond cleanly to V command.")
     print(f"Trying stale fast-baud recovery at {fast_baud} baud...")
-
     set_serial_baud(ser, fast_baud)
 
-    if not verify_command_link(ser, f"{fast_baud} baud"):
+    if not verify_with_e0(ser, f"{fast_baud} baud"):
         set_serial_baud(ser, default_baud)
-        raise RuntimeError("Unable to communicate at default baud or fast baud. Board may need reset.")
+        raise LinkRecoveryError(
+            "Unable to communicate at default baud or fast baud. The target is "
+            "not answering UART commands. Press reset or power-cycle the board, "
+            "then rerun the script."
+        )
 
     print("Device responded at fast baud.")
     print("Restoring target UART to default baud with U0...")
 
     set_target_baud(ser, 0, default_baud)
 
-    if not verify_command_link(ser, f"{default_baud} baud"):
-        raise RuntimeError("U0 appeared to be accepted, but default baud did not verify.")
+    if not verify_with_e0(ser, f"{default_baud} baud"):
+        raise LinkRecoveryError(
+            "U0 appeared to be accepted, but default baud did not verify. "
+            "Press reset or power-cycle the board, then rerun the script."
+        )
 
     print("Default baud restored and verified.")
+    return default_baud
 
 
 def configure_trng(ser):
@@ -372,10 +372,10 @@ def set_fast_baud(ser, fast_baud):
 
     set_target_baud(ser, baud_sel, fast_baud)
 
-    # Do not verify fast baud with E0 here. E0 freezes the TRNG after
-    # configuration and causes the following binary stream read to time out.
-    if not verify_command_link(ser, f"{fast_baud} baud"):
-        raise RuntimeError("Fast baud command appeared to be accepted, but V did not verify.")
+    # E0 is safe here because configure_trng() runs after baud switching and
+    # ends with E1. Do not call this verification after configure_trng().
+    if not verify_with_e0(ser, f"{fast_baud} baud"):
+        raise RuntimeError("Fast baud command appeared to be accepted, but fast baud did not verify.")
 
     print("Fast baud enabled and verified.")
 
@@ -393,7 +393,7 @@ def restore_default_baud(ser, default_baud, fast_baud_active):
         set_serial_baud(ser, default_baud)
         return False
 
-    if not verify_command_link(ser, f"{default_baud} baud"):
+    if not verify_with_e0(ser, f"{default_baud} baud"):
         print("WARNING: target did not verify at default baud after restore.")
         return False
 
@@ -452,6 +452,10 @@ def capture_with_retries(ser, args):
 
     print("Using Bxx binary stream command. Stream source is selected by the RTL build.")
 
+    if args.fast_baud:
+        set_fast_baud(ser, args.fast_baud_rate)
+        fast_baud_active = True
+
     for attempt in range(1, args.capture_retries + 1):
         if attempt > 1:
             print(
@@ -464,10 +468,6 @@ def capture_with_retries(ser, args):
         time.sleep(0.10)
 
         configure_trng(ser)
-
-        if args.fast_baud and not fast_baud_active:
-            set_fast_baud(ser, args.fast_baud_rate)
-            fast_baud_active = True
 
         try:
             capture_binary_stream(
@@ -510,7 +510,7 @@ def cleanup_after_error(args, fast_baud_active):
                     print(f"WARNING: cleanup U0 failed: {exc}")
                     set_serial_baud(ser, args.baud)
 
-                verify_command_link(ser, f"{args.baud} baud")
+                verify_with_e0(ser, f"{args.baud} baud")
             else:
                 print("Attempting best-effort default-baud cleanup...")
                 safe_send_ascii_cmd(ser, b"E0\r", CMD_OK)
