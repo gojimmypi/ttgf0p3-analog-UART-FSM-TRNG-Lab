@@ -177,7 +177,8 @@ module trng_lab_core
     wire        trng_reset;
 
 `ifdef TRNG_HEALTH_STATUS
-    wire [7:0]  health_status;
+    /* Health monitor only drives R5[7:3]. Legacy R5[2:0] is preserved. */
+    wire [7:3]  health_status;
 `endif
 
     assign trng_reset = reg_ctrl[2];
@@ -403,7 +404,13 @@ module trng_lab_core
 
     assign unused_reg_ctrl = &reg_ctrl[7:3];
     assign unused_reg_src  = &reg_src[7:2];
+
+`ifdef TRNG_HEALTH_STATUS
+    assign unused_reg_mode = &reg_mode;
+`else
     assign unused_reg_mode = &reg_mode[7:3];
+`endif
+
     assign unused_sample_shift = sample_shift[15];
 
 /*
@@ -701,7 +708,7 @@ module trng_lab_core
             reg_status[1]   <= sample_tick_q;
             reg_status[2]   <= |reg_oscen;
 `ifdef TRNG_HEALTH_STATUS
-            /* Preserve legacy R5[2:0]; use health monitor only for R5[7:3]. */
+            /* Preserve legacy R5[2:0]; use health monitor only for R5[7:3] */
             reg_status[3]   <= health_status[3]; /* health_valid */
             reg_status[4]   <= health_status[4]; /* activity_seen */
             reg_status[5]   <= health_status[5]; /* repetition_fail */
@@ -832,7 +839,7 @@ module trng_health_core
     input  wire       sample_bit_i,
     input  wire       ro_activity_bit_i,
     input  wire [7:0] oscen_i,
-    output wire [7:0] health_status_o
+    output wire [7:3] health_status_o /*  Preserves legacy R5[2:0] */
 );
 /* -------------------------------------------------------------------------------------------- */
     localparam [5:0] HEALTH_WINDOW_MASK = 6'h3F; /* 64 sampled bits */
@@ -866,10 +873,7 @@ module trng_health_core
         stuck_fail,      /* [6] no monitored RO transition seen during a completed health window */
         repetition_fail, /* [5] diagnostic: 16 identical sampled bits in a row. Not impossible, but unlikely */
         activity_seen,   /* [4] sticky: at least one monitored RO transition seen since clear */
-        health_valid,    /* [3] at least one 64-sample health window completed; just a completed data sample, window_done, nothing more */
-        |oscen_i,        /* [2] "any oscillator enabled"; zero when all oscillator enables are off. */
-        sample_seen,     /* [1] enable_i && sample_valid_i; at least one accepted sample seen since clear */
-        enable_i         /* [0] trng_enable; TRNG sampling enabled  */
+        health_valid     /* [3] at least one 64-sample health window completed; just a completed data sample, window_done, nothing more */
     };
 
     always @(posedge clk) begin
