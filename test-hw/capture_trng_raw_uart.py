@@ -353,6 +353,8 @@ def main():
         finally:
             try:
                 print("Disable/freezes TRNG sampling with E0")
+                print("Done!")
+                # TODO: add command-line option: --stop-after-capture
                 ser.reset_input_buffer()
                 ser.reset_output_buffer()
                 send_ascii_cmd(ser, b"E0\r", b"OK\r")
