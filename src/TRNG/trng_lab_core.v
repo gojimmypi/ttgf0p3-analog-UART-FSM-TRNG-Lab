@@ -701,6 +701,7 @@ module trng_lab_core
             reg_status[1]   <= sample_tick_q;
             reg_status[2]   <= |reg_oscen;
 `ifdef TRNG_HEALTH_STATUS
+            /* Preserve legacy R5[2:0]; use health monitor only for R5[7:3]. */
             reg_status[3]   <= health_status[3]; /* health_valid */
             reg_status[4]   <= health_status[4]; /* activity_seen */
             reg_status[5]   <= health_status[5]; /* repetition_fail */
@@ -799,6 +800,8 @@ module trng_lab_core
 
 endmodule /* trng_lab_core */
 
+
+`ifdef TRNG_HEALTH_STATUS
 /*
  * --------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------
@@ -817,7 +820,7 @@ endmodule /* trng_lab_core */
  *   [4] activity_seen: RO activity bit toggled since the last clear/reset
  *   [5] repetition_fail: 16 identical sampled bits in a row
  *   [6] stuck_fail: no RO activity-bit transition in a 64-sample window
- *   [7] health_fail: repetition_fail or stuck_fail
+ *   [7] health_fail: fatal health failure, currently same as stuck_fail
  */
 module trng_health_core
 (
@@ -856,15 +859,17 @@ module trng_health_core
     assign window_done = (window_count == HEALTH_WINDOW_MASK);
     assign next_window_transition_seen = window_transition_seen || ro_activity_toggled;
 
+    wire health_fail = stuck_fail;
+
     assign health_status_o = {
-        repetition_fail || stuck_fail,
-        stuck_fail,
-        repetition_fail,
-        activity_seen,
-        health_valid,
-        |oscen_i,
-        sample_seen,
-        enable_i
+        health_fail,     /* [7] fatal health failure, currently same as stuck_fail */
+        stuck_fail,      /* [6] no monitored RO transition seen during a completed health window */
+        repetition_fail, /* [5] diagnostic: 16 identical sampled bits in a row. Not impossible, but unlikely */
+        activity_seen,   /* [4] sticky: at least one monitored RO transition seen since clear */
+        health_valid,    /* [3] at least one 64-sample health window completed; just a completed data sample, window_done, nothing more */
+        |oscen_i,        /* [2] "any oscillator enabled"; zero when all oscillator enables are off. */
+        sample_seen,     /* [1] enable_i && sample_valid_i; at least one accepted sample seen since clear */
+        enable_i         /* [0] trng_enable; TRNG sampling enabled  */
     };
 
     always @(posedge clk) begin
@@ -925,6 +930,9 @@ module trng_health_core
     end
 
 endmodule /* trng_health_core */
+
+`endif /* TRNG_HEALTH_STATUS */
+
 
 /*
  * --------------------------------------------------------------------------------------------
