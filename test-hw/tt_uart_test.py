@@ -18,15 +18,54 @@
 # Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337
 
 import argparse
+from pathlib import Path
 import re
+import subprocess
 import sys
 import time
 
 import serial
 
 
-EXPECTED_VERSION="$(../scripts/get_expected_version.sh)"
-print("Expected version: $EXPECTED_VERSION")
+SCRIPT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = SCRIPT_DIR.parent
+VERSION_SCRIPT = PROJECT_ROOT / "scripts" / "get_expected_version.sh"
+VERSION_CONFIG = PROJECT_ROOT / "src" / "project_config.v"
+
+
+def get_expected_version():
+    if not VERSION_SCRIPT.is_file():
+        print(f"ERROR: Version helper not found: {VERSION_SCRIPT}", file=sys.stderr)
+        sys.exit(1)
+
+    if not VERSION_CONFIG.is_file():
+        print(f"ERROR: Version config not found: {VERSION_CONFIG}", file=sys.stderr)
+        sys.exit(1)
+
+    result = subprocess.run(
+        ["bash", str(VERSION_SCRIPT), str(VERSION_CONFIG)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        if result.stderr:
+            print(result.stderr.rstrip(), file=sys.stderr)
+        print("ERROR: Could not extract expected version", file=sys.stderr)
+        sys.exit(result.returncode)
+
+    expected_version = result.stdout.strip()
+
+    if not expected_version:
+        print("ERROR: Version helper returned an empty version string", file=sys.stderr)
+        sys.exit(1)
+
+    return expected_version
+
+
+EXPECTED_VERSION = get_expected_version()
+print(f"Expected version: {EXPECTED_VERSION}")
 EXPECTED_VERSION_PREFIX = b"Version "
 READ_RE = re.compile(rb"R([0-7])=([0-9A-F]{2})\r")
 
@@ -520,7 +559,7 @@ def main():
     parser.add_argument("--stop-on-fail", action="store_true")
     parser.add_argument(
         "--expected-version",
-        default=EXPECTED_VERSION[:-1].decode("ascii"),
+        default=EXPECTED_VERSION,
         help="Exact V command response text, without the trailing carriage return",
     )
     parser.add_argument("--health-status", action="store_true")
