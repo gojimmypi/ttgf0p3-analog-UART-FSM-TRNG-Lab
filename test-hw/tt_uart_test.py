@@ -139,6 +139,16 @@ def report_missing_command_tests():
     return False
 
 
+
+def print_reset_registers_hint(args):
+    if args.reset_registers:
+        return
+
+    print("")
+    print("Suggestion: this may be stale register state from a previous run.")
+    print("Try again with --reset-registers to start from configured defaults:")
+    print(f"  python {Path(sys.argv[0]).name} --port {args.port} --reset-registers")
+
 def read_until_idle(ser, idle_time, max_time):
     data = bytearray()
     start_time = time.monotonic()
@@ -585,6 +595,8 @@ def main():
             print("")
             print("PASS")
             return 0
+
+        print_reset_registers_hint(args)
 
         print("")
         print("FAIL")
