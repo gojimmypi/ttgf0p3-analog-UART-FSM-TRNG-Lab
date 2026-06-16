@@ -40,7 +40,7 @@ These changes have been applied / added to `src\config.json`:
   "RUN_POST_GPL_DESIGN_REPAIR": "true",
 
   "DESIGN_REPAIR_MAX_SLEW_PCT": 30,
-  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 30,
+  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 35,
 ```
 
 The design is intended for 25 MHz but is intentionally set to `"CLOCK_PERIOD": 20` (50 MHz) over-constraint.
