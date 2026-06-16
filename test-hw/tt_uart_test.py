@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #
 # Copyright (c) 2026 gojimmypi
 # SPDX-License-Identifier: Apache-2.0
@@ -13,6 +14,8 @@
 # python tt_uart_test.py --port $PORT  
 # 
 # python tt_uart_test.py --port $PORT --reset-registers
+#
+# Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337
 
 import argparse
 import re

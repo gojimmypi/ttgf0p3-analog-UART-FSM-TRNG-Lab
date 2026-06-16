@@ -1012,7 +1012,7 @@ module trng_ro_inverter_cell
         //`endif
 
         /* 
-         * There are several possible inverts to use in GF180. See
+         * There are several possible inverters to use in GF180. See
          *    https://github.com/google/globalfoundries-pdk-libs-gf180mcu_fd_sc_mcu7t5v0/tree/main/cells/inv
          *
          * Asked ChatGPT to summarize differences. This is the response:

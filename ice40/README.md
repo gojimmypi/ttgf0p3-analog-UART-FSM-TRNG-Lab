@@ -6,7 +6,7 @@
 
 Set the `TT_PROJECT_ROOT` and other environment variables before running the tests or other scripts.
 
-See the [. ./env_ice40.sh](./env_ice40.sh) script and edit as needed for your environment. For example:
+See the [source  ./env_ice40.sh](./env_ice40.sh) script and edit as needed for your environment. For example:
 
 ```text
 TT_PORT:              /dev/ttyS6
@@ -18,6 +18,8 @@ TT_TOP_NAME:          tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab
 TT_TOOLS:             /mnt/c/workspace/tt-support-tools-gojimmypi
 ```
 
+WSL `/dev/ttyS[n]` == `COM[n]` on Windows, other Linux: `/dev/ttyUSB[n]`, `/dev/ttyACM[n]`, etc.
+
 Run the scripts:
 
 ```bash
@@ -27,6 +29,8 @@ cd ice40
 ./build_and_flash.sh
 ./run_tests.sh
 ```
+
+Seeing the 7-segment display flicker different values is expected. No, the repeated "F" at the end does not mean failure!
 
 Note the difference between [`tt_tool.py --harden`](https://github.com/TinyTapeout/tt-support-tools/blob/main/tt_tool.py) and [`tt_fpga.py harden`](https://github.com/TinyTapeout/tt-support-tools/blob/main/tt_fpga.py) harden parameter options.
 

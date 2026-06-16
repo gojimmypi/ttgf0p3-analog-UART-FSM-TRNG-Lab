@@ -54,10 +54,12 @@
 #   ./run_tests.sh --with-build --ulx3s-board-version v316
 #   ./run_tests.sh --with-build --board-version=v20
 #
-# Windows: PORT=COM8
-# Linux:   PORT=/dev/ttyUSB0
-# macOS:   PORT=/dev/tty.usbserial-0001
-# WSL:     PORT=/dev/ttyS8
+# Windows: PORT=COM5
+# WSL:     PORT=/dev/ttyS5
+# Linux:   PORT=/dev/ttyUSB5 or /dev/ttyACM5
+# macOS:   PORT=/dev/tty.usbserial-0005
+#
+# Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337
 
 PORT=/dev/ttyS12
 
