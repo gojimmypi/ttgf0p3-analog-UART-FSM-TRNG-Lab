@@ -58,6 +58,8 @@
 # WSL:     PORT=/dev/ttyS5
 # Linux:   PORT=/dev/ttyUSB5 or /dev/ttyACM5
 # macOS:   PORT=/dev/tty.usbserial-0005
+#
+# Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337
 
 PORT=/dev/ttyS12
 

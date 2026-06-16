@@ -59,15 +59,15 @@ Once connected, there should be a [Python REPL command prompt](https://tinytapeo
 
 Don't confuse the TT board serial connection with the external UART.
 
-Select project, set clock to 25 MHZ, and reset:
+Select project, set clock to 25 MHZ, and reset (see [project_reset.py](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/blob/main/ice40/project_reset.py):
 
 ```
 # select project and reset ttgf
-send "tt.shuttle. tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.enable()"
+tt.shuttle.tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.enable()
 
-send "tt.clock_project_PWM(25000000)"
-send "tt.reset_project(True)"
-send "tt.reset_project(False)"
+tt.clock_project_PWM(25000000)
+tt.reset_project(True)
+tt.reset_project(False)
 ```
 
 Connect a UART terminal (e.g. PuTTY) to the TT Breakout (or Demoboard) I/O pins with the following connections:
@@ -78,7 +78,16 @@ Connect a UART terminal (e.g. PuTTY) to the TT Breakout (or Demoboard) I/O pins 
 
 ![PMOD-connector-test1.png](./PMOD-connector-test1.jpg)
 
-Note: `IN3` and `OUT4` are Tiny Tapeout logical signal names, not PMOD physical pin numbers. On the shown PMOD adapter, `in3` is PMOD IO4 / physical pin 4, and `out4` is PMOD IO5 / physical pin 7.
+&#x26A0; ** **CAUTION** ** Pins are 3v3 and NOT expected to be 5v tolerant.
+
+&#x26A0; ** **CAUTION** ** TT IO pins such as `Tx` and `Rx` are likely  ** **NOT** ** tolerant to reversal. See [TT Discord](https://discord.com/channels/1009193568256135208/1009193568256135211/1500537741245419541). 
+
+> That's the same as shorting them. They're definitely not designed for it, but they won't die immediately either.
+
+Note: `IN3` and `OUT4` are Tiny Tapeout logical signal names, not PMOD physical pin numbers. On the shown PMOD adapter:
+
+- `in3` is PMOD `IO4` /physical pin 4.
+- `out4` is PMOD` IO5` / physical pin 7.
 
 Project config:
 
@@ -514,8 +523,8 @@ Build and flash the bitstream to the FPGA, then run the test script. The test sc
 Test locally with [ULX3S](https://radiona.org/ulx3s/) ECP5 FPGA in [/ulx3s/](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/ulx3s/README.md) directory.
 
 - [verilator_lint.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/scripts/verilator_lint.sh)
-- [ulx3s_build.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/scripts/ulx3s/ulx3s_build.sh)
-- [ulx3s_flash.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/scripts/ulx3s/ulx3s_flash.sh)
+- [ulx3s_build.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ulx3s_build.sh)
+- [ulx3s_flash.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ulx3s_flash.sh)
 
 Example:
 

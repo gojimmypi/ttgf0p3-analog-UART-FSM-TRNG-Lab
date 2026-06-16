@@ -23,6 +23,7 @@ Version 0.1.7
 ## TODO
 
 - Final submission version check
+- Health register docs
 - Recheck GDS GH action script
 - `CLOCK_PERIOD` at 20 or 40 ns? 
 - Decide on JTAG state: macro on or off?

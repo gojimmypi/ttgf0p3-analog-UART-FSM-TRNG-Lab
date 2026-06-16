@@ -5,6 +5,7 @@
 #
 # file: ice40/project_reset.py
 #
+# Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337
 
 import os
 import sys

@@ -13,6 +13,8 @@
 # python tt_uart_test.py --port $PORT  
 # 
 # python tt_uart_test.py --port $PORT --reset-registers
+#
+# Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337
 
 import argparse
 import re
