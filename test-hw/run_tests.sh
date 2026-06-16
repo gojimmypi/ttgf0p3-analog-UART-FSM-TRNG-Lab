@@ -62,6 +62,7 @@
 # Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337
 
 PORT=/dev/ttyS12
+EXPECTED_VERSION="Version 1.0.2 6/16/2026"
 
 # Run shellcheck to ensure this is a good script.
 # Specify the executable shell checker you want to use:
@@ -301,13 +302,21 @@ else
     #                              [--repeat REPEAT] [--stop-on-fail]
     #                              [--reset-registers]
 
-    python ./tt_uart_test.py --port "$PORT"                   || exit 1
+    python ./tt_uart_test.py \
+        --port "$PORT" \
+        --expected-version "$EXPECTED_VERSION"                 || exit 1
 
-    python ./tt_uart_test.py --port "$PORT" --reset-registers || exit 1
+    python ./tt_uart_test.py \
+        --port "$PORT" \
+        --expected-version "$EXPECTED_VERSION" \
+        --reset-registers                                      || exit 1
 
-    python ./tt_trng_uart_test.py --port "$PORT"              || exit 1
+    # Includes health-status smoke, U0/U1/U2/U3 baud transitions,
+    # C10 conditioned stream exact-length, B10 raw stream exact-length,
+    # frozen sample checks, and source-select path checks.
+    python ./tt_trng_uart_test.py --port "$PORT"               || exit 1
 
-    python ./tt_trng_repro_test.py --port  "$PORT"            || exit 1
+    python ./tt_trng_repro_test.py --port "$PORT"              || exit 1
 fi
 
 # echo "Generating a 16MB trng_conditioned.bin"

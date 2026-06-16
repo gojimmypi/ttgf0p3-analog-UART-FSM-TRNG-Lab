@@ -25,6 +25,7 @@ import time
 import serial
 
 
+EXPECTED_VERSION = b"Version 1.0.2 6/16/2026\r"
 EXPECTED_VERSION_PREFIX = b"Version "
 READ_RE = re.compile(rb"R([0-7])=([0-9A-F]{2})\r")
 
@@ -283,9 +284,17 @@ def test_version_if_present(ser, args):
 
     print(f"Version probe response: {response!r}")
 
-    if EXPECTED_VERSION_PREFIX in response:
-        print("PASS: Version command")
+    expected = args.expected_version.encode("ascii") + b"\r"
+
+    if response == expected:
+        print("PASS: Version command exact match")
         return True
+
+    if EXPECTED_VERSION_PREFIX in response:
+        print("FAIL: Version command exact match")
+        print(f"  Expected: {expected!r}")
+        print(f"  Actual:   {response!r}")
+        return False
 
     print("SKIP: Version command not present in this bitstream")
     return None
@@ -508,6 +517,11 @@ def main():
     parser.add_argument("--idle-time", type=float, default=0.05)
     parser.add_argument("--repeat", type=int, default=5)
     parser.add_argument("--stop-on-fail", action="store_true")
+    parser.add_argument(
+        "--expected-version",
+        default=EXPECTED_VERSION[:-1].decode("ascii"),
+        help="Exact V command response text, without the trailing carriage return",
+    )
     parser.add_argument("--health-status", action="store_true")
     parser.add_argument("--health-poll-attempts", type=int, default=20)
     parser.add_argument("--health-poll-delay", type=float, default=0.005)
