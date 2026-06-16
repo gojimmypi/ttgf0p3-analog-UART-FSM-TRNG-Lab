@@ -330,13 +330,14 @@ module trng_cfg_ascii_core
      * significant byte, so idx 0 selects the top byte.
      */
     localparam [(`VERSION_STRING_LEN * 8) - 1:0] VERSION_STRING_ROM = `VERSION_STRING;
+    localparam [7:0] VERSION_LAST_BIT_OFFSET = ((`VERSION_STRING_LEN - 1) * 8);
 
     function [7:0] version_char;
         input [4:0] idx;
-        integer char_offset;
+        reg [7:0] bit_offset;
         begin
-            char_offset = (`VERSION_STRING_LEN - 1 - idx) * 8;
-            version_char = VERSION_STRING_ROM[char_offset +: 8];
+            bit_offset = VERSION_LAST_BIT_OFFSET - {idx, 3'b000};
+            version_char = VERSION_STRING_ROM[bit_offset +: 8];
         end
     endfunction
 `else
