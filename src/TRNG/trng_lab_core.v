@@ -651,7 +651,7 @@ module trng_lab_core
     );
 `endif
 
-    always @(posedge clk or negedge rst_n) begin
+    always @(posedge clk) begin
         if (!rst_n || trng_reset) begin
             trng_step_d     <= 1'b0;
             sample_tick_q   <= 1'b0;
