@@ -5,6 +5,7 @@
 #
 # file: my_full_test.sh
 #
+# FPGA Demoboard test
 
 # Run shellcheck to ensure this is a good script.
 # Specify the executable shell checker you want to use:
