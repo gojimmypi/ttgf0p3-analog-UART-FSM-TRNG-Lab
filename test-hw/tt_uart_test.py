@@ -25,7 +25,8 @@ import time
 import serial
 
 
-EXPECTED_VERSION = b"Version 1.0.2 6/16/2026\r"
+EXPECTED_VERSION="$(../scripts/get_expected_version.sh)"
+print("Expected version: $EXPECTED_VERSION")
 EXPECTED_VERSION_PREFIX = b"Version "
 READ_RE = re.compile(rb"R([0-7])=([0-9A-F]{2})\r")
 

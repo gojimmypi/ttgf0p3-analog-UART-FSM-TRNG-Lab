@@ -63,9 +63,6 @@
 
 PORT=/dev/ttyS12
 
-# Config file only for expected version
-CONFIG_FILE="../src/project_config.v"
-
 # Run shellcheck to ensure this is a good script.
 # Specify the executable shell checker you want to use:
 MY_SHELLCHECK="shellcheck"
@@ -91,20 +88,8 @@ BUILD_ARGS=""
 # ------------------------------------------------------------------------------
 # Extract expected version
 # ------------------------------------------------------------------------------
-VERSION_LINE="$(grep '^[[:space:]]*`define[[:space:]]\+VERSION_STRING' "$CONFIG_FILE")"
-
-EXPECTED_VERSION="$(
-    echo "$VERSION_LINE" |
-    sed -E 's/^[[:space:]]*`define[[:space:]]+VERSION_STRING[[:space:]]+"([^"]*)".*/\1/'
-)"
-
-if [ -z "$EXPECTED_VERSION" ]; then
-    echo "ERROR: VERSION_STRING not found in $CONFIG_FILE" >&2
-    exit 1
-fi
-
-echo "Expected version: $EXPECTED_VERSION"EXPECTED_VERSION="Version 1.0.2 6/16/2026"
-
+EXPECTED_VERSION="$(../scripts/get_expected_version.sh)"
+echo "Expected version: $EXPECTED_VERSION"
 # ------------------------------------------------------------------------------
 # Parameter processing
 # ------------------------------------------------------------------------------
