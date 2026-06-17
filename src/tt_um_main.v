@@ -301,6 +301,13 @@ module tt_um_main
     assign pin_id_sel    = reg_div[4:0];
 `endif /* PIN_DIAG */
 
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * Instantiate the UART Core
+ *******************************************************************************
+ *******************************************************************************
+ */
     uart_trng_ascii_core
     #(
         .CLOCK_HZ(CLOCK_HZ),
@@ -330,6 +337,13 @@ module tt_um_main
 `endif
     );
 
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * Optionally Instantiate the PIN Diagnostics Core
+ *******************************************************************************
+ *******************************************************************************
+ */
 `ifdef PIN_DIAG
     pin_id_core
     #(
@@ -357,11 +371,13 @@ module tt_um_main
      * This is handy during bring-up because it gives visual/logic-analyzer
      * access to internal state without changing the core.
      */
-    assign uo_out_normal[4] = uart_tx;
     assign uo_out_normal[0] = trng_bit;
     assign uo_out_normal[1] = reg_status[0];
     assign uo_out_normal[2] = reg_status[1];
     assign uo_out_normal[3] = reg_status[2];
+
+    assign uo_out_normal[4] = uart_tx;
+
     assign uo_out_normal[5] = reg_rawlo[0];
     assign uo_out_normal[6] = reg_rawlo[1];
     assign uo_out_normal[7] = reg_rawlo[2];
@@ -377,6 +393,13 @@ module tt_um_main
     assign jtag_tdi = uio_in[1];
     assign jtag_tck = uio_in[3];
 
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * Optionally Instantiate the JTAG Core
+ *******************************************************************************
+ *******************************************************************************
+ */
     jtag_core u_jtag_core
     (
         .clk(clk),
@@ -421,6 +444,13 @@ module tt_um_main
     `endif
 `endif
 
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * Optionally Instantiate the SPI Core
+ *******************************************************************************
+ *******************************************************************************
+ */
 `ifdef SPI_ENABLED
     assign spi_cs_n = uio_in[0];
     assign spi_mosi = uio_in[1];
@@ -507,6 +537,6 @@ module tt_um_main
     assign uio_oe  = uio_oe_normal;
 `endif /* PIN_DIAG */
 
-endmodule
+endmodule /* tt_um_main */
 
 `default_nettype wire
