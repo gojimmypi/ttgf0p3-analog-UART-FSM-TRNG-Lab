@@ -46,10 +46,15 @@ echo "**************************************************************************
 source ./env_ice40.sh
 
 echo "**************************************************************************"
-echo "Fetch current config"
+echo "Fetch current config to config_old.ini"
 echo "**************************************************************************"
-
 mpremote connect "$TT_PORT" fs cat :config.ini > config_old.ini
+
+
+echo "**************************************************************************"
+echo "Write config.ini"
+echo "**************************************************************************"
+mpremote connect /dev/ttyS6 fs cp ./config.ini :config.ini
 
 # Build
 echo "Change to parent directory:"
