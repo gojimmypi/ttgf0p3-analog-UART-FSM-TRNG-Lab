@@ -11,6 +11,9 @@
 # Linux:   PORT=/dev/ttyUSB5 or /dev/ttyACM5
 # macOS:   PORT=/dev/tty.usbserial-0005
 
+if [ -z "${MY_TT_PORT:-}" ]; then
+    MY_TT_PORT="/dev/ttyS6"
+fi
 
 echo "**************************************************************************"
 echo "**  Begin ${BASH_SOURCE[0]} from ${PWD}"
@@ -28,15 +31,29 @@ else
     echo "$MY_SHELLCHECK is not installed. Please install it if changes to this script have been made."
 fi
 
+
+if [ -z "${TT_PORT:-}" ]; then
+    echo  "info: no TT_PORT found, setting to ${MY_TT_PORT}" >&2
+    TT_PORT="${MY_TT_PORT}"
+else
+    echo "TT_PORT:     ${TT_PORT}"
+fi
+
 # Setup environment
 echo "**************************************************************************"
-echo " Setup environment"
+echo "Setup environment"
 echo "**************************************************************************"
 source ./env_ice40.sh
 
+echo "**************************************************************************"
+echo "Fetch current config"
+echo "**************************************************************************"
+
+mpremote connect "$TT_PORT" fs cat :config.ini > config_old.ini
+
 # Build
 echo "Change to parent directory:"
-pushd ../   || exit 1
+pushd ../  || exit 1
 
 # tt_tool.py not working locally
 #
@@ -58,6 +75,13 @@ echo "Build complete, proceeding to flash..."
 echo "**************************************************************************"
 
 # Flash
-"$TT_TOOLS/tt_fpga.py" configure --port /dev/ttyS6 --upload --name "$TT_TOP_NAME" --set-default
+"$TT_TOOLS/tt_fpga.py" configure \
+    --port "$TT_PORT" \
+    --upload \
+    --name "$TT_TOP_NAME" \
+    --set-default \
+    --clockrate 25000000
 
-popd        || exit 1
+echo "Completed with TT_PORT: ${TT_PORT}"
+
+popd  || exit 1
