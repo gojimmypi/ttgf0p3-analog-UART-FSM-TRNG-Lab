@@ -18,9 +18,10 @@
  * - ui_in[7:5]   : reserved for future use, currently ignored
  * - ui_in[4]     : SPI/JTAG select, 1 = SPI, 0 = JTAG (when JTAG_ENABLED defined)
  * - ui_in[3]     : UART RX input to the core
- * - ui_in[2:0]   : reserved for future use, currently ignored
+ * - ui_in[2:1]   : reserved for future use, currently ignored
+ * - ui_in[0]     : Optional DEBUG_PAGE_SELECT
  *
- * - uo_out[7:5]  : selected low raw-data bits
+ * - uo_out[7:5]  : selected low raw-data bits or health summary when DEBUG_PAGE_SELECT and ui_in[0]=1
  * - uo_out[4]    : UART TX output from the core
  * - uo_out[3:1]  : selected status bits
  * - uo_out[0]    : trng_bit
@@ -163,16 +164,38 @@ module tt_um_main
     wire debug_is_jtag;
 `endif
 
+`ifdef TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT
+    /* ui_in[0] is used for debug page select. */
+    wire unused_or_used_ui_in0 = 1'b0;
+`else
+    /* ui_in[0] is unused in this build, so mark it consumed. */
+    wire unused_or_used_ui_in0 = ui_in[0];
+`endif
+
+`ifdef JTAG_ENABLED
+    /* ui_in[4] is used as the SPI/JTAG select when JTAG is present. */
+    wire unused_or_used_ui_in4 = 1'b0;
+`else
+    wire unused_or_used_ui_in4 = ui_in[4];
+`endif
+
     /* TODO check unused wires when SPI and/or UART not enabled */
 `ifdef SPI_ENABLED
-    `ifdef JTAG_ENABLED
-        wire _unused_ui_in = &{ui_in[7:5], ui_in[2:0]};
-    `else
-        wire _unused_ui_in = &{ui_in[7:4], ui_in[2:0]};
-    `endif
+    wire _unused_ui_in = &{
+        ui_in[7:5],
+        unused_or_used_ui_in4,
+        ui_in[2:1],
+        unused_or_used_ui_in0
+    };
 `else
     /* not SPI_ENABLED */
-    wire _unused_inputs = &{ui_in[7:4], uio_in[2], ui_in[2:0]};
+    wire _unused_ui_in = &{
+        ui_in[7:5],
+        unused_or_used_ui_in4,
+        uio_in[2],
+        ui_in[2:1],
+        unused_or_used_ui_in0
+    };
 `endif /* !SPI_ENABLED */
 
     wire _unused_debug_regs = &{
@@ -192,7 +215,7 @@ module tt_um_main
         reg_status[7:3],
         reg_rawlo[7:3], 
         reg_rawhi[3:0]
-    };
+    }; /* _unused_debug_regs */
 
     /*
      * Keep unused TT inputs referenced so synthesis does not warn.
@@ -378,9 +401,20 @@ module tt_um_main
 
     assign uo_out_normal[4] = uart_tx;
 
+`ifdef TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT
+    /* TRNG_HEALTH_STATUS && DEBUG_PAGE_SELECT; See project_config.v */
+    wire debug_page_health;
+
+    assign debug_page_health = ui_in[0];
+
+    assign uo_out_normal[5] = debug_page_health ? reg_status[3] : reg_rawlo[0];
+    assign uo_out_normal[6] = debug_page_health ? reg_status[4] : reg_rawlo[1];
+    assign uo_out_normal[7] = debug_page_health ? reg_status[7] : reg_rawlo[2];
+`else
     assign uo_out_normal[5] = reg_rawlo[0];
     assign uo_out_normal[6] = reg_rawlo[1];
     assign uo_out_normal[7] = reg_rawlo[2];
+`endif
 
 `ifdef JTAG_ENABLED
     /* ui_in[4] = 1: ESP32 SPI owns uio[3:0] (default, unconnected = 1: PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;)

@@ -71,6 +71,11 @@
     /* Lightweight TRNG health status. Reuses R5 status bits rather than adding
      * new UART/SPI registers. Disable only if final area/timing needs the space. */
     `define TRNG_HEALTH_STATUS
+
+    /* Use ui_in[0] to select alternate health/debug signals on uo_out[7:5].
+     *
+     * Manually set TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT in /test/test.py as needed. */
+    // `define DEBUG_PAGE_SELECT
     
     /* 
      * --------------------------------------------------------------------------------------------
@@ -194,6 +199,13 @@
     // `define SPI_TEST_FIXED
     // `define SPI_TEST_ECHO
 
+    /* Final combinatorial macros */
+    `ifdef TRNG_HEALTH_STATUS
+        `ifdef DEBUG_PAGE_SELECT
+            /* TRNG_HEALTH_STATUS && DEBUG_PAGE_SELECT */
+            `define TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT
+        `endif
+    `endif
 
     /* Some final config sanity checks */
     `ifdef TRNG_CONDITIONED_STREAM
