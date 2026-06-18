@@ -61,3 +61,7 @@ test/gate_level_netlist.v
 /test-hw/trng_conditioned_115200.bin
 /test-hw/test_conditioned_115200.bin
 /artifacts
+
+# _tt_fpga_top.v is never included, but we also want to see when it gets created,
+# so commented out here as a reminder:
+# /src/_tt_fpga_top.v
