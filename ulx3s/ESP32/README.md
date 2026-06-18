@@ -14,7 +14,7 @@ export TT_PROJECT_ROOT="/mnt/c/workspace/$TT_PROJECT_NAME"
 Shown here in WSL using ULX3S FTDI `US1` (net the external UART) to program the ESP32 on `/dev/ttyS3`:
 
 ```
-# Wherever your ESP-IDF is installed, here in a shared WSL/Windows directory for VisualGDB:
+# Wherever your ESP-IDF is installed, here in a  shared WSL/Windows directory for VisualGDB:
 cd /mnt/c/SysGCC/esp32-master/esp-idf/v5.5
 
 source ./export.sh
