@@ -21,6 +21,7 @@ UART_TX_BIT = 4
 
 EXPECTED_VERSION_PREFIX = b"Version "
 
+TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT = True
 
 def set_bit(value: int, bit_index: int, bit_value: int) -> int:
     mask = 1 << bit_index
@@ -141,6 +142,75 @@ async def uart_recv_until_timeout(dut, max_bytes: int = 64, idle_timeout_bits: i
     return bytes(data)
 
 
+def get_uo_bit(dut, bit_index: int) -> int:
+    bit_text = str(dut.uo_out.value[bit_index])
+
+    if bit_text not in ("0", "1"):
+        raise ValueError(f"uo_out[{bit_index}] is not 0 or 1: {bit_text}")
+
+    return int(bit_text)
+
+
+def get_uo_7_5(dut) -> int:
+    return (
+        get_uo_bit(dut, 5)
+        | (get_uo_bit(dut, 6) << 1)
+        | (get_uo_bit(dut, 7) << 2)
+    )
+
+
+def set_ui_bit(dut, bit_index: int, bit_value: int) -> None:
+    current_ui = int(dut.ui_in.value)
+    current_ui = set_bit(current_ui, bit_index, bit_value)
+    current_ui = set_bit(current_ui, UART_RX_BIT, 1)
+    dut.ui_in.value = current_ui
+
+
+async def uart_command_response(
+    dut,
+    command: bytes,
+    max_bytes: int = 16,
+    idle_timeout_bits: int = 80,
+) -> bytes:
+    recv_task = cocotb.start_soon(
+        uart_recv_until_timeout(
+            dut,
+            max_bytes=max_bytes,
+            idle_timeout_bits=idle_timeout_bits,
+        )
+    )
+
+    await Timer(CLK_PERIOD_NS // 2, unit="ns")
+    await uart_send_bytes(dut, command)
+
+    return await recv_task
+
+
+async def uart_expect_ok(dut, command: bytes) -> None:
+    response = await uart_command_response(dut, command, max_bytes=3)
+
+    assert response == b"OK\r", (
+        f"Expected OK response to {command!r}, got {response!r}"
+    )
+
+
+async def uart_read_reg(dut, reg_num: int) -> int:
+    command = f"R{reg_num}\r".encode("ascii")
+    response = await uart_command_response(dut, command, max_bytes=6)
+
+    expected_prefix = f"R{reg_num}=".encode("ascii")
+
+    assert response.startswith(expected_prefix), (
+        f"Expected {expected_prefix!r} prefix, got {response!r}"
+    )
+
+    assert len(response) == 6 and response.endswith(b"\r"), (
+        f"Invalid register response for R{reg_num}: {response!r}"
+    )
+
+    return int(response[3:5], 16)
+
+
 @cocotb.test()
 async def test_gate_level_idle_sanity(dut):
     cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
@@ -199,4 +269,82 @@ async def test_version_command_or_absent(dut):
 
     assert EXPECTED_VERSION_PREFIX in response, (
         f"Expected version prefix or absent-version response, got {response!r}"
+    )
+
+
+@cocotb.test(skip=not TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT)
+async def test_trng_health_status_debug_page_select(dut):
+
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
+
+    dut.ena.value = 1
+    dut.ui_in.value = 1 << UART_RX_BIT
+    dut.uio_in.value = 0
+    dut.rst_n.value = 0
+
+    await Timer(100, unit="ns")
+    dut.rst_n.value = 1
+
+    await Timer(100_000, unit="ns")
+    await Timer(SETTLE_TIME_NS, unit="ns")
+
+    # Put TRNG in a deterministic, frozen state.
+    for command in (
+        b"E0\r",
+        b"V0\r",
+        b"W1\r",
+        b"W0\r",
+        b"S0\r",
+        b"O00\r",
+        b"D01\r",
+    ):
+        await uart_expect_ok(dut, command)
+
+    rawlo = 0
+
+    # Build a deterministic nonzero rawlo[2:0] value using single-step mode.
+    for _ in range(4):
+        for _ in range(16):
+            await uart_expect_ok(dut, b"V1\r")
+            await uart_expect_ok(dut, b"V0\r")
+
+        rawlo = await uart_read_reg(dut, 6)
+
+        if (rawlo & 0x07) != 0:
+            break
+
+    status = await uart_read_reg(dut, 5)
+
+    raw_page_expected = rawlo & 0x07
+    health_page_expected = (
+        ((status >> 3) & 0x01)
+        | (((status >> 4) & 0x01) << 1)
+        | (((status >> 7) & 0x01) << 2)
+    )
+
+    assert raw_page_expected != health_page_expected, (
+        "Test did not create distinct raw/debug page values: "
+        f"rawlo=0x{rawlo:02X}, status=0x{status:02X}"
+    )
+
+    set_ui_bit(dut, 0, 0)
+    await Timer(SETTLE_TIME_NS, unit="ns")
+
+    raw_page_actual = get_uo_7_5(dut)
+
+    assert raw_page_actual == raw_page_expected, (
+        "ui_in[0]=0 should select reg_rawlo[2:0] on uo_out[7:5]: "
+        f"expected 0x{raw_page_expected:X}, got 0x{raw_page_actual:X}, "
+        f"rawlo=0x{rawlo:02X}"
+    )
+
+    set_ui_bit(dut, 0, 1)
+    await Timer(SETTLE_TIME_NS, unit="ns")
+
+    health_page_actual = get_uo_7_5(dut)
+
+    assert health_page_actual == health_page_expected, (
+        "ui_in[0]=1 should select R5 health summary bits on uo_out[7:5]: "
+        f"expected 0x{health_page_expected:X}, got 0x{health_page_actual:X}, "
+        f"status=0x{status:02X}"
     )
