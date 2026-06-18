@@ -114,13 +114,7 @@ module tt_spi_slave
             spi_tx_shift <= SPI_TEST_BYTE_VAL;
             spi_miso     <= SPI_IDLE_MISO;
             reg_wr_en    <= 1'b0;
-`ifdef MAX_SPI_REG
-            reg_addr     <= 7'd0;
-`elsif BIG16_SPI_REG
-            reg_addr     <= 4'd0;
-`else
-            reg_addr     <= 3'd0;
-`endif
+            reg_addr     <= {`SPI_ADDR_WIDTH{1'b0}};
             reg_wdata    <= 8'h00;
         end else begin
             spi_sck_sync <= {spi_sck_sync[1:0], spi_sck};
