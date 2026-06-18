@@ -63,8 +63,18 @@
 
     // `define ANALOG_ENABLED
     `define UART_ENABLED
+
     `define SPI_ENABLED
     `define SPI_REG_ACCESS
+
+    /* Default SPI register size is 3 bits. (0..7) 
+     * Optionally expand to:
+     *   4 bits: 0..15 with BIG16_SPI_REG 
+     *   7 bits: 0..127 with MAX_SPI_REG  */
+
+    // `define BIG16_SPI_REG
+    // `define MAX_SPI_REG
+
     `define TRNG_ENABLED
     `define TRNG_BINARY_STREAM
 

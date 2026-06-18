@@ -24,8 +24,10 @@
  *
  * Command byte:
  * - bit7    = 1 for read, 0 for write
- * - bits2:0 = register address 0..7
- * - other bits are ignored
+ * - bits2:0 = register address 0..7   (default)
+ * - bits3:0 = register address 0..15  (BIG16_SPI_REG defined)
+ * - bits6:0 = register address 0..127 (MAX_SPI_REG defined)
+ * - other bits are ignored, depending on default, BIG16_SPI_REG, MAX_SPI_REG
  *
  * Read transaction:
  * - byte 0: command 8'h80 | addr
@@ -33,7 +35,7 @@
  *
  * Write transaction:
  * - byte 0: command addr
- * - byte 1: data byte written to register address 0..4
+ * - byte 1: data byte written to the selected writable register
  *
  * Register map matches the UART Rn command:
  * - 0 reg_ctrl
@@ -72,7 +74,13 @@ module tt_spi_slave
     output reg        spi_miso,
 
     output reg        reg_wr_en,
+`ifdef MAX_SPI_REG
+    output reg  [6:0] reg_addr,
+`elsif BIG16_SPI_REG
+    output reg  [3:0] reg_addr,
+`else
     output reg  [2:0] reg_addr,
+`endif
     output reg  [7:0] reg_wdata,
     input  wire [7:0] reg_rdata
 );
@@ -112,13 +120,25 @@ module tt_spi_slave
             spi_tx_shift <= SPI_TEST_BYTE_VAL;
             spi_miso     <= SPI_IDLE_MISO;
             reg_wr_en    <= 1'b0;
+`ifdef MAX_SPI_REG
+            reg_addr     <= 7'd0;
+`elsif BIG16_SPI_REG
+            reg_addr     <= 4'd0;
+`else
             reg_addr     <= 3'd0;
+`endif
             reg_wdata    <= 8'h00;
         end else begin
             spi_sck_sync <= {spi_sck_sync[1:0], spi_sck};
             spi_cs_sync  <= {spi_cs_sync[1:0], spi_cs_n};
             reg_wr_en    <= 1'b0;
+`ifdef MAX_SPI_REG
+            reg_addr     <= 7'd0;
+`elsif BIG16_SPI_REG
+            reg_addr     <= 4'd0;
+`else
             reg_addr     <= 3'd0;
+`endif
             reg_wdata    <= 8'h00;
 
             /* SPI slave, mode 0 (CPOL=0, CPHA=0), MSB-first */
@@ -162,7 +182,7 @@ module tt_spi_slave
      *
      * Write:
      * - byte 0: addr
-     * - byte 1: data byte written to register address 0..4
+     * - byte 1: data byte written to the selected writable register
      */
 
     localparam SPI_IDLE_MISO = 1'b1;
@@ -212,7 +232,13 @@ module tt_spi_slave
             load_read_data <= 1'b0;
             spi_miso       <= SPI_IDLE_MISO;
             reg_wr_en      <= 1'b0;
+`ifdef MAX_SPI_REG
+            reg_addr       <= 7'd0;
+`elsif BIG16_SPI_REG
+            reg_addr       <= 4'd0;
+`else
             reg_addr       <= 3'd0;
+`endif
             reg_wdata      <= 8'h00;
         end else begin
             spi_sck_sync <= {spi_sck_sync[1:0], spi_sck};
@@ -238,7 +264,14 @@ module tt_spi_slave
 
                         case (state)
                             ST_CMD: begin
+                                /* rx_next[7] == 0 write; 1 read */
+`ifdef MAX_SPI_REG
+                                reg_addr <= rx_next[6:0];
+`elsif BIG16_SPI_REG
+                                reg_addr <= rx_next[3:0];
+`else
                                 reg_addr <= rx_next[2:0];
+`endif
                                 cmd_read <= rx_next[7];
                                 state    <= ST_DATA;
 
