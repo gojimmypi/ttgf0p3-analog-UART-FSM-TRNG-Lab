@@ -17,6 +17,14 @@
  *       assign wifi_en    = btn[0];
  *       assign wifi_gpio0 = btn[1];
  *
+ * There's a "hand-off programming" RTL in `esp32_prog_ctrl.v`
+ * 
+ * See the related ESP32_BOOT_RTS_DTR_ENABLED in the Makefile (on by default)
+ * 
+ * ---------------------------------------------------------------------------------------------
+ * 
+ * When NOT using the `esp32_prog_ctrl.v`:
+ *
  * If ESP32_BOOT_CONTROL_ENABLED is defined, BTN0 controls wifi_en and BTN1 controls wifi_gpio0
  *
  * To RESET the ESP32 and start the running program in flash:
@@ -225,13 +233,18 @@ void app_main(void)
     ESP_LOGI(TAG, "---------------------- BEGIN MAIN ----------------------");
     ESP_LOGI(TAG, "--------------------------------------------------------");
     ESP_LOGI(TAG, "--------------------------------------------------------");
+    ret = tt_macro_list();
+
     ESP_LOGI(TAG, "Stack Start: 0x%x", stack_start);
 
     /* all platforms: stack high water mark check */
     ESP_LOGI(TAG, "Stack HWM: %d\n", uxTaskGetStackHighWaterMark(NULL));
 
-
-    printf("Hello world 3!\n");
+#ifdef TT_MACRO_VERSION_STRING
+    printf("Tiny Tapeout %s\n", TT_MACRO_VERSION_STRING);
+#else
+    printf("Tiny Tapeout (version unknown)\n");
+#endif
 
     /* Print chip information */
     esp_chip_info_t chip_info;

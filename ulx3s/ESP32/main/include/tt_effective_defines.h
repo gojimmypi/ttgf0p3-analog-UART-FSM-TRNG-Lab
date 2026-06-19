@@ -28,4 +28,16 @@
 #define TT_MACRO_VERSION_STRING_LEN 23u
 #define TT_MACRO_VERSION_STRING "Version 1.0.5 6/21/2026"
 
+#define TT_MACRO_ESP_PRINTF(...) ESP_LOGI(TAG, __VA_ARGS__)
+#define TT_MACRO_PRINTF(...) printf( __VA_ARGS__)
+
+static inline int tt_macro_list(void)
+{
+    int err = 0;
+#if defined(TT_MACRO_ADJUSTABLE_BAUD_ENABLED)
+    TT_MACRO_PRINTF("TT_MACRO_ADJUSTABLE_BAUD_ENABLED: %d\n", TT_MACRO_ADJUSTABLE_BAUD_ENABLED);
+#endif
+    return err;
+}
+
 #endif /* TT_MACRO_EFFECTIVE_DEFINES_H */
