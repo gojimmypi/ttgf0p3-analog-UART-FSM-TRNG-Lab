@@ -18,9 +18,10 @@
  * - ui_in[7:5]   : reserved for future use, currently ignored
  * - ui_in[4]     : SPI/JTAG select, 1 = SPI, 0 = JTAG (when JTAG_ENABLED defined)
  * - ui_in[3]     : UART RX input to the core
- * - ui_in[2:0]   : reserved for future use, currently ignored
+ * - ui_in[2:1]   : reserved for future use, currently ignored
+ * - ui_in[0]     : Optional DEBUG_PAGE_SELECT
  *
- * - uo_out[7:5]  : selected low raw-data bits
+ * - uo_out[7:5]  : selected low raw-data bits or health summary when DEBUG_PAGE_SELECT and ui_in[0]=1
  * - uo_out[4]    : UART TX output from the core
  * - uo_out[3:1]  : selected status bits
  * - uo_out[0]    : trng_bit
@@ -120,27 +121,28 @@ module tt_um_main
 
 `ifdef SPI_REG_ACCESS
     wire       spi_reg_wr_en;
-    wire [2:0] spi_reg_addr;
+    wire [`SPI_ADDR_MSB:0] spi_reg_addr;
     wire [7:0] spi_reg_wdata;
     wire [7:0] spi_reg_rdata;
 
     `ifdef SPI_ENABLED
         wire       spi_slave_reg_wr_en;
-        wire [2:0] spi_slave_reg_addr;
+        wire [`SPI_ADDR_MSB:0] spi_slave_reg_addr;
         wire [7:0] spi_slave_reg_wdata;
-    `endif
+    `endif /* SPI_ENABLED */
+
     `ifdef JTAG_ENABLED
         wire       jtag_reg_wr_en;
-        wire [7:0] jtag_reg_addr;
+        wire [`JTAG_ADDR_MSB:0] jtag_reg_addr;
         wire [7:0] jtag_reg_wdata;
         wire       spi_reg_wr_en_mux;
-        wire [2:0] spi_reg_addr_mux;
+        wire [`SPI_ADDR_MSB:0] spi_reg_addr_mux;
         wire [7:0] spi_reg_wdata_mux;
         reg        spi_reg_wr_en_r;
-        reg  [2:0] spi_reg_addr_r;
+        reg  [`SPI_ADDR_MSB:0] spi_reg_addr_r;
         reg  [7:0] spi_reg_wdata_r;
-        wire _unused_jtag_reg_addr = &{1'b0, jtag_reg_addr[7:3]};
-    `endif
+        // wire _unused_jtag_reg_addr = &{1'b0, jtag_reg_addr[7:(`SPI_ADDR_MSB + 1)]};
+    `endif /* JTAG_ENABLED */
 `endif /* SPI_REG_ACCESS */
 
 `ifdef SPI_ENABLED
@@ -150,9 +152,9 @@ module tt_um_main
     wire spi_miso;
     `ifndef SPI_REG_ACCESS
         wire       spi_unused_reg_wr_en;
-        wire [2:0] spi_unused_reg_addr;
         wire [7:0] spi_unused_reg_wdata;
-    `endif
+        wire [`SPI_ADDR_MSB:0] spi_unused_reg_addr;
+    `endif /* SPI_REG_ACCESS */
 `endif /* SPI_ENABLED */
 
 `ifdef JTAG_ENABLED
@@ -163,16 +165,38 @@ module tt_um_main
     wire debug_is_jtag;
 `endif
 
+`ifdef TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT
+    /* ui_in[0] is used for debug page select. */
+    wire unused_or_used_ui_in0 = 1'b0;
+`else
+    /* ui_in[0] is unused in this build, so mark it consumed. */
+    wire unused_or_used_ui_in0 = ui_in[0];
+`endif
+
+`ifdef JTAG_ENABLED
+    /* ui_in[4] is used as the SPI/JTAG select when JTAG is present. */
+    wire unused_or_used_ui_in4 = 1'b0;
+`else
+    wire unused_or_used_ui_in4 = ui_in[4];
+`endif
+
     /* TODO check unused wires when SPI and/or UART not enabled */
 `ifdef SPI_ENABLED
-    `ifdef JTAG_ENABLED
-        wire _unused_ui_in = &{ui_in[7:5], ui_in[2:0]};
-    `else
-        wire _unused_ui_in = &{ui_in[7:4], ui_in[2:0]};
-    `endif
+    wire _unused_ui_in = &{
+        ui_in[7:5],
+        unused_or_used_ui_in4,
+        ui_in[2:1],
+        unused_or_used_ui_in0
+    };
 `else
     /* not SPI_ENABLED */
-    wire _unused_inputs = &{ui_in[7:4], uio_in[2], ui_in[2:0]};
+    wire _unused_ui_in = &{
+        ui_in[7:5],
+        unused_or_used_ui_in4,
+        uio_in[2],
+        ui_in[2:1],
+        unused_or_used_ui_in0
+    };
 `endif /* !SPI_ENABLED */
 
     wire _unused_debug_regs = &{
@@ -192,7 +216,7 @@ module tt_um_main
         reg_status[7:3],
         reg_rawlo[7:3], 
         reg_rawhi[3:0]
-    };
+    }; /* _unused_debug_regs */
 
     /*
      * Keep unused TT inputs referenced so synthesis does not warn.
@@ -277,7 +301,7 @@ module tt_um_main
     always @(posedge clk) begin
         if (!rst_sync_n) begin
             spi_reg_wr_en_r <= 1'b0;
-            spi_reg_addr_r  <= 3'b000;
+            spi_reg_addr_r  <= {`SPI_ADDR_WIDTH{1'b0}};
             spi_reg_wdata_r <= 8'h00;
         end else begin
             spi_reg_wr_en_r <= spi_reg_wr_en_mux;
@@ -301,6 +325,13 @@ module tt_um_main
     assign pin_id_sel    = reg_div[4:0];
 `endif /* PIN_DIAG */
 
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * Instantiate the UART Core
+ *******************************************************************************
+ *******************************************************************************
+ */
     uart_trng_ascii_core
     #(
         .CLOCK_HZ(CLOCK_HZ),
@@ -328,8 +359,24 @@ module tt_um_main
         .spi_reg_wdata(spi_reg_wdata),
         .spi_reg_rdata(spi_reg_rdata)
 `endif
-    );
 
+`ifdef BIG16_SPI_REG
+        ,
+        .ui_in(ui_in),
+        .uo_out(uo_out),
+        .uio_in(uio_in),
+        .uio_out(uio_out),
+        .uio_oe(uio_oe)
+`endif    
+);
+
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * Optionally Instantiate the PIN Diagnostics Core
+ *******************************************************************************
+ *******************************************************************************
+ */
 `ifdef PIN_DIAG
     pin_id_core
     #(
@@ -357,14 +404,27 @@ module tt_um_main
      * This is handy during bring-up because it gives visual/logic-analyzer
      * access to internal state without changing the core.
      */
-    assign uo_out_normal[4] = uart_tx;
     assign uo_out_normal[0] = trng_bit;
     assign uo_out_normal[1] = reg_status[0];
     assign uo_out_normal[2] = reg_status[1];
     assign uo_out_normal[3] = reg_status[2];
+
+    assign uo_out_normal[4] = uart_tx;
+
+`ifdef TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT
+    /* TRNG_HEALTH_STATUS && DEBUG_PAGE_SELECT; See project_config.v */
+    wire debug_page_health;
+
+    assign debug_page_health = ui_in[0];
+
+    assign uo_out_normal[5] = debug_page_health ? reg_status[3] : reg_rawlo[0];
+    assign uo_out_normal[6] = debug_page_health ? reg_status[4] : reg_rawlo[1];
+    assign uo_out_normal[7] = debug_page_health ? reg_status[7] : reg_rawlo[2];
+`else
     assign uo_out_normal[5] = reg_rawlo[0];
     assign uo_out_normal[6] = reg_rawlo[1];
     assign uo_out_normal[7] = reg_rawlo[2];
+`endif
 
 `ifdef JTAG_ENABLED
     /* ui_in[4] = 1: ESP32 SPI owns uio[3:0] (default, unconnected = 1: PULLMODE=UP IO_TYPE=LVCMOS33 DRIVE=4;)
@@ -377,6 +437,13 @@ module tt_um_main
     assign jtag_tdi = uio_in[1];
     assign jtag_tck = uio_in[3];
 
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * Optionally Instantiate the JTAG Core
+ *******************************************************************************
+ *******************************************************************************
+ */
     jtag_core u_jtag_core
     (
         .clk(clk),
@@ -408,7 +475,7 @@ module tt_um_main
 `ifdef SPI_REG_ACCESS
     `ifdef JTAG_ENABLED
         assign spi_reg_wr_en_mux = debug_is_jtag ? jtag_reg_wr_en : spi_slave_reg_wr_en;
-        assign spi_reg_addr_mux  = debug_is_jtag ? jtag_reg_addr[2:0] : spi_slave_reg_addr;
+        assign spi_reg_addr_mux  = debug_is_jtag ? jtag_reg_addr  : spi_slave_reg_addr;
         assign spi_reg_wdata_mux = debug_is_jtag ? jtag_reg_wdata : spi_slave_reg_wdata;
 
         assign spi_reg_wr_en = spi_reg_wr_en_r;
@@ -421,6 +488,13 @@ module tt_um_main
     `endif
 `endif
 
+/*
+ *******************************************************************************
+ *******************************************************************************
+ * Optionally Instantiate the SPI Core
+ *******************************************************************************
+ *******************************************************************************
+ */
 `ifdef SPI_ENABLED
     assign spi_cs_n = uio_in[0];
     assign spi_mosi = uio_in[1];
@@ -507,6 +581,6 @@ module tt_um_main
     assign uio_oe  = uio_oe_normal;
 `endif /* PIN_DIAG */
 
-endmodule
+endmodule /* tt_um_main */
 
 `default_nettype wire

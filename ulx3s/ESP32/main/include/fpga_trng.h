@@ -15,10 +15,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "esp_err.h"
+/* Espressif */
+#include <esp_err.h>
 
 #ifdef __cplusplus
 extern "C" {
+#endif
+
+/* Generated defined from src/project_config.v */
+#include "tt_effective_defines_asic.h"
+
+
+#ifndef TT_ASIC_MACRO_BIG16_SPI_REG
+    #error "missing TT_ASIC_MACRO_BIG16_SPI_REG?"
 #endif
 
 #define FPGA_TRNG_REG_CTRL       0x00U
@@ -29,6 +38,14 @@ extern "C" {
 #define FPGA_TRNG_REG_STATUS     0x05U
 #define FPGA_TRNG_REG_RAWLO      0x06U
 #define FPGA_TRNG_REG_RAWHI      0x07U
+
+#ifdef TT_ASIC_MACRO_BIG16_SPI_REG
+    #define FPGA_TRNG_REG_UI_IN     0x08U
+    #define FPGA_TRNG_REG_UO_OUT    0x09U
+    #define FPGA_TRNG_REG_UIO_IN    0x0AU
+    #define FPGA_TRNG_REG_UIO_OUT   0x0BU
+    #define FPGA_TRNG_REG_UIO_OE    0x0CU
+#endif
 
 #define FPGA_TRNG_CTRL_NONE         0x00U
 #define FPGA_TRNG_CTRL_ENABLE       0x01U
@@ -54,6 +71,14 @@ typedef struct fpga_trng_sample {
     uint16_t raw;
 } fpga_trng_sample_t;
 
+typedef struct fpga_trng_pin_regs {
+    uint8_t ui_in;
+    uint8_t uo_out;
+    uint8_t uio_in;
+    uint8_t uio_out;
+    uint8_t uio_oe;
+} fpga_trng_pin_regs_t;
+
 esp_err_t fpga_trng_init_defaults(void);
 
 esp_err_t fpga_trng_configure_lfsr_test_mode(void);
@@ -70,6 +95,7 @@ esp_err_t fpga_trng_read_live_raw(uint16_t *raw);
 esp_err_t fpga_trng_fill_live(uint8_t *buffer, size_t length);
 
 esp_err_t fpga_trng_read_sample(fpga_trng_sample_t *sample);
+esp_err_t fpga_trng_read_pin_regs(fpga_trng_pin_regs_t *pins);
 esp_err_t fpga_trng_read_raw(uint16_t *raw);
 esp_err_t fpga_trng_fill(uint8_t *buffer, size_t length);
 

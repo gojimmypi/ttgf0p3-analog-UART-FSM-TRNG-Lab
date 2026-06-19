@@ -149,6 +149,43 @@ static esp_err_t trng_live_source_demo(
     return ESP_OK;
 } /* trng_live_source_demo */
 
+static esp_err_t trng_pin_regs_demo(void)
+{
+    esp_err_t err;
+    fpga_trng_pin_regs_t pins;
+
+    pins.ui_in = 0U;
+    pins.uo_out = 0U;
+    pins.uio_in = 0U;
+    pins.uio_out = 0U;
+    pins.uio_oe = 0U;
+
+    ESP_LOGI(TAG, "TRNG SPI pin register test");
+
+    err = fpga_trng_read_pin_regs(&pins);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "fpga_trng_read_pin_regs failed: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    ESP_LOGI(TAG,
+        "pin regs: R8 UI_IN=0x%02X R9 UO_OUT=0x%02X "
+        "R10 UIO_IN=0x%02X R11 UIO_OUT=0x%02X R12 UIO_OE=0x%02X",
+        pins.ui_in,
+        pins.uo_out,
+        pins.uio_in,
+        pins.uio_out,
+        pins.uio_oe);
+
+    ESP_LOGI(TAG,
+        "uio view: observed=0x%02X drive_value=0x%02X drive_enable=0x%02X",
+        pins.uio_in,
+        pins.uio_out,
+        pins.uio_oe);
+
+    return ESP_OK;
+} /* trng_pin_regs_demo */
+
 static esp_err_t trng_demo(void)
 {
     esp_err_t err;
@@ -239,6 +276,11 @@ void app_main(void)
     vTaskDelay(pdMS_TO_TICKS(100));
 
     ret = trng_demo();
+    if (ret != ESP_OK) {
+        return;
+    }
+
+    ret = trng_pin_regs_demo();
     if (ret != ESP_OK) {
         return;
     }

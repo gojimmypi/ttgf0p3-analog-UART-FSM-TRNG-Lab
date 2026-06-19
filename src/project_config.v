@@ -17,14 +17,13 @@
  */
 `ifndef PROJECT_CONFIG_V
     `define PROJECT_CONFIG_V
-
-    /* There's about a 5% (~ 100 cells) increase in the number of cells when using long strings.
+    /* There's <1% (~ 21 cells) increase in the number of cells when using long strings.
      * Currently only the version string is implemented. */
     `define USE_LONG_STRINGS
 
     `ifdef USE_LONG_STRINGS
         `define VERSION_STRING_LEN 23 /* 123456789012345678901234 */   
-        `define VERSION_STRING          "Version 1.0.3 6/16/2026"
+        `define VERSION_STRING          "Version 1.0.4 6/18/2026"
         /* GF26a deadline: June 22, 1:00PM PDT */
     `else
         /* no long strings */
@@ -64,14 +63,35 @@
 
     // `define ANALOG_ENABLED
     `define UART_ENABLED
+
+    /*
+     * --------------------------------------------------------------------------------------------
+     * SPI Config. See SPI/spi_slave.v
+     * --------------------------------------------------------------------------------------------
+     */
     `define SPI_ENABLED
     `define SPI_REG_ACCESS
+
+    /* Default SPI register size is 3 bits. (0..7) 
+     * Optionally expand to:
+     *   4 bits: 0..15 with BIG16_SPI_REG 
+     *   7 bits: 0..127 with MAX_SPI_REG  */
+    // `define MAX_SPI_REG
+
+    /* See tt_uart_test.py for manual edit: BIG16_SPI_REG=True */
+    `define BIG16_SPI_REG
+
     `define TRNG_ENABLED
     `define TRNG_BINARY_STREAM
 
     /* Lightweight TRNG health status. Reuses R5 status bits rather than adding
      * new UART/SPI registers. Disable only if final area/timing needs the space. */
     `define TRNG_HEALTH_STATUS
+
+    /* Use ui_in[0] to select alternate health/debug signals on uo_out[7:5].
+     *
+     * Manually set TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT in /test/test.py as needed. */
+    // `define DEBUG_PAGE_SELECT
     
     /* 
      * --------------------------------------------------------------------------------------------
@@ -175,7 +195,9 @@
         /* FPGA only: A practical lightweight candidate is a xoshiro-style 128-bit PRNG. 
          * It is not cryptographic, but it is much more likely to pass STS than the current 16-bit LFSR tap source */
         //`define FPGA_NIST_PRNG_SOURCE
-    
+
+        `define ULX3S_SPI_ENABLED
+
     `elsif IS_MY_IVERILOG_SIMULATION 
         /* This is used by the [project]/test/my_test.sh simulation test script */
         // `define PIN_DIAG
@@ -195,6 +217,30 @@
     // `define SPI_TEST_FIXED
     // `define SPI_TEST_ECHO
 
+    /* Final combinatorial macros */
+    `ifdef TRNG_HEALTH_STATUS
+        `ifdef DEBUG_PAGE_SELECT
+            /* TRNG_HEALTH_STATUS && DEBUG_PAGE_SELECT */
+            `define TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT
+        `endif
+    `endif
+
+    `ifdef SPI_REG_ACCESS
+        `ifdef MAX_SPI_REG
+            `define SPI_ADDR_MSB 6
+            `define MAX
+        `elsif BIG16_SPI_REG
+            `define SPI_ADDR_MSB 3
+        `else
+            `define SPI_ADDR_MSB 2
+        `endif
+        `define SPI_ADDR_WIDTH  (`SPI_ADDR_MSB + 1)
+    `endif
+
+    `ifdef JTAG_ENABLED
+        `define JTAG_ADDR_MSB `SPI_ADDR_MSB
+        `define JTAG_ADDR_WIDTH (`JTAG_ADDR_MSB + 1)
+    `endif
 
     /* Some final config sanity checks */
     `ifdef TRNG_CONDITIONED_STREAM
@@ -258,6 +304,18 @@
     `ifdef SPI_REG_ACCESS
         `ifndef SPI_ENABLED
             PROJECT_SPI_REG_ACCESS_REQUIRES_SPI_ENABLED u_stop ();
+        `endif
+    `endif
+
+    `ifdef BIG16_SPI_REG
+        `ifdef MAX_SPI_REG
+            PROJECT_SPI_BIG16_AND_MAX_PICK_ONE u_stop (); /* Define none or only one SPI reg size */
+        `endif
+    `endif
+
+    `ifdef MAX_SPI_REG
+        `ifdef BIG16_SPI_REG
+            PROJECT_SPI_MAX_AND_BIG16_PICK_ONE u_stop (); /* Define none or only one SPI reg size */
         `endif
     `endif
 

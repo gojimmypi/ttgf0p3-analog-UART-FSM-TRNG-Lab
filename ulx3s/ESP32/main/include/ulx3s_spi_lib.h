@@ -15,7 +15,17 @@
 
 #include <stdint.h>
 
-#include "esp_err.h"
+/* Espressif */
+#include <esp_err.h>
+
+#include "fpga_trng.h"
+
+ /* Generated defined from src/project_config.v */
+#include "tt_effective_defines_asic.h"
+
+#ifndef TT_ASIC_MACRO_BIG16_SPI_REG
+    #error "missing TT_ASIC_MACRO_BIG16_SPI_REG?"
+#endif
 
 /*
  * SPI write policy:
@@ -36,8 +46,6 @@
 #define ULX3S_SPI_MONITOR_LOG_CHANGES_ONLY      1
 #define ULX3S_SPI_MONITOR_POLL_DELAY_MS         1000U
 
-#define ULX3S_SPI_REG_COUNT                     8U
-
 #define TT_REG_CTRL                             0U
 #define TT_REG_SRC                              1U
 #define TT_REG_DIV                              2U
@@ -46,6 +54,12 @@
 #define TT_REG_STATUS                           5U
 #define TT_REG_RAWLO                            6U
 #define TT_REG_RAWHI                            7U
+
+#ifdef TT_ASIC_MACRO_BIG16_SPI_REG
+    #define ULX3S_SPI_REG_COUNT                     16U
+#else
+    #define ULX3S_SPI_REG_COUNT                     8U
+#endif
 
 #define ULX3S_REG_CTRL_DEFAULT     0x00U
 #define ULX3S_REG_SRC_DEFAULT      0x00U

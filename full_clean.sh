@@ -45,6 +45,9 @@ rm -rf ./ulx3s/ESP32/sdkconfig.bak
 
 rm -rf ./ulx3s/ESP32/build
 
+# Remove the virtual environment created by test/my_cocotb_test.sh
+rm -rf ./.venv/
+
 BAK_FILES="$(find . -type f -iname "*.bak" -print)"
 
 if [ -n "$BAK_FILES" ]; then

@@ -162,6 +162,41 @@ esp_err_t fpga_trng_read_sample(fpga_trng_sample_t *sample)
 /******************************************************************************
  *
  ******************************************************************************/
+esp_err_t fpga_trng_read_pin_regs(fpga_trng_pin_regs_t* pins)
+{
+    esp_err_t err;
+
+    if (pins == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    pins->ui_in = 0U;
+    pins->uo_out = 0U;
+    pins->uio_in = 0U;
+    pins->uio_out = 0U;
+    pins->uio_oe = 0U;
+
+    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UI_IN, &pins->ui_in);
+    ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UI input register");
+
+    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UO_OUT, &pins->uo_out);
+    ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UO output register");
+
+    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UIO_IN, &pins->uio_in);
+    ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UIO input register");
+
+    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UIO_OUT, &pins->uio_out);
+    ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UIO output register");
+
+    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UIO_OE, &pins->uio_oe);
+    ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UIO output-enable register");
+
+    return ESP_OK;
+}
+
+/******************************************************************************
+ *
+ ******************************************************************************/
 esp_err_t fpga_trng_read_raw(uint16_t *raw)
 {
     return fpga_trng_read_live_raw(raw);

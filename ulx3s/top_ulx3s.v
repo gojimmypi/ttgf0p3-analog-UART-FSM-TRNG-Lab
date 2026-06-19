@@ -188,7 +188,7 @@ module top_ulx3s (
     wire shared_spi_jtag_select;
 `ifdef ULX3S_SHARED_SPI_JTAG_IO
     /* WARNING: don't leave gp4 floating!!! */
-    // assign shared_spi_jtag_select = 1'b0;
+    // assign shared_spi_jtag_select = 1'b1; /* force ESP32 SPI enabled */
     assign shared_spi_jtag_select = gp4;
 `else
     assign shared_spi_jtag_select = 1'b0;

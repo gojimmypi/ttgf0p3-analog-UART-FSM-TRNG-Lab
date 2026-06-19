@@ -14,7 +14,7 @@
  *
  * Supported instructions:
  *     4'h1 IDCODE     32-bit read-only IDCODE
- *     4'h2 REG_ADDR   8-bit register address update
+ *     4'h2 REG_ADDR   decoded register address update (variable length, see project_config.v)
  *     4'h3 REG_READ   8-bit register read
  *     4'h4 REG_WRITE  8-bit register write
  *     4'hF BYPASS     1-bit bypass register
@@ -40,7 +40,7 @@ module jtag_core #(
     input wire        tdi_i,
     output wire       tdo_o,
 
-    output reg [7:0]  reg_addr_o,
+    output reg [`JTAG_ADDR_MSB:0]  reg_addr_o,
     output reg        reg_wr_o,
     output reg [7:0]  reg_wdata_o,
     input wire [7:0]  reg_rdata_i
@@ -160,13 +160,13 @@ always @(posedge clk) begin
     if (!rst_n) begin
         dr_shift_q <= IDCODE_VALUE;
         bypass_q <= 1'b0;
-        reg_addr_o <= 8'h00;
+        reg_addr_o <=  {`JTAG_ADDR_WIDTH{1'b0}};
         reg_wr_o <= 1'b0;
         reg_wdata_o <= 8'h00;
     end else if (!ena) begin
         dr_shift_q <= IDCODE_VALUE;
         bypass_q <= 1'b0;
-        reg_addr_o <= 8'h00;
+        reg_addr_o <= {`JTAG_ADDR_WIDTH{1'b0}};
         reg_wr_o <= 1'b0;
         reg_wdata_o <= 8'h00;
     end else begin
@@ -180,7 +180,8 @@ always @(posedge clk) begin
                     end
 
                     IR_REG_ADDR: begin
-                        dr_shift_q <= {24'h000000, reg_addr_o};
+                        // dr_shift_q <= {24'h000000, reg_addr_o};
+                        dr_shift_q <= {{(32 - `JTAG_ADDR_WIDTH){1'b0}}, reg_addr_o};
                     end
 
                     IR_REG_READ: begin
@@ -215,10 +216,12 @@ always @(posedge clk) begin
             end else if (tap_state_q == TAP_DR_UPDATE) begin
                 case (ir_q)
                     IR_REG_ADDR: begin
-                        reg_addr_o <= dr_shift_q[7:0];
+                        /* Variable length registers */
+                        reg_addr_o <= dr_shift_q[`JTAG_ADDR_MSB:0];
                     end
 
                     IR_REG_WRITE: begin
+                        /* Fixed length data */
                         reg_wdata_o <= dr_shift_q[7:0];
                         reg_wr_o <= 1'b1;
                     end

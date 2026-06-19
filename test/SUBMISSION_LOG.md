@@ -4,19 +4,21 @@ By the time this file has been edited, the contents here are for the *prior*, mo
 
 https://app.tinytapeout.com/projects/4337
 
-Sun Jun 14 2026	[c3483029](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/commit/c3483029818724eaf35fa8a4ffc2c1b0181af74b)	
-1x2	[#98](https://github.com/TinyTapeout/tinytapeout-gf-26a/pull/98):
+Version 1.0.3 6/16/2026
+
+Tue Jun 16 2026 [0dd0886b](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/commit/0dd0886b5febb854e42d1ce68173723bcbb6b2ad)	
+1x2	[#103](https://github.com/TinyTapeout/tinytapeout-gf-26a/pull/103):
 
 ```
 🩺 Checking docs workflow result...
 
 🩺 Checking GDS workflow result...
 
-⬇️ Downloading tt_submission from https://api.github.com/repos/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/artifacts/7625382275 ...
+⬇️ Downloading tt_submission from https://api.github.com/repos/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/artifacts/7680625644 ...
 
-Downloaded 4555106 bytes
+Downloaded 4544555 bytes
 
-Artifact contains 39 files:
+Artifact contains 44 files:
 
 * src/JTAG/README.md
 
@@ -28,13 +30,19 @@ Artifact contains 39 files:
 
 * src/README.md
 
+* src/SPI/README.md
+
 * src/SPI/spi_slave.v
+
+* src/TRNG/README.md
 
 * src/TRNG/trng_cfg_ascii_core.v
 
 * src/TRNG/trng_lab_core.v
 
 * src/TRNG/trng_stub.v
+
+* src/UART/README.md
 
 * src/UART/uart_rx_min.v
 
@@ -54,17 +62,21 @@ Artifact contains 39 files:
 
 * src/tt_um_main.v
 
-* docs/Demoboard_F_is_for_Fun_Success.jpg
-
 * src/user_config.json
+
+* docs/Demoboard_F_is_for_Fun_Success.jpg
 
 * docs/NIST-random-number-generation.jpg
 
 * docs/PMOD-connector-test1.jpg
 
-* docs/info.md
+* docs/UART-FSM-TRNG-Lab-block-diagram.jpg
 
-* docs/ttgf-UART-FSM-TRNG-Lab-block-diagram.jpg
+* docs/example_esp32_output.md
+
+* docs/example_test_results.md
+
+* docs/info.md
 
 * docs/windows-device-manager-ports.png
 
@@ -92,35 +104,35 @@ Artifact contains 39 files:
 
 * tt_submission/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.v
 
-* info.yaml
-
 * LICENSE
+
+* info.yaml
 
 📚 Project PDK: gf180mcuD
 
-🔀 Branching projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab-27512850172 from e8c98fb89f38dad7b6e68813efccf4abde228417
+🔀 Branching projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab-27650388894 from 3fb15a51573d1903cecd72b1fac158d9b7d0bea8
 
-⬆️ Creating commit on branch projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab-27512850172
+⬆️ Creating commit on branch projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab-27650388894
 
 -> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/commit_id.json
 
 -> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/info.yaml
 
--> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/docs/info.md (57544 bytes)
+-> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/docs/info.md (40727 bytes)
 
--> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.lef (18034 bytes)
+-> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.lef (17965 bytes)
 
--> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.v (1012622 bytes)
+-> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.v (1001615 bytes)
 
--> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.oas (228481 bytes)
+-> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.oas (226541 bytes)
 
 -> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/pdk.json (169 bytes)
 
--> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/stats/metrics.csv (15833 bytes)
+-> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/stats/metrics.csv (15838 bytes)
 
--> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/stats/synthesis-stats.txt (5606 bytes)
+-> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/stats/synthesis-stats.txt (5824 bytes)
 
--> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/docs/ttgf-UART-FSM-TRNG-Lab-block-diagram.jpg (116773 bytes)
+-> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/docs/UART-FSM-TRNG-Lab-block-diagram.jpg (139102 bytes)
 
 -> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/docs/PMOD-connector-test1.jpg (95795 bytes)
 
@@ -130,9 +142,9 @@ Artifact contains 39 files:
 
 -> projects/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab/LICENSE (11357 bytes)
 
-📜 Committed, hash = 5429a078. Creating Pull Request...
+📜 Committed, hash = 81c6cb88. Creating Pull Request...
 
-🆕 Pull Request created successfully: https://github.com/TinyTapeout/tinytapeout-gf-26a/pull/98
+🆕 Pull Request created successfully: https://github.com/TinyTapeout/tinytapeout-gf-26a/pull/103
 
 💌 Sending confirmation email to gojimmypi@gmail.com
 

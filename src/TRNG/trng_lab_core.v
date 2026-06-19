@@ -101,7 +101,7 @@ module trng_lab_core
     localparam [1:0] SRC_ROX  = 2'b10;
     localparam [1:0] SRC_MIX  = 2'b11;
 
-    reg  [15:0] sample_ctr;
+    reg  [8:0] sample_ctr; /* 9 bit register, allow for 8 bit overflow */
     reg  [15:0] lfsr;
     reg  [15:0] sample_shift;
 
@@ -195,7 +195,7 @@ module trng_lab_core
     assign trng_enable = reg_ctrl[0];
     assign source_select = reg_src[1:0];
 
-    assign sample_tick = sample_ctr >= {8'h00, reg_div};
+    assign sample_tick = sample_ctr >= {1'b0, reg_div};
 
     assign lfsr_next_bit = lfsr[15] ^ lfsr[13] ^ lfsr[12] ^ lfsr[10];
 
@@ -663,7 +663,7 @@ module trng_lab_core
             sample_tick_q   <= 1'b0;
             do_sample_q     <= 1'b0;
 
-            sample_ctr      <= 16'h0000;
+            sample_ctr      <= 9'd0;
             lfsr            <= 16'h1ACE;
             sample_shift    <= 16'h0000;
 
@@ -709,7 +709,7 @@ module trng_lab_core
             sample_tick_q   <= 1'b0;
             do_sample_q     <= 1'b0;
 
-            sample_ctr      <= 16'h0000;
+            sample_ctr      <= 9'd0;
             lfsr            <= 16'h1ACE;
             sample_shift    <= 16'h0000;
 
@@ -783,7 +783,7 @@ module trng_lab_core
 `endif
 
             if (do_sample_q) begin
-                sample_ctr   <= 16'h0000;
+                sample_ctr   <= 9'd0;
                 lfsr         <= {lfsr[14:0], lfsr_next_bit};
                 sample_shift <= {sample_shift[14:0], selected_bit};
                 reg_rawlo    <= {sample_shift[6:0], selected_bit};
@@ -860,10 +860,10 @@ module trng_lab_core
 `endif /* TRNG_CONDITIONED_STREAM */
 
             end else if (trng_enable) begin
-                sample_ctr <= sample_ctr + 16'h0001;
+                sample_ctr <= sample_ctr + 9'd1;
 
             end else begin
-                sample_ctr <= 16'h0000;
+                sample_ctr <= 9'd0;
             end
         end
     end

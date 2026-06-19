@@ -66,10 +66,19 @@ module uart_trng_ascii_core
 `ifdef SPI_REG_ACCESS
     ,
     input  wire       spi_reg_wr_en,
-    input  wire [2:0] spi_reg_addr,
+    input  wire [`SPI_ADDR_MSB:0] spi_reg_addr,
     input  wire [7:0] spi_reg_wdata,
     output wire [7:0] spi_reg_rdata
 `endif /* SPI_REG_ACCESS */
+
+`ifdef BIG16_SPI_REG
+    ,
+    input  wire [7:0] ui_in,
+    input  wire [7:0] uo_out,
+    input  wire [7:0] uio_in,
+    input  wire [7:0] uio_out,
+    input  wire [7:0] uio_oe
+`endif
 );
     /* Boilerplate parameter checking */
     generate
@@ -466,6 +475,14 @@ module uart_trng_ascii_core
         .reg_rawlo(reg_rawlo),
         .reg_rawhi(reg_rawhi),
 
+`ifdef BIG16_SPI_REG
+        .ui_in(ui_in),
+        .uo_out(uo_out),
+        .uio_in(uio_in),
+        .uio_out(uio_out),
+        .uio_oe(uio_oe),
+`endif
+
 `ifdef TRNG_BINARY_STREAM
         .stream_sample_count(stream_sample_count),
 `endif
@@ -493,7 +510,7 @@ module uart_trng_ascii_core
         .spi_reg_rdata(spi_reg_rdata)
 `else
         .spi_reg_wr_en(1'b0),
-        .spi_reg_addr(3'b000),
+        .spi_reg_addr({`SPI_ADDR_WIDTH{1'b0}}),
         .spi_reg_wdata(8'h00),
         .spi_reg_rdata(unused_spi_reg_rdata)
 `endif

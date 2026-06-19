@@ -244,11 +244,6 @@ if [ "$EXPECT_BOARD_VERSION_VALUE" -eq 1 ]; then
 fi
 
 # ------------------------------------------------------------------------------
-# Show the current configuration from src/project_config.v
-# ------------------------------------------------------------------------------
-../scripts/show_effective_defines.sh
-
-# ------------------------------------------------------------------------------
 # Optional build
 # ------------------------------------------------------------------------------
 if [ "$WITH_BUILD" -eq 1 ]; then
@@ -258,6 +253,12 @@ if [ "$WITH_BUILD" -eq 1 ]; then
         # shellcheck disable=SC2206
         BUILD_ARGS_ARRAY=($BUILD_ARGS)
     fi
+
+    # ------------------------------------------------------------------------------
+    # Show the current configuration from src/project_config.v
+    # ------------------------------------------------------------------------------
+    ../scripts/show_effective_defines.sh
+
     pushd "$(dirname "$0")"                   || exit 1
     cd ../ulx3s                               || exit 1
     echo "Build..."
@@ -273,6 +274,11 @@ fi
 if [ "$PAUSE_FOR_TEST" -eq 1 ]; then
     read -r -p "Press Enter to continue..."
 fi
+
+# ------------------------------------------------------------------------------
+# Show the current configuration from src/project_config.v
+# ------------------------------------------------------------------------------
+../scripts/show_effective_defines.sh
 
 # ------------------------------------------------------------------------------
 # Run tests

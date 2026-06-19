@@ -9,12 +9,27 @@ export TT_PROJECT_NAME="ttgf-UART-FSM-TRNG-Lab"
 export TT_PROJECT_ROOT="/mnt/c/workspace/$TT_PROJECT_NAME"
 ```
 
+## Generate `project_config.v` macros for C Header
+
+There are some interesting macros defined in the `src/project_config.v`. For these to be visible in the C app, 
+run the `show_effective_defines.sh` script:
+
+```
+PROJECT=myProjectDirectory
+
+cd "${myProjectDirectory}/scripts"
+
+./show_effective_defines.sh  ../src/project_config.v  --target asic  --header tt_effective_defines_asic.h
+```
+
+Review the generated `tt_effective_defines_asic.h` and copy to `./ulx3s/ESP32/main/include`
+
 ## Program with US1
 
 Shown here in WSL using ULX3S FTDI `US1` (net the external UART) to program the ESP32 on `/dev/ttyS3`:
 
 ```
-# Wherever your ESP-IDF is installed, here in a shared WSL/Windows directory for VisualGDB:
+# Wherever your ESP-IDF is installed, here in a  shared WSL/Windows directory for VisualGDB:
 cd /mnt/c/SysGCC/esp32-master/esp-idf/v5.5
 
 source ./export.sh
