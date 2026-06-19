@@ -1,6 +1,6 @@
 # Project Status
 
-<!-- breadcrumb for testing workflows 1.0b, testing end-to-end build, release Version 1.0.4 6/18/2026" -->
+<!-- breadcrumb for testing workflows 1.0b, testing end-to-end build, release Version 1.0.4 6/18/2026 -->
 
 Version 0.1.7
 
