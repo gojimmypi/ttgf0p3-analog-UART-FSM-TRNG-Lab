@@ -20,7 +20,7 @@ else
 fi
 
 CONFIG="../src/project_config.v"
-TARGET="FPGA"
+TARGET=""
 HEADER_FILE=""
 C_PREFIX=""
 IVERILOG_ARGS=()
@@ -85,6 +85,9 @@ done
 TARGET="$(printf "%s" "$TARGET" | tr '[:lower:]' '[:upper:]')"
 
 case "$TARGET" in
+    "")
+        C_PREFIX="TT_MACRO_"
+        ;;
     FPGA | ASIC)
         ;;
     *)
@@ -93,9 +96,21 @@ case "$TARGET" in
         ;;
 esac
 
-if [[ -z "$C_PREFIX" ]]; then
-    C_PREFIX="TT_${TARGET}_MACRO_"
-fi
+case "$TARGET" in
+    "")
+        C_PREFIX="TT_MACRO_"
+        ;;
+    FPGA)
+        C_PREFIX="TT_FPGA_"
+        ;;
+    ASIC)
+        C_PREFIX="TT_ASIC_"
+        ;;
+    *)
+        echo "error: --target must be fpga or asic" >&2
+        exit 1
+        ;;
+esac
 
 if [[ ! "$C_PREFIX" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
     echo "error: C macro prefix is not a valid C identifier prefix: $C_PREFIX" >&2

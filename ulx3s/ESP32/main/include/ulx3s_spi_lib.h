@@ -20,11 +20,13 @@
 
 #include "fpga_trng.h"
 
- /* Generated defined from src/project_config.v */
-#include "tt_effective_defines_asic.h"
+/* Generated defined from src/project_config.v
+ *   ./show_effective_defines.sh  ../src/project_config.v  --header tt_effective_defines.h
+ */
+#include "tt_effective_defines.h"
 
-#ifndef TT_ASIC_MACRO_BIG16_SPI_REG
-    #error "missing TT_ASIC_MACRO_BIG16_SPI_REG?"
+#ifndef TT_MACRO_BIG16_SPI_REG
+    #error "missing TT_MACRO_BIG16_SPI_REG?"
 #endif
 
 /*
@@ -55,7 +57,7 @@
 #define TT_REG_RAWLO                            6U
 #define TT_REG_RAWHI                            7U
 
-#ifdef TT_ASIC_MACRO_BIG16_SPI_REG
+#ifdef TT_MACRO_BIG16_SPI_REG
     #define ULX3S_SPI_REG_COUNT                     16U
 #else
     #define ULX3S_SPI_REG_COUNT                     8U

@@ -19,10 +19,14 @@ PROJECT=myProjectDirectory
 
 cd "${myProjectDirectory}/scripts"
 
-./show_effective_defines.sh  ../src/project_config.v  --target asic  --header tt_effective_defines_asic.h
+./show_effective_defines.sh  ../src/project_config.v  --header tt_effective_defines.h
 ```
 
-Review the generated `tt_effective_defines_asic.h` and copy to `./ulx3s/ESP32/main/include`
+Review the generated `tt_effective_defines.h` and copy to `./ulx3s/ESP32/main/include`
+
+```bash
+mv ./tt_effective_defines.h 
+```
 
 ## Program with US1
 

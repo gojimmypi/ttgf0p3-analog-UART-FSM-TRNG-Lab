@@ -22,12 +22,14 @@
 extern "C" {
 #endif
 
-/* Generated defined from src/project_config.v */
-#include "tt_effective_defines_asic.h"
+/* Generated defined from src/project_config.v 
+ *   ./show_effective_defines.sh  ../src/project_config.v  --header tt_effective_defines.h 
+ */
+#include "tt_effective_defines.h"
 
 
-#ifndef TT_ASIC_MACRO_BIG16_SPI_REG
-    #error "missing TT_ASIC_MACRO_BIG16_SPI_REG?"
+#ifndef TT_MACRO_BIG16_SPI_REG
+    #error "missing TT_MACRO_BIG16_SPI_REG?"
 #endif
 
 #define FPGA_TRNG_REG_CTRL       0x00U
@@ -39,7 +41,7 @@ extern "C" {
 #define FPGA_TRNG_REG_RAWLO      0x06U
 #define FPGA_TRNG_REG_RAWHI      0x07U
 
-#ifdef TT_ASIC_MACRO_BIG16_SPI_REG
+#ifdef TT_MACRO_BIG16_SPI_REG
     #define FPGA_TRNG_REG_UI_IN     0x08U
     #define FPGA_TRNG_REG_UO_OUT    0x09U
     #define FPGA_TRNG_REG_UIO_IN    0x0AU
