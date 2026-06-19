@@ -4,7 +4,7 @@
  *
  * See ATTRIBUTION.md for third-party sources and credits.
  *
- * file: main.h
+ * file: main.c
  *
  * ESP32 main app
  *
@@ -39,7 +39,8 @@
  *      (begin flash upload)
  *    Release btn[0] when "Connecting..." is observed.
  *
- * Should then see something like:
+ * ---------------------------------------------------------------------------------------------
+ * At boot time, should then see something like:
  *
  *   Chip is ESP32-D0WDQ6 (revision v1.0)
  *   Features: WiFi, BT, Dual Core, 240MHz, VRef calibration in efuse, Coding Scheme None
@@ -87,6 +88,11 @@
 
 static const char* const TAG = "main";
 
+/*
+* ------------------------------------------------------------------------------
+* 
+* ------------------------------------------------------------------------------
+*/
 static esp_err_t trng_lfsr_demo(void)
 {
     esp_err_t err;
@@ -120,6 +126,12 @@ static esp_err_t trng_lfsr_demo(void)
     return ESP_OK;
 } /* trng_lfsr_demo */
 
+
+/*
+* ------------------------------------------------------------------------------
+*
+* ------------------------------------------------------------------------------
+*/
 static esp_err_t trng_live_source_demo(
     const char *name,
     fpga_trng_source_t source,
@@ -156,6 +168,12 @@ static esp_err_t trng_live_source_demo(
 
     return ESP_OK;
 } /* trng_live_source_demo */
+
+/*
+* ------------------------------------------------------------------------------
+*
+* ------------------------------------------------------------------------------
+*/
 
 static esp_err_t trng_pin_regs_demo(void)
 {
@@ -194,6 +212,12 @@ static esp_err_t trng_pin_regs_demo(void)
     return ESP_OK;
 } /* trng_pin_regs_demo */
 
+/*
+* ------------------------------------------------------------------------------
+*
+* ------------------------------------------------------------------------------
+*/
+
 static esp_err_t trng_demo(void)
 {
     esp_err_t err;
@@ -229,13 +253,13 @@ static esp_err_t trng_demo(void)
 static int plain_text_project_summary() {
     int ret = 0;
 
-    printf("TT project_config.v effective settings (excludes project.v)")
-    printf("-----------------------------------------------------------")
+    printf("TT project_config.v effective settings (excludes project.v)\n");
+    printf("-----------------------------------------------------------\n");
     /* Generate an update with:
     *   ./show_effective_defines.sh  ../src/project_config.v  --header tt_effective_defines.h
     */
     ret = tt_macro_list();
-    printf("-----------------------------------------------------------")
+    printf("-----------------------------------------------------------\n");
 
 
     /* Print chip information */
@@ -253,19 +277,23 @@ static int plain_text_project_summary() {
     unsigned major_rev = chip_info.revision / 100;
     unsigned minor_rev = chip_info.revision % 100;
     printf("silicon revision v%d.%d, ", major_rev, minor_rev);
-    if (esp_flash_get_size(NULL, &flash_size) != ESP_OK) {
+    ret = esp_flash_get_size(NULL, &flash_size);
+    if (ret != ESP_OK) {
         printf("Get flash size failed");
-        return;
+        return ret;
     }
 
     printf("%" PRIu32 "MB %s flash\n", flash_size / (uint32_t)(1024 * 1024),
         (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
 
-    printf("Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
     return ret;
 }
 
-/* entry point */
+/*
+* ------------------------------------------------------------------------------
+* Entry point
+* ------------------------------------------------------------------------------
+*/
 void app_main(void)
 {
     esp_err_t ret;
@@ -279,21 +307,21 @@ void app_main(void)
     ESP_LOGI(TAG, "--------------------------------------------------------");
     ESP_LOGI(TAG, "Stack Start: 0x%x", stack_start);
 
-    /* all platforms: stack high water mark check */
-    ESP_LOGI(TAG, "Stack HWM: %d\n", uxTaskGetStackHighWaterMark(NULL));
+    /* stack high water mark check */
+    ESP_LOGI(TAG, "Stack HWM: %d", uxTaskGetStackHighWaterMark(NULL));
+    ESP_LOGI(TAG, "Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
 
-    ret = plain_text_project_summary()
+    ret = plain_text_project_summary();
 
 #ifdef TT_MACRO_VERSION_STRING
-    ESP_LOGI(TAG, "Tiny Tapeout %s\n", TT_MACRO_VERSION_STRING);
+    ESP_LOGI(TAG, "Tiny Tapeout SPI Test %s", TT_MACRO_VERSION_STRING);
 #else
-    ESP_LOGW(TAG, "Tiny Tapeout (version unknown)\n");
+    ESP_LOGW(TAG, "Tiny Tapeout SPI Test (version unknown)");
 #endif
 
-
-
-    ret = ulx3s_spi_init();
+    ret = ulx3s_spi_init(true);
     if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "Failed to initialize ULX3S SPI");
         return;
     }
 
@@ -348,5 +376,4 @@ void app_main(void)
     printf("Restarting now.\n");
     fflush(stdout);
     esp_restart();
-
-}
+} /* app_main */

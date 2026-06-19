@@ -14,6 +14,7 @@
 #define _ULX3S_SPI_LIB_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* Espressif */
 #include <esp_err.h>
@@ -70,7 +71,7 @@
 #define ULX3S_REG_OSCEN_DEFAULT    0x01U
 
 
-esp_err_t ulx3s_spi_init(void);
+esp_err_t ulx3s_spi_init(bool verbose);
 
 esp_err_t ulx3s_spi_reset_config_registers(void);
 

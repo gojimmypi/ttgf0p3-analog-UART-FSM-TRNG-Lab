@@ -18,7 +18,9 @@
 #include "driver/spi_master.h"
 #include "esp_log.h"
 
+#ifndef ULX3S_SPI_HOST
 #define ULX3S_SPI_HOST      SPI2_HOST
+#endif
 
 /* Prior testing SPI pins disabled: */
 #if 0
@@ -51,12 +53,49 @@
 static const char* const TAG = "ulx3s_spi";
 static spi_device_handle_t ulx3s_spi;
 
-esp_err_t ulx3s_spi_init(void)
+/*
+*  Initialize the SPI on the ULX3S ESP32
+*/
+esp_err_t ulx3s_spi_init(bool verbose)
 {
     esp_err_t ret;
 
     spi_bus_config_t buscfg;
     spi_device_interface_config_t devcfg;
+
+    if (verbose) {
+        ESP_LOGI(TAG, "--------------------------------------------------------");
+        ESP_LOGI(TAG, "SPI Config:");
+        ESP_LOGI(TAG, "--------------------------------------------------------");
+#ifdef ULX3S_SPI_HOST
+        switch (ULX3S_SPI_HOST)
+        {
+        case SPI1_HOST:
+            ESP_LOGI(TAG, "ULX3S_SPI_HOST: %s (%d)", "SPI1_HOST", SPI1_HOST);
+            break;
+
+        case SPI2_HOST:
+            ESP_LOGI(TAG, "ULX3S_SPI_HOST: %s (%d)", "SPI2_HOST", SPI2_HOST);
+            break;
+
+        case SPI3_HOST:
+            ESP_LOGI(TAG, "ULX3S_SPI_HOST: %s (%d)", "SPI3_HOST", SPI3_HOST);
+            break;
+
+        default:
+            ESP_LOGW(TAG, "ULX3S_SPI_HOST: %s (%d)", "Unknown", ULX3S_SPI_HOST);
+            break;
+        }
+#else 
+        ESP_LOGE(TAG, "ULX3S_SPI_HOST not defined!");
+#endif
+        ESP_LOGI(TAG, "SPI_CLOCK_HZ:   %d", SPI_CLOCK_HZ);
+        ESP_LOGI(TAG, "PIN_NUM_CS:     %d", PIN_NUM_CS);
+        ESP_LOGI(TAG, "PIN_NUM_MISO:   %d", PIN_NUM_MISO);
+        ESP_LOGI(TAG, "PIN_NUM_MOSI:   %d", PIN_NUM_MOSI);
+        ESP_LOGI(TAG, "PIN_NUM_CLK:    %d", PIN_NUM_CLK);
+        ESP_LOGI(TAG, "--------------------------------------------------------");
+    } /* verbose */
 
     memset(&buscfg, 0, sizeof(buscfg));
     memset(&devcfg, 0, sizeof(devcfg));
@@ -88,6 +127,9 @@ esp_err_t ulx3s_spi_init(void)
     return ESP_OK;
 }
 
+/*
+*  Send data to the TT SPI from the ULX3S ESP32
+*/
 static esp_err_t ulx3s_spi_transfer(
     const uint8_t* tx_buf,
     uint8_t* rx_buf,
@@ -142,6 +184,9 @@ static void ulx3s_spi_test_once(void)
 }
 #endif /* conditional ulx3s_spi_test_once()  */
 
+/*
+*  Read data from the TT SPI on the ULX3S ESP32
+*/
 esp_err_t ulx3s_spi_read_reg(
     uint8_t addr,
     uint8_t* value)
@@ -177,6 +222,9 @@ esp_err_t ulx3s_spi_read_reg(
     return ESP_OK;
 }
 
+/*
+*  Send register data to the TT SPI on the ULX3S ESP32
+*/
 esp_err_t ulx3s_spi_write_reg(
     uint8_t addr,
     uint8_t value)
@@ -198,6 +246,9 @@ esp_err_t ulx3s_spi_write_reg(
 #endif /* conditional ULX3S_SPI_WRITE_MODE != ULX3S_SPI_WRITE_MODE_MONITOR_ONLY */
 }
 
+/*
+*  Read register data from the TT SPI on the ULX3S ESP32
+*/
 esp_err_t ulx3s_spi_read_regs(uint8_t regs[ULX3S_SPI_REG_COUNT])
 {
     esp_err_t ret;
@@ -219,6 +270,9 @@ esp_err_t ulx3s_spi_read_regs(uint8_t regs[ULX3S_SPI_REG_COUNT])
     return ESP_OK;
 }
 
+/*
+*  View TT SPI registers from the SPI on the ULX3S ESP32
+*/
 void ulx3s_spi_log_regs(const uint8_t regs[ULX3S_SPI_REG_COUNT])
 {
     uint16_t raw;
@@ -243,6 +297,10 @@ void ulx3s_spi_log_regs(const uint8_t regs[ULX3S_SPI_REG_COUNT])
              regs[TT_REG_OSCEN]);
 }
 
+
+/*
+*  Reset TT SPI Registers
+*/
 esp_err_t ulx3s_spi_reset_config_registers(void)
 {
     esp_err_t ret;
@@ -280,6 +338,9 @@ esp_err_t ulx3s_spi_reset_config_registers(void)
     return ESP_OK;
 }
 
+/*
+*  Show TT SPI Registers
+*/
 esp_err_t ulx3s_spi_dump_regs(void)
 {
     esp_err_t ret;
@@ -295,6 +356,9 @@ esp_err_t ulx3s_spi_dump_regs(void)
     return ESP_OK;
 }
 
+/*
+*  Peek TT SPI Registers
+*/
 esp_err_t ulx3s_spi_monitor_once(void)
 {
     esp_err_t ret;
