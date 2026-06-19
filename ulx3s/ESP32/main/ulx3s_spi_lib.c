@@ -396,6 +396,10 @@ esp_err_t ulx3s_spi_reset_config_registers(void)
 #define ULX3S_REG_STATUS_EXPECTED               0x3CU
 #endif
 
+#ifndef ULX3S_REG_STATUS_COLD_EXPECTED
+#define ULX3S_REG_STATUS_COLD_EXPECTED          0x04U
+#endif
+
 typedef enum {
     ULX3S_SPI_CHECK_EQUAL = 0,
     ULX3S_SPI_CHECK_MASK,
@@ -486,6 +490,48 @@ static unsigned int ulx3s_spi_check_reg_value(
     ESP_LOGI(TAG, "SPI self-check PASS %s: %02X", check->name, actual);
 
     return 0U;
+}
+
+static unsigned int ulx3s_spi_check_status_initial(uint8_t status)
+{
+    if (status == ULX3S_REG_STATUS_COLD_EXPECTED) {
+        ESP_LOGI(TAG,
+            "SPI self-check PASS R5 STATUS initial cold/reset state: %02X",
+            status);
+        ESP_LOGI(TAG,
+            "SPI self-check note: R5=0x%02X is allowed immediately after FPGA/project reset before TRNG warm-up",
+            (unsigned int)ULX3S_REG_STATUS_COLD_EXPECTED);
+        return 0U;
+    }
+
+    if (status == ULX3S_REG_STATUS_EXPECTED) {
+        ESP_LOGI(TAG,
+            "SPI self-check PASS R5 STATUS initial warmed/default state: %02X",
+            status);
+        return 0U;
+    }
+
+    ESP_LOGE(TAG,
+        "SPI self-check FAIL R5 STATUS initial: expected cold %02X or warmed %02X, actual %02X",
+        (unsigned int)ULX3S_REG_STATUS_COLD_EXPECTED,
+        (unsigned int)ULX3S_REG_STATUS_EXPECTED,
+        status);
+    return 1U;
+}
+
+static void ulx3s_spi_log_status_after_warmup(uint8_t status)
+{
+    if (status == ULX3S_REG_STATUS_EXPECTED) {
+        ESP_LOGI(TAG,
+            "SPI self-check PASS R5 STATUS after active warm-up/restore: %02X",
+            status);
+    }
+    else {
+        ESP_LOGW(TAG,
+            "SPI self-check WARN R5 STATUS after active warm-up/restore: expected %02X, actual %02X",
+            (unsigned int)ULX3S_REG_STATUS_EXPECTED,
+            status);
+    }
 }
 
 static esp_err_t ulx3s_spi_restore_trng_regs(const uint8_t saved_regs[ULX3S_SPI_REG_COUNT])
@@ -1092,7 +1138,11 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
         { TT_REG_DIV,    "R2 DIV",      ULX3S_REG_DIV_DEFAULT,     0xFFU, ULX3S_SPI_CHECK_EQUAL },
         { TT_REG_MODE,   "R3 MODE",     ULX3S_REG_MODE_DEFAULT,    0xFFU, ULX3S_SPI_CHECK_EQUAL },
         { TT_REG_OSCEN,  "R4 OSCEN",    ULX3S_REG_OSCEN_DEFAULT,   0xFFU, ULX3S_SPI_CHECK_EQUAL },
-        { TT_REG_STATUS, "R5 STATUS",   ULX3S_REG_STATUS_EXPECTED, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
+
+        /*
+         * R5 is checked separately because it can be 0x04 immediately after
+         * FPGA/project reset before the TRNG status path has been warmed up.
+         */
 
         /*
          * R6/R7 are checked separately as a combined active TRNG non-fixed value.
@@ -1135,12 +1185,15 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
     ESP_LOGI(TAG,
         "SPI self-check purpose: verify R0-RF SPI register map, expected defaults, pin snapshots, and active raw movement");
     ESP_LOGI(TAG,
-        "SPI self-check expected defaults after reset: R0=0x%02X R1=0x%02X R2=0x%02X R3=0x%02X R4=0x%02X R5=0x%02X",
+        "SPI self-check expected defaults after reset: R0=0x%02X R1=0x%02X R2=0x%02X R3=0x%02X R4=0x%02X",
         (unsigned int)ULX3S_REG_CTRL_DEFAULT,
         (unsigned int)ULX3S_REG_SRC_DEFAULT,
         (unsigned int)ULX3S_REG_DIV_DEFAULT,
         (unsigned int)ULX3S_REG_MODE_DEFAULT,
-        (unsigned int)ULX3S_REG_OSCEN_DEFAULT,
+        (unsigned int)ULX3S_REG_OSCEN_DEFAULT);
+    ESP_LOGI(TAG,
+        "SPI self-check expected R5 status: cold/reset 0x%02X is allowed before TRNG warm-up; warmed/default is 0x%02X",
+        (unsigned int)ULX3S_REG_STATUS_COLD_EXPECTED,
         (unsigned int)ULX3S_REG_STATUS_EXPECTED);
 #ifdef TT_MACRO_BIG16_SPI_REG
     ESP_LOGI(TAG,
@@ -1197,6 +1250,13 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
         }
     }
 
+    if (ulx3s_spi_check_status_initial(regs[TT_REG_STATUS]) == 0U) {
+        pass_count++;
+    }
+    else {
+        fail_count++;
+    }
+
     ESP_LOGI(TAG,
         "SPI self-check step 2/3: record passive R6/R7 snapshot before active TRNG check");
     ESP_LOGI(TAG,
@@ -1211,9 +1271,21 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
         return ret;
     }
 
+    ESP_LOGI(TAG,
+        "SPI self-check step 3/3: re-read R0-RF after active warm-up and restore");
+
+    ret = ulx3s_spi_read_regs(regs);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "SPI self-check final read failed: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    ulx3s_spi_log_regs(regs);
+    ulx3s_spi_log_status_after_warmup(regs[TT_REG_STATUS]);
+
 #ifdef TT_MACRO_BIG16_SPI_REG
     ESP_LOGI(TAG,
-        "SPI self-check final pin snapshot from initial read: ui=0x%02X uo=0x%02X uio_in=0x%02X uio_out=0x%02X uio_oe=0x%02X",
+        "SPI self-check final pin snapshot after warm-up/restore: ui=0x%02X uo=0x%02X uio_in=0x%02X uio_out=0x%02X uio_oe=0x%02X",
         regs[TT_REG_UI_IN],
         regs[TT_REG_UO_OUT],
         regs[TT_REG_UIO_IN],
