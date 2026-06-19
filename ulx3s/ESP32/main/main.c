@@ -326,6 +326,16 @@ void app_main(void)
     }
 
     ret = ulx3s_spi_self_check_regs_once();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "ulx3s_spi_self_check_regs_once failed: %s", esp_err_to_name(ret));
+        // return;
+    }
+
+    ret = ulx3s_spi_characterize_ro_sources_once();
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "ulx3s_spi_characterize_ro_sources_once failed: %s", esp_err_to_name(ret));
+        // return;
+    }
 
 #if (ULX3S_SPI_WRITE_MODE == ULX3S_SPI_WRITE_MODE_BOOT_CONFIG_ONCE)
     ESP_LOGI(TAG, "SPI write mode: boot config once");

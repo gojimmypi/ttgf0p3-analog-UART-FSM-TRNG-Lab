@@ -382,6 +382,16 @@ esp_err_t ulx3s_spi_reset_config_registers(void)
 #define ULX3S_SPI_SELF_CHECK_TRNG_DELAY_MS      10U
 #define ULX3S_SPI_SELF_CHECK_TRNG_SETTLE_MS     20U
 
+#define ULX3S_SPI_RO_CHARACTERIZE_SOURCE_ROX    2U
+#define ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX    3U
+#define ULX3S_SPI_RO_CHARACTERIZE_DIV           0x01U
+#define ULX3S_SPI_RO_CHARACTERIZE_MODE          0x00U
+#define ULX3S_SPI_RO_CHARACTERIZE_ENABLE        0x01U
+#define ULX3S_SPI_RO_CHARACTERIZE_SAMPLES       256U
+#define ULX3S_SPI_RO_CHARACTERIZE_DELAY_MS      1U
+#define ULX3S_SPI_RO_CHARACTERIZE_SETTLE_MS     10U
+#define ULX3S_SPI_RO_CHARACTERIZE_RO_COUNT      8U
+
 #ifndef ULX3S_REG_STATUS_EXPECTED
 #define ULX3S_REG_STATUS_EXPECTED               0x3CU
 #endif
@@ -403,6 +413,20 @@ typedef struct {
 static uint16_t ulx3s_spi_raw_from_regs(const uint8_t regs[ULX3S_SPI_REG_COUNT])
 {
     return ((uint16_t)regs[TT_REG_RAWHI] << 8) | regs[TT_REG_RAWLO];
+}
+
+static unsigned int ulx3s_spi_popcount16(uint16_t value)
+{
+    unsigned int count;
+
+    count = 0U;
+
+    while (value != 0U) {
+        count += (unsigned int)(value & 1U);
+        value >>= 1U;
+    }
+
+    return count;
 }
 
 static unsigned int ulx3s_spi_check_reg_value(
@@ -629,6 +653,319 @@ static esp_err_t ulx3s_spi_check_trng_raw_changes(
 #endif
 }
 
+
+static esp_err_t ulx3s_spi_start_trng_source(
+    uint8_t source,
+    uint8_t oscen)
+{
+    esp_err_t ret;
+
+    ret = ulx3s_spi_write_reg(TT_REG_CTRL, ULX3S_REG_CTRL_DEFAULT);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "RO characterize failed to write R0 CTRL disable: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    ret = ulx3s_spi_write_reg(TT_REG_SRC, source);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "RO characterize failed to write R1 SRC: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    ret = ulx3s_spi_write_reg(TT_REG_DIV, ULX3S_SPI_RO_CHARACTERIZE_DIV);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "RO characterize failed to write R2 DIV: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    ret = ulx3s_spi_write_reg(TT_REG_MODE, ULX3S_SPI_RO_CHARACTERIZE_MODE);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "RO characterize failed to write R3 MODE: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    ret = ulx3s_spi_write_reg(TT_REG_OSCEN, oscen);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "RO characterize failed to write R4 OSCEN: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    ret = ulx3s_spi_write_reg(TT_REG_CTRL, ULX3S_SPI_RO_CHARACTERIZE_ENABLE);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "RO characterize failed to write R0 CTRL enable: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(ULX3S_SPI_RO_CHARACTERIZE_SETTLE_MS));
+
+    return ESP_OK;
+}
+
+static const char* ulx3s_spi_ro_source_name(uint8_t source)
+{
+    switch (source)
+    {
+    case ULX3S_SPI_RO_CHARACTERIZE_SOURCE_ROX:
+        return "S2 ROX/fallback";
+
+    case ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX:
+        return "S3 MIX/fallback";
+
+    default:
+        return "unknown";
+    }
+}
+
+static esp_err_t ulx3s_spi_characterize_ro_mask(
+    uint8_t source,
+    uint8_t oscen,
+    const char* source_label,
+    const char* ro_label,
+    unsigned int* pass_count,
+    unsigned int* fail_count)
+{
+#if (ULX3S_SPI_WRITE_MODE != ULX3S_SPI_WRITE_MODE_MONITOR_ONLY)
+    esp_err_t ret;
+    uint8_t regs[ULX3S_SPI_REG_COUNT];
+    uint16_t samples[ULX3S_SPI_RO_CHARACTERIZE_SAMPLES];
+    uint16_t raw;
+    uint16_t min_raw;
+    uint16_t max_raw;
+    uint16_t previous_raw;
+    unsigned int sample;
+    unsigned int index;
+    unsigned int unique_count;
+    unsigned int change_count;
+    unsigned int ones_count;
+    unsigned int bit_count;
+    unsigned int percent_x10;
+    uint8_t status_or;
+    uint8_t status_and;
+    uint8_t seen;
+    uint8_t failed;
+
+    ret = ulx3s_spi_start_trng_source(source, oscen);
+    if (ret != ESP_OK) {
+        return ret;
+    }
+
+    unique_count = 0U;
+    change_count = 0U;
+    ones_count = 0U;
+    status_or = 0U;
+    status_and = 0xFFU;
+    min_raw = 0xFFFFU;
+    max_raw = 0U;
+    previous_raw = 0U;
+
+    for (sample = 0U; sample < ULX3S_SPI_RO_CHARACTERIZE_SAMPLES; sample++) {
+        ret = ulx3s_spi_read_regs(regs);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "RO characterize read failed: %s", esp_err_to_name(ret));
+            return ret;
+        }
+
+        raw = ulx3s_spi_raw_from_regs(regs);
+        samples[sample] = raw;
+
+        if ((sample != 0U) && (raw != previous_raw)) {
+            change_count++;
+        }
+        previous_raw = raw;
+
+        if (raw < min_raw) {
+            min_raw = raw;
+        }
+
+        if (raw > max_raw) {
+            max_raw = raw;
+        }
+
+        ones_count += ulx3s_spi_popcount16(raw);
+        status_or |= regs[TT_REG_STATUS];
+        status_and &= regs[TT_REG_STATUS];
+
+        seen = 0U;
+        for (index = 0U; index < sample; index++) {
+            if (samples[index] == raw) {
+                seen = 1U;
+                break;
+            }
+        }
+
+        if (seen == 0U) {
+            unique_count++;
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(ULX3S_SPI_RO_CHARACTERIZE_DELAY_MS));
+    }
+
+    bit_count = ULX3S_SPI_RO_CHARACTERIZE_SAMPLES * 16U;
+    percent_x10 = ((ones_count * 1000U) + (bit_count / 2U)) / bit_count;
+
+    failed = 0U;
+
+    if (unique_count <= 1U) {
+        failed = 1U;
+    }
+
+    if ((ones_count == 0U) || (ones_count == bit_count)) {
+        failed = 1U;
+    }
+
+    if (change_count == 0U) {
+        failed = 1U;
+    }
+
+    ESP_LOGI(TAG,
+        "RO characterize %s src=%u %s %s oscen=0x%02X unique=%u/%u changes=%u/%u ones=%u/%u (%u.%u%%) min=0x%04X max=0x%04X status_or=0x%02X status_and=0x%02X",
+        (failed == 0U) ? "PASS" : "FAIL",
+        (unsigned int)source,
+        source_label,
+        ro_label,
+        oscen,
+        unique_count,
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_SAMPLES,
+        change_count,
+        (unsigned int)(ULX3S_SPI_RO_CHARACTERIZE_SAMPLES - 1U),
+        ones_count,
+        bit_count,
+        percent_x10 / 10U,
+        percent_x10 % 10U,
+        min_raw,
+        max_raw,
+        status_or,
+        status_and);
+
+    if (failed != 0U) {
+        (*fail_count)++;
+        return ESP_FAIL;
+    }
+
+    (*pass_count)++;
+
+    return ESP_OK;
+#else
+    ESP_LOGW(TAG, "RO characterize SKIP %s %s: SPI writes disabled", source_label, ro_label);
+    (void)source;
+    (void)oscen;
+    (void)source_label;
+    (void)ro_label;
+    (void)pass_count;
+    (void)fail_count;
+    return ESP_OK;
+#endif
+}
+
+esp_err_t ulx3s_spi_characterize_ro_sources_once(void)
+{
+#if (ULX3S_SPI_WRITE_MODE != ULX3S_SPI_WRITE_MODE_MONITOR_ONLY)
+    esp_err_t ret;
+    uint8_t saved_regs[ULX3S_SPI_REG_COUNT];
+    uint8_t ro_index;
+    uint8_t oscen;
+    unsigned int pass_count;
+    unsigned int fail_count;
+
+    static const char* const ro_labels[ULX3S_SPI_RO_CHARACTERIZE_RO_COUNT] = {
+        "RO0",
+        "RO1",
+        "RO2",
+        "RO3",
+        "RO4",
+        "RO5",
+        "RO6",
+        "RO7"
+    };
+
+    pass_count = 0U;
+    fail_count = 0U;
+
+    ESP_LOGI(TAG,
+        "RO characterize: samples=%u div=0x%02X mode=0x%02X",
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_SAMPLES,
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_DIV,
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_MODE);
+
+    ret = ulx3s_spi_read_regs(saved_regs);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "RO characterize failed to save registers: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    for (ro_index = 0U; ro_index < ULX3S_SPI_RO_CHARACTERIZE_RO_COUNT; ro_index++) {
+        oscen = (uint8_t)(1U << ro_index);
+
+        ret = ulx3s_spi_characterize_ro_mask(
+            ULX3S_SPI_RO_CHARACTERIZE_SOURCE_ROX,
+            oscen,
+            ulx3s_spi_ro_source_name(ULX3S_SPI_RO_CHARACTERIZE_SOURCE_ROX),
+            ro_labels[ro_index],
+            &pass_count,
+            &fail_count);
+
+        if ((ret != ESP_OK) && (ret != ESP_FAIL)) {
+            (void)ulx3s_spi_restore_trng_regs(saved_regs);
+            return ret;
+        }
+    }
+
+    for (ro_index = 0U; ro_index < ULX3S_SPI_RO_CHARACTERIZE_RO_COUNT; ro_index++) {
+        oscen = (uint8_t)(1U << ro_index);
+
+        ret = ulx3s_spi_characterize_ro_mask(
+            ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX,
+            oscen,
+            ulx3s_spi_ro_source_name(ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX),
+            ro_labels[ro_index],
+            &pass_count,
+            &fail_count);
+
+        if ((ret != ESP_OK) && (ret != ESP_FAIL)) {
+            (void)ulx3s_spi_restore_trng_regs(saved_regs);
+            return ret;
+        }
+    }
+
+    ret = ulx3s_spi_characterize_ro_mask(
+        ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX,
+        0xFFU,
+        ulx3s_spi_ro_source_name(ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX),
+        "ALL",
+        &pass_count,
+        &fail_count);
+
+    if ((ret != ESP_OK) && (ret != ESP_FAIL)) {
+        (void)ulx3s_spi_restore_trng_regs(saved_regs);
+        return ret;
+    }
+
+    ret = ulx3s_spi_restore_trng_regs(saved_regs);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "RO characterize restore failed: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    if (fail_count != 0U) {
+        ESP_LOGE(TAG,
+            "RO characterize result: FAIL, pass=%u fail=%u",
+            pass_count,
+            fail_count);
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG,
+        "RO characterize result: PASS, pass=%u fail=%u",
+        pass_count,
+        fail_count);
+
+    return ESP_OK;
+#else
+    ESP_LOGW(TAG, "RO characterize SKIP: SPI writes disabled");
+    return ESP_OK;
+#endif
+}
+
 esp_err_t ulx3s_spi_self_check_regs_once(void)
 {
     esp_err_t ret;
@@ -683,7 +1020,6 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
     fail_count = 0U;
 
     ESP_LOGI(TAG, "SPI self-check: reading all known registers");
-    ESP_LOGI(TAG, "--------------------------------------------------------");
 
     ret = ulx3s_spi_read_regs(regs);
     if (ret != ESP_OK) {

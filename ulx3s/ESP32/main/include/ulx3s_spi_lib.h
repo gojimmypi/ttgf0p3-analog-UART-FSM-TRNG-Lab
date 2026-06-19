@@ -87,6 +87,8 @@ esp_err_t ulx3s_spi_reset_config_registers(void);
 
 esp_err_t ulx3s_spi_self_check_regs_once(void);
 
+esp_err_t ulx3s_spi_characterize_ro_sources_once(void);
+
 esp_err_t ulx3s_spi_dump_regs(void);
 
 esp_err_t ulx3s_spi_read_reg(
