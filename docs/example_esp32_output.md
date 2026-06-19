@@ -2,6 +2,13 @@
 
 <!--- # Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337 --->
 
+<!--- # Use only Fully Qualified URLs. This file is copied out of the GitHub repo for publication. --->
+
+This is the example output for the [ESP32 example app](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32) 
+on the [Radiona ULX3S FPGA](https://radiona.org/ulx3s/) 
+for the [Hardware Entropy Explorer: UART/SPI TRNG and PUF](https://app.tinytapeout.com/projects/4337) project.
+
+The source code for this test is in [`ulx3s/ESP32`](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32)
 
 ```text
 gojimmypi:/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ulx3s/ESP32
