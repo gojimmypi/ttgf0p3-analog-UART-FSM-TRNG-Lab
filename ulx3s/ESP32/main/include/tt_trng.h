@@ -4,7 +4,7 @@
  *
  * See ATTRIBUTION.md for third-party sources and credits.
  *
- * file: ./ulx3s/ESP32/main/include/fpga_trng.h
+ * file: ./ulx3s/ESP32/main/include/tt_trng.h
  *
  * ESP32 ulx3s_spi_lib FPGA SPI library
  *
@@ -61,45 +61,45 @@ extern "C" {
 #define TT_TRNG_DEFAULT_MODE      0x00U
 #define TT_TRNG_DEFAULT_OSCEN     0x01U
 
-typedef enum fpga_trng_source {
+typedef enum tt_trng_source {
     TT_TRNG_SOURCE_LFSR_TEST = 0U,
     TT_TRNG_SOURCE_RO0       = 1U,
     TT_TRNG_SOURCE_ROX       = 2U,
     TT_TRNG_SOURCE_MIX       = 3U
-} fpga_trng_source_t;
+} tt_trng_source_t;
 
-typedef struct fpga_trng_sample {
+typedef struct tt_trng_sample {
     uint8_t status;
     uint16_t raw;
-} fpga_trng_sample_t;
+} tt_trng_sample_t;
 
-typedef struct fpga_trng_pin_regs {
+typedef struct tt_trng_pin_regs {
     uint8_t ui_in;
     uint8_t uo_out;
     uint8_t uio_in;
     uint8_t uio_out;
     uint8_t uio_oe;
-} fpga_trng_pin_regs_t;
+} tt_trng_pin_regs_t;
 
-esp_err_t fpga_trng_init_defaults(void);
+esp_err_t tt_trng_init_defaults(void);
 
-esp_err_t fpga_trng_configure_lfsr_test_mode(void);
-esp_err_t fpga_trng_pulse_single_step(void);
-esp_err_t fpga_trng_read_lfsr_sample(fpga_trng_sample_t *sample);
+esp_err_t tt_trng_configure_lfsr_test_mode(void);
+esp_err_t tt_trng_pulse_single_step(void);
+esp_err_t tt_trng_read_lfsr_sample(tt_trng_sample_t *sample);
 
-esp_err_t fpga_trng_configure_live(
-    fpga_trng_source_t source,
+esp_err_t tt_trng_configure_live(
+    tt_trng_source_t source,
     uint8_t divider,
     uint8_t oscillator_mask);
 
-esp_err_t fpga_trng_read_live_sample(fpga_trng_sample_t *sample);
-esp_err_t fpga_trng_read_live_raw(uint16_t *raw);
-esp_err_t fpga_trng_fill_live(uint8_t *buffer, size_t length);
+esp_err_t tt_trng_read_live_sample(tt_trng_sample_t *sample);
+esp_err_t tt_trng_read_live_raw(uint16_t *raw);
+esp_err_t tt_trng_fill_live(uint8_t *buffer, size_t length);
 
-esp_err_t fpga_trng_read_sample(fpga_trng_sample_t *sample);
-esp_err_t fpga_trng_read_pin_regs(fpga_trng_pin_regs_t *pins);
-esp_err_t fpga_trng_read_raw(uint16_t *raw);
-esp_err_t fpga_trng_fill(uint8_t *buffer, size_t length);
+esp_err_t tt_trng_read_sample(tt_trng_sample_t *sample);
+esp_err_t tt_trng_read_pin_regs(tt_trng_pin_regs_t *pins);
+esp_err_t tt_trng_read_raw(uint16_t *raw);
+esp_err_t tt_trng_fill(uint8_t *buffer, size_t length);
 
 #ifdef __cplusplus
 }

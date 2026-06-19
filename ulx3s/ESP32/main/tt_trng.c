@@ -20,12 +20,12 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
-static const char *TAG = "fpga_trng";
+static const char *TAG = "tt_trng";
 
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_init_defaults(void)
+esp_err_t tt_trng_init_defaults(void)
 {
     esp_err_t err;
 
@@ -44,7 +44,7 @@ esp_err_t fpga_trng_init_defaults(void)
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_configure_lfsr_test_mode(void)
+esp_err_t tt_trng_configure_lfsr_test_mode(void)
 {
     esp_err_t err;
 
@@ -80,7 +80,7 @@ esp_err_t fpga_trng_configure_lfsr_test_mode(void)
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_pulse_single_step(void)
+esp_err_t tt_trng_pulse_single_step(void)
 {
     esp_err_t err;
 
@@ -96,7 +96,7 @@ esp_err_t fpga_trng_pulse_single_step(void)
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_read_lfsr_sample(fpga_trng_sample_t *sample)
+esp_err_t tt_trng_read_lfsr_sample(tt_trng_sample_t *sample)
 {
     esp_err_t err;
     unsigned int bit_index;
@@ -110,11 +110,11 @@ esp_err_t fpga_trng_read_lfsr_sample(fpga_trng_sample_t *sample)
     ESP_RETURN_ON_ERROR(err, TAG, "failed to disable TRNG sampling");
 
     for (bit_index = 0U; bit_index < TT_TRNG_BITS_PER_SAMPLE; bit_index++) {
-        err = fpga_trng_pulse_single_step();
+        err = tt_trng_pulse_single_step();
         ESP_RETURN_ON_ERROR(err, TAG, "failed to pulse TRNG single-step bit");
     }
 
-    err = fpga_trng_read_sample(sample);
+    err = tt_trng_read_sample(sample);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read stepped TRNG sample");
 
     return ESP_OK;
@@ -123,7 +123,7 @@ esp_err_t fpga_trng_read_lfsr_sample(fpga_trng_sample_t *sample)
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_read_sample(fpga_trng_sample_t *sample)
+esp_err_t tt_trng_read_sample(tt_trng_sample_t *sample)
 {
     esp_err_t err;
     uint8_t status;
@@ -162,7 +162,7 @@ esp_err_t fpga_trng_read_sample(fpga_trng_sample_t *sample)
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_read_pin_regs(fpga_trng_pin_regs_t* pins)
+esp_err_t tt_trng_read_pin_regs(tt_trng_pin_regs_t* pins)
 {
     esp_err_t err;
 
@@ -197,16 +197,16 @@ esp_err_t fpga_trng_read_pin_regs(fpga_trng_pin_regs_t* pins)
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_read_raw(uint16_t *raw)
+esp_err_t tt_trng_read_raw(uint16_t *raw)
 {
-    return fpga_trng_read_live_raw(raw);
+    return tt_trng_read_live_raw(raw);
 }
 
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_configure_live(
-    fpga_trng_source_t source,
+esp_err_t tt_trng_configure_live(
+    tt_trng_source_t source,
     uint8_t divider,
     uint8_t oscillator_mask)
 {
@@ -241,7 +241,7 @@ esp_err_t fpga_trng_configure_live(
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_read_live_sample(fpga_trng_sample_t *sample)
+esp_err_t tt_trng_read_live_sample(tt_trng_sample_t *sample)
 {
     esp_err_t err;
 
@@ -261,7 +261,7 @@ esp_err_t fpga_trng_read_live_sample(fpga_trng_sample_t *sample)
     err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_NONE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to freeze TRNG sampling");
 
-    err = fpga_trng_read_sample(sample);
+    err = tt_trng_read_sample(sample);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read live TRNG sample");
 
     return ESP_OK;
@@ -270,10 +270,10 @@ esp_err_t fpga_trng_read_live_sample(fpga_trng_sample_t *sample)
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_read_live_raw(uint16_t *raw)
+esp_err_t tt_trng_read_live_raw(uint16_t *raw)
 {
     esp_err_t err;
-    fpga_trng_sample_t sample;
+    tt_trng_sample_t sample;
 
     if (raw == NULL) {
         return ESP_ERR_INVALID_ARG;
@@ -282,7 +282,7 @@ esp_err_t fpga_trng_read_live_raw(uint16_t *raw)
     sample.status = 0U;
     sample.raw = 0U;
 
-    err = fpga_trng_read_live_sample(&sample);
+    err = tt_trng_read_live_sample(&sample);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read live TRNG sample");
 
     *raw = sample.raw;
@@ -293,15 +293,15 @@ esp_err_t fpga_trng_read_live_raw(uint16_t *raw)
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_fill(uint8_t *buffer, size_t length)
+esp_err_t tt_trng_fill(uint8_t *buffer, size_t length)
 {
-    return fpga_trng_fill_live(buffer, length);
+    return tt_trng_fill_live(buffer, length);
 }
 
 /******************************************************************************
  *
  ******************************************************************************/
-esp_err_t fpga_trng_fill_live(uint8_t *buffer, size_t length)
+esp_err_t tt_trng_fill_live(uint8_t *buffer, size_t length)
 {
     esp_err_t err;
     size_t index;
@@ -317,7 +317,7 @@ esp_err_t fpga_trng_fill_live(uint8_t *buffer, size_t length)
 
         raw = 0U;
 
-        err = fpga_trng_read_live_raw(&raw);
+        err = tt_trng_read_live_raw(&raw);
         ESP_RETURN_ON_ERROR(err, TAG, "failed to read live TRNG raw value");
 
         buffer[index] = (uint8_t)(raw & 0xFFU);

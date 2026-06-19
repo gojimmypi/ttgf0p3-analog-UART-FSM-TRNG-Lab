@@ -103,7 +103,7 @@ static void main_log_section(const char* title)
 static esp_err_t trng_lfsr_demo(void)
 {
     esp_err_t err;
-    fpga_trng_sample_t sample;
+    tt_trng_sample_t sample;
     int i;
 
     sample.status = 0U;
@@ -115,16 +115,16 @@ static esp_err_t trng_lfsr_demo(void)
     ESP_LOGI(TAG,
         "TRNG LFSR expectation: samples should match the known firmware/RTL deterministic sequence");
 
-    err = fpga_trng_configure_lfsr_test_mode();
+    err = tt_trng_configure_lfsr_test_mode();
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "fpga_trng_configure_lfsr_test_mode failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "tt_trng_configure_lfsr_test_mode failed: %s", esp_err_to_name(err));
         return err;
     }
 
     for (i = 0; i < TRNG_DEMO_SAMPLE_COUNT; i++) {
-        err = fpga_trng_read_lfsr_sample(&sample);
+        err = tt_trng_read_lfsr_sample(&sample);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "fpga_trng_read_lfsr_sample failed: %s", esp_err_to_name(err));
+            ESP_LOGE(TAG, "tt_trng_read_lfsr_sample failed: %s", esp_err_to_name(err));
             return err;
         }
 
@@ -145,11 +145,11 @@ static esp_err_t trng_lfsr_demo(void)
 */
 static esp_err_t trng_live_source_demo(
     const char *name,
-    fpga_trng_source_t source,
+    tt_trng_source_t source,
     uint8_t oscillator_mask)
 {
     esp_err_t err;
-    fpga_trng_sample_t sample;
+    tt_trng_sample_t sample;
     int i;
 
     sample.status = 0U;
@@ -163,18 +163,18 @@ static esp_err_t trng_live_source_demo(
         0x01U,
         oscillator_mask);
     ESP_LOGI(TAG,
-        "TRNG live purpose: confirm this source selection produces changing raw/status samples through the fpga_trng API");
+        "TRNG live purpose: confirm this source selection produces changing raw/status samples through the tt_trng API");
 
-    err = fpga_trng_configure_live(source, 0x01U, oscillator_mask);
+    err = tt_trng_configure_live(source, 0x01U, oscillator_mask);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "fpga_trng_configure_live failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "tt_trng_configure_live failed: %s", esp_err_to_name(err));
         return err;
     }
 
     for (i = 0; i < TRNG_DEMO_SAMPLE_COUNT; i++) {
-        err = fpga_trng_read_live_sample(&sample);
+        err = tt_trng_read_live_sample(&sample);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "fpga_trng_read_live_sample failed: %s", esp_err_to_name(err));
+            ESP_LOGE(TAG, "tt_trng_read_live_sample failed: %s", esp_err_to_name(err));
             return err;
         }
 
@@ -197,7 +197,7 @@ static esp_err_t trng_live_source_demo(
 static esp_err_t trng_pin_regs_demo(void)
 {
     esp_err_t err;
-    fpga_trng_pin_regs_t pins;
+    tt_trng_pin_regs_t pins;
 
     pins.ui_in = 0U;
     pins.uo_out = 0U;
@@ -211,9 +211,9 @@ static esp_err_t trng_pin_regs_demo(void)
     ESP_LOGI(TAG,
         "TRNG pin expectation: RC should normally be 0xF4 with SPI enabled; R8 should include UART RX idle high");
 
-    err = fpga_trng_read_pin_regs(&pins);
+    err = tt_trng_read_pin_regs(&pins);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "fpga_trng_read_pin_regs failed: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "tt_trng_read_pin_regs failed: %s", esp_err_to_name(err));
         return err;
     }
 
@@ -396,7 +396,7 @@ void app_main(void)
 
     main_log_section("Run SPI pin snapshot demo");
     ESP_LOGI(TAG,
-        "Main step: read R8/R9/RA/RB/RC through fpga_trng_read_pin_regs()");
+        "Main step: read R8/R9/RA/RB/RC through tt_trng_read_pin_regs()");
 
     ret = trng_pin_regs_demo();
     if (ret != ESP_OK) {
