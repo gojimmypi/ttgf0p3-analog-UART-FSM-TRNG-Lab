@@ -29,13 +29,13 @@ esp_err_t fpga_trng_init_defaults(void)
 {
     esp_err_t err;
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_DIV, FPGA_TRNG_DEFAULT_DIV);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_DIV, TT_TRNG_DEFAULT_DIV);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG divider");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_MODE, FPGA_TRNG_DEFAULT_MODE);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_MODE, TT_TRNG_DEFAULT_MODE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG mode");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_OSCEN, FPGA_TRNG_DEFAULT_OSCEN);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_OSCEN, TT_TRNG_DEFAULT_OSCEN);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG oscillator enable");
 
     return ESP_OK;
@@ -49,29 +49,29 @@ esp_err_t fpga_trng_configure_lfsr_test_mode(void)
     esp_err_t err;
 
     /* Disable sampling and clear single-step/reset control bits. */
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_NONE);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_NONE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to clear TRNG control register");
 
     /* Pulse TRNG internal reset through reg_ctrl[2]. */
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_RESET);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_RESET);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to assert TRNG reset");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_NONE);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_NONE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to release TRNG reset");
 
     /* Source 0 is the deterministic LFSR test source. */
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_SRC, (uint8_t)FPGA_TRNG_SOURCE_LFSR_TEST);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_SRC, (uint8_t)TT_TRNG_SOURCE_LFSR_TEST);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to select TRNG LFSR source");
 
     /* Keep this test purely digital and deterministic. */
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_OSCEN, 0x00U);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_OSCEN, 0x00U);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to disable TRNG oscillators");
 
     /* Match the UART regression test setup. */
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_DIV, 0x01U);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_DIV, 0x01U);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG divider");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_MODE, 0x00U);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_MODE, 0x00U);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG mode");
 
     return ESP_OK;
@@ -84,10 +84,10 @@ esp_err_t fpga_trng_pulse_single_step(void)
 {
     esp_err_t err;
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_SINGLE_STEP);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_SINGLE_STEP);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to assert TRNG single-step bit");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_NONE);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_NONE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to release TRNG single-step bit");
 
     return ESP_OK;
@@ -106,10 +106,10 @@ esp_err_t fpga_trng_read_lfsr_sample(fpga_trng_sample_t *sample)
     }
 
     /* Keep free-running sampling disabled while building a deterministic sample. */
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_NONE);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_NONE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to disable TRNG sampling");
 
-    for (bit_index = 0U; bit_index < FPGA_TRNG_BITS_PER_SAMPLE; bit_index++) {
+    for (bit_index = 0U; bit_index < TT_TRNG_BITS_PER_SAMPLE; bit_index++) {
         err = fpga_trng_pulse_single_step();
         ESP_RETURN_ON_ERROR(err, TAG, "failed to pulse TRNG single-step bit");
     }
@@ -140,13 +140,13 @@ esp_err_t fpga_trng_read_sample(fpga_trng_sample_t *sample)
     rawhi = 0U;
     raw = 0U;
 
-    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_STATUS, &status);
+    err = ulx3s_spi_read_reg(TT_TRNG_REG_STATUS, &status);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG status");
 
-    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_RAWLO, &rawlo);
+    err = ulx3s_spi_read_reg(TT_TRNG_REG_RAWLO, &rawlo);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG raw low byte");
 
-    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_RAWHI, &rawhi);
+    err = ulx3s_spi_read_reg(TT_TRNG_REG_RAWHI, &rawhi);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG raw high byte");
 
     raw = (uint16_t)rawhi;
@@ -176,19 +176,19 @@ esp_err_t fpga_trng_read_pin_regs(fpga_trng_pin_regs_t* pins)
     pins->uio_out = 0U;
     pins->uio_oe = 0U;
 
-    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UI_IN, &pins->ui_in);
+    err = ulx3s_spi_read_reg(TT_TRNG_REG_UI_IN, &pins->ui_in);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UI input register");
 
-    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UO_OUT, &pins->uo_out);
+    err = ulx3s_spi_read_reg(TT_TRNG_REG_UO_OUT, &pins->uo_out);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UO output register");
 
-    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UIO_IN, &pins->uio_in);
+    err = ulx3s_spi_read_reg(TT_TRNG_REG_UIO_IN, &pins->uio_in);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UIO input register");
 
-    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UIO_OUT, &pins->uio_out);
+    err = ulx3s_spi_read_reg(TT_TRNG_REG_UIO_OUT, &pins->uio_out);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UIO output register");
 
-    err = ulx3s_spi_read_reg(FPGA_TRNG_REG_UIO_OE, &pins->uio_oe);
+    err = ulx3s_spi_read_reg(TT_TRNG_REG_UIO_OE, &pins->uio_oe);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to read TRNG UIO output-enable register");
 
     return ESP_OK;
@@ -212,7 +212,7 @@ esp_err_t fpga_trng_configure_live(
 {
     esp_err_t err;
 
-    if ((source < FPGA_TRNG_SOURCE_RO0) || (source > FPGA_TRNG_SOURCE_MIX)) {
+    if ((source < TT_TRNG_SOURCE_RO0) || (source > TT_TRNG_SOURCE_MIX)) {
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -220,19 +220,19 @@ esp_err_t fpga_trng_configure_live(
      * Live mode uses the FPGA sampler instead of deterministic single-step.
      * Clear reg_ctrl first so stale enable/step/reset bits do not leak in.
      */
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_NONE);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_NONE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to clear TRNG control register");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_SRC, (uint8_t)source);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_SRC, (uint8_t)source);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG source");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_DIV, divider);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_DIV, divider);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG divider");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_MODE, 0x00U);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_MODE, 0x00U);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG mode");
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_OSCEN, oscillator_mask);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_OSCEN, oscillator_mask);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to write TRNG oscillator mask");
 
     return ESP_OK;
@@ -253,12 +253,12 @@ esp_err_t fpga_trng_read_live_sample(fpga_trng_sample_t *sample)
      * This matches the UART live-sample pattern:
      * enable sampling, let the FPGA run, freeze sampling, then read R6/R7.
      */
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_ENABLE);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_ENABLE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to enable TRNG sampling");
 
-    vTaskDelay(pdMS_TO_TICKS(FPGA_TRNG_LIVE_SAMPLE_DELAY_MS));
+    vTaskDelay(pdMS_TO_TICKS(TT_TRNG_LIVE_SAMPLE_DELAY_MS));
 
-    err = ulx3s_spi_write_reg(FPGA_TRNG_REG_CTRL, FPGA_TRNG_CTRL_NONE);
+    err = ulx3s_spi_write_reg(TT_TRNG_REG_CTRL, TT_TRNG_CTRL_NONE);
     ESP_RETURN_ON_ERROR(err, TAG, "failed to freeze TRNG sampling");
 
     err = fpga_trng_read_sample(sample);

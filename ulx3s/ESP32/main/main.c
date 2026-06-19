@@ -250,17 +250,17 @@ static esp_err_t trng_demo(void)
         return err;
     }
 
-    err = trng_live_source_demo("S1 RO0/fallback", FPGA_TRNG_SOURCE_RO0, 0x01U);
+    err = trng_live_source_demo("S1 RO0/fallback", TT_TRNG_SOURCE_RO0, 0x01U);
     if (err != ESP_OK) {
         return err;
     }
 
-    err = trng_live_source_demo("S2 ROX/fallback", FPGA_TRNG_SOURCE_ROX, 0xFFU);
+    err = trng_live_source_demo("S2 ROX/fallback", TT_TRNG_SOURCE_ROX, 0xFFU);
     if (err != ESP_OK) {
         return err;
     }
 
-    err = trng_live_source_demo("S3 MIX/fallback", FPGA_TRNG_SOURCE_MIX, 0xFFU);
+    err = trng_live_source_demo("S3 MIX/fallback", TT_TRNG_SOURCE_MIX, 0xFFU);
     if (err != ESP_OK) {
         return err;
     }
