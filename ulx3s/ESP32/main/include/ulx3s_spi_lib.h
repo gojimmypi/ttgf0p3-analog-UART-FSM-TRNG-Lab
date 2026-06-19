@@ -59,8 +59,15 @@
 #define TT_REG_RAWHI                            7U
 
 #ifdef TT_MACRO_BIG16_SPI_REG
+    /* Additional registers in BIG16_SPI_REG: */
+    #define TT_REG_UI_IN                        8U
+    #define TT_REG_UO_OUT                       9U
+    #define TT_REG_UIO_IN                       10U
+    #define TT_REG_UIO_OUT                      11U
+    #define TT_REG_UIO_OE                       12U
     #define ULX3S_SPI_REG_COUNT                     16U
 #else
+    /* Just the basic list, above */
     #define ULX3S_SPI_REG_COUNT                     8U
 #endif
 

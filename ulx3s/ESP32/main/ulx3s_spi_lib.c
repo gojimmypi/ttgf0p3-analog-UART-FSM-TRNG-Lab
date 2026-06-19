@@ -280,7 +280,7 @@ void ulx3s_spi_log_regs(const uint8_t regs[ULX3S_SPI_REG_COUNT])
     raw = ((uint16_t)regs[TT_REG_RAWHI] << 8) | regs[TT_REG_RAWLO];
 
     ESP_LOGI(TAG,
-             "SPI regs: R0=%02X R1=%02X R2=%02X R3=%02X R4=%02X R5=%02X R6=%02X R7=%02X raw=0x%04X status=0x%02X src=%u div=0x%02X mode=0x%02X oscen=0x%02X",
+             "SPI regs: R0=%02X R1=%02X R2=%02X R3=%02X R4=%02X R5=%02X R6=%02X R7=%02X",
              regs[0],
              regs[1],
              regs[2],
@@ -288,13 +288,43 @@ void ulx3s_spi_log_regs(const uint8_t regs[ULX3S_SPI_REG_COUNT])
              regs[4],
              regs[5],
              regs[6],
-             regs[7],
-             raw,
-             regs[TT_REG_STATUS],
-             regs[TT_REG_SRC],
-             regs[TT_REG_DIV],
-             regs[TT_REG_MODE],
-             regs[TT_REG_OSCEN]);
+             regs[7]);
+
+#ifdef FPGA_TRNG_BIG16_SPI_REG
+    ESP_LOGI(TAG,
+        "SPI regs: R8=%02X R9=%02X RA=%02X RB=%02X RC=%02X RD=%02X RE=%02X RF=%02X",
+        regs[8],
+        regs[9],
+        regs[10],
+        regs[11],
+        regs[12],
+        regs[13],
+        regs[14],
+        regs[15]);
+
+    ESP_LOGI(TAG,
+        "raw=0x%04X status=0x%02X src=%u div=0x%02X mode=0x%02X oscen=0x%02X ui=0x%02X uo=0x%02X uio_in=0x%02X uio_out=0x%02X uio_oe=0x%02X",
+        raw,
+        regs[TT_REG_STATUS],
+        regs[TT_REG_SRC],
+        regs[TT_REG_DIV],
+        regs[TT_REG_MODE],
+        regs[TT_REG_OSCEN],
+        regs[TT_REG_UI_IN],
+        regs[TT_REG_UO_OUT],
+        regs[TT_REG_UIO_IN],
+        regs[TT_REG_UIO_OUT],
+        regs[TT_REG_UIO_OE]);
+#else
+    ESP_LOGI(TAG,
+        "raw=0x%04X status=0x%02X src=%u div=0x%02X mode=0x%02X oscen=0x%02X",
+        raw,
+        regs[TT_REG_STATUS],
+        regs[TT_REG_SRC],
+        regs[TT_REG_DIV],
+        regs[TT_REG_MODE],
+        regs[TT_REG_OSCEN]);
+#endif
 }
 
 
