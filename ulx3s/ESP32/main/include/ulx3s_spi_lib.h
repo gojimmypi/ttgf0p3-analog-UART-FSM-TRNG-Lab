@@ -65,7 +65,10 @@
     #define TT_REG_UIO_IN                       10U
     #define TT_REG_UIO_OUT                      11U
     #define TT_REG_UIO_OE                       12U
-    #define ULX3S_SPI_REG_COUNT                     16U
+    #define TT_REG_UNUSED_D                     13U
+    #define TT_REG_UNUSED_E                     14U
+    #define TT_REG_UNUSED_F                     15U
+    #define ULX3S_SPI_REG_COUNT                    16U
 #else
     /* Just the basic list, above */
     #define ULX3S_SPI_REG_COUNT                     8U
@@ -81,6 +84,8 @@
 esp_err_t ulx3s_spi_init(bool verbose);
 
 esp_err_t ulx3s_spi_reset_config_registers(void);
+
+esp_err_t ulx3s_spi_self_check_regs_once(void);
 
 esp_err_t ulx3s_spi_dump_regs(void);
 

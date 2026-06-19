@@ -325,6 +325,8 @@ void app_main(void)
         return;
     }
 
+    ret = ulx3s_spi_self_check_regs_once();
+
 #if (ULX3S_SPI_WRITE_MODE == ULX3S_SPI_WRITE_MODE_BOOT_CONFIG_ONCE)
     ESP_LOGI(TAG, "SPI write mode: boot config once");
     ulx3s_spi_apply_default_config_once();

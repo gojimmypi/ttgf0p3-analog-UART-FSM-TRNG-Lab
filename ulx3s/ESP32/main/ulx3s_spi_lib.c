@@ -369,6 +369,256 @@ esp_err_t ulx3s_spi_reset_config_registers(void)
 }
 
 /*
+*  Self check diagnostics
+*/
+#define ULX3S_SPI_SELF_CHECK_RAW_SAMPLES        8U
+#define ULX3S_SPI_SELF_CHECK_RAW_DELAY_MS       10U
+
+#ifndef ULX3S_REG_STATUS_EXPECTED
+#define ULX3S_REG_STATUS_EXPECTED           0x3CU
+#endif
+
+typedef enum {
+    ULX3S_SPI_CHECK_EQUAL = 0,
+    ULX3S_SPI_CHECK_MASK,
+    ULX3S_SPI_CHECK_LOG_ONLY
+} ulx3s_spi_check_type_t;
+
+typedef struct {
+    uint8_t addr;
+    const char* name;
+    uint8_t expected;
+    uint8_t mask;
+    ulx3s_spi_check_type_t type;
+} ulx3s_spi_reg_check_t;
+
+static unsigned int ulx3s_spi_check_reg_value(
+    const uint8_t regs[ULX3S_SPI_REG_COUNT],
+    const ulx3s_spi_reg_check_t* check)
+{
+    uint8_t actual;
+    uint8_t actual_masked;
+    uint8_t expected_masked;
+
+    actual = regs[check->addr];
+
+    if (check->type == ULX3S_SPI_CHECK_LOG_ONLY) {
+        ESP_LOGI(TAG, "SPI self-check INFO %s: %02X", check->name, actual);
+        return 0U;
+    }
+
+    if (check->type == ULX3S_SPI_CHECK_MASK) {
+        actual_masked = actual & check->mask;
+        expected_masked = check->expected & check->mask;
+
+        if (actual_masked != expected_masked) {
+            ESP_LOGE(TAG,
+                "SPI self-check FAIL %s: expected mask %02X value %02X, actual %02X",
+                check->name,
+                check->mask,
+                expected_masked,
+                actual);
+            return 1U;
+        }
+
+        ESP_LOGI(TAG,
+            "SPI self-check PASS %s: actual %02X mask %02X value %02X",
+            check->name,
+            actual,
+            check->mask,
+            expected_masked);
+        return 0U;
+    }
+
+    if (actual != check->expected) {
+        ESP_LOGE(TAG,
+            "SPI self-check FAIL %s: expected %02X, actual %02X",
+            check->name,
+            check->expected,
+            actual);
+        return 1U;
+    }
+
+    ESP_LOGI(TAG, "SPI self-check PASS %s: %02X", check->name, actual);
+
+    return 0U;
+}
+
+static esp_err_t ulx3s_spi_check_raw_changes(
+    unsigned int* pass_count,
+    unsigned int* fail_count)
+{
+    esp_err_t ret;
+    uint8_t regs[ULX3S_SPI_REG_COUNT];
+    uint16_t first_raw;
+    uint16_t last_raw;
+    uint16_t raw;
+    uint8_t sample;
+    uint8_t changed;
+
+    ret = ulx3s_spi_read_regs(regs);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "SPI self-check raw read failed: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    first_raw = ((uint16_t)regs[TT_REG_RAWHI] << 8) | regs[TT_REG_RAWLO];
+    last_raw = first_raw;
+    changed = 0U;
+
+    for (sample = 1U; sample < ULX3S_SPI_SELF_CHECK_RAW_SAMPLES; sample++) {
+        vTaskDelay(pdMS_TO_TICKS(ULX3S_SPI_SELF_CHECK_RAW_DELAY_MS));
+
+        ret = ulx3s_spi_read_regs(regs);
+        if (ret != ESP_OK) {
+            ESP_LOGE(TAG, "SPI self-check raw read failed: %s", esp_err_to_name(ret));
+            return ret;
+        }
+
+        raw = ((uint16_t)regs[TT_REG_RAWHI] << 8) | regs[TT_REG_RAWLO];
+        last_raw = raw;
+
+        if (raw != first_raw) {
+            changed = 1U;
+        }
+    }
+
+    if (changed == 0U) {
+        ESP_LOGE(TAG,
+            "SPI self-check FAIL R6/R7 raw: fixed at 0x%04X across %u samples",
+            first_raw,
+            ULX3S_SPI_SELF_CHECK_RAW_SAMPLES);
+        (*fail_count)++;
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG,
+        "SPI self-check PASS R6/R7 raw: first=0x%04X last=0x%04X samples=%u",
+        first_raw,
+        last_raw,
+        ULX3S_SPI_SELF_CHECK_RAW_SAMPLES);
+
+    (*pass_count)++;
+
+    return ESP_OK;
+}
+
+esp_err_t ulx3s_spi_self_check_regs_once(void)
+{
+    esp_err_t ret;
+    uint8_t regs[ULX3S_SPI_REG_COUNT];
+    unsigned int pass_count;
+    unsigned int fail_count;
+    size_t index;
+
+    static const ulx3s_spi_reg_check_t reg_checks[] = {
+        { TT_REG_CTRL,   "R0 CTRL",     ULX3S_REG_CTRL_DEFAULT,   0xFFU, ULX3S_SPI_CHECK_EQUAL },
+        { TT_REG_SRC,    "R1 SRC",      ULX3S_REG_SRC_DEFAULT,    0xFFU, ULX3S_SPI_CHECK_EQUAL },
+        { TT_REG_DIV,    "R2 DIV",      ULX3S_REG_DIV_DEFAULT,    0xFFU, ULX3S_SPI_CHECK_EQUAL },
+        { TT_REG_MODE,   "R3 MODE",     ULX3S_REG_MODE_DEFAULT,   0xFFU, ULX3S_SPI_CHECK_EQUAL },
+        { TT_REG_OSCEN,  "R4 OSCEN",    ULX3S_REG_OSCEN_DEFAULT,  0xFFU, ULX3S_SPI_CHECK_EQUAL },
+        { TT_REG_STATUS, "R5 STATUS",   ULX3S_REG_STATUS_EXPECTED, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
+
+        /*
+         * R6/R7 are checked separately as a combined non-fixed raw value.
+         */
+
+#ifdef FPGA_TRNG_BIG16_SPI_REG
+         /*
+          * R8 depends on board inputs. Require UART RX idle high on ui_in[3].
+          * Do not require exact R8 because other input pins can vary.
+          */
+         { TT_REG_UI_IN,    "R8 UI_IN UART_RX_IDLE", 0x08U, 0x08U, ULX3S_SPI_CHECK_MASK },
+
+         /*
+          * R9, RA, and RB are readable pin snapshots, but may include dynamic
+          * output/debug/entropy-visible bits. Log them without exact matching.
+          */
+         { TT_REG_UO_OUT,   "R9 UO_OUT",             0x00U, 0x00U, ULX3S_SPI_CHECK_LOG_ONLY },
+         { TT_REG_UIO_IN,   "RA UIO_IN",             0x00U, 0x00U, ULX3S_SPI_CHECK_LOG_ONLY },
+         { TT_REG_UIO_OUT,  "RB UIO_OUT",            0x00U, 0x00U, ULX3S_SPI_CHECK_LOG_ONLY },
+
+         /*
+          * With SPI enabled, uio_oe should normally be F4:
+          * uio[2] plus uio[7:4] outputs, uio[3:0] otherwise inputs.
+          */
+         { TT_REG_UIO_OE,   "RC UIO_OE",             0xF4U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
+
+         /*
+          * Unused readable addresses should return 00.
+          */
+         { TT_REG_UNUSED_D, "RD UNUSED",             0x00U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
+         { TT_REG_UNUSED_E, "RE UNUSED",             0x00U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
+         { TT_REG_UNUSED_F, "RF UNUSED",             0x00U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
+ #endif
+    };
+
+    pass_count = 0U;
+    fail_count = 0U;
+
+    ESP_LOGI(TAG, "SPI self-check: reading all known registers");
+
+    ret = ulx3s_spi_read_regs(regs);
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "SPI self-check failed to read registers: %s", esp_err_to_name(ret));
+        return ret;
+    }
+
+    ulx3s_spi_log_regs(regs);
+
+    for (index = 0U; index < (sizeof(reg_checks) / sizeof(reg_checks[0])); index++) {
+        if (reg_checks[index].addr >= ULX3S_SPI_REG_COUNT) {
+            ESP_LOGE(TAG,
+                "SPI self-check FAIL %s: addr %u outside register count %u",
+                reg_checks[index].name,
+                reg_checks[index].addr,
+                ULX3S_SPI_REG_COUNT);
+            fail_count++;
+            continue;
+        }
+
+        if (ulx3s_spi_check_reg_value(regs, &reg_checks[index]) == 0U) {
+            if (reg_checks[index].type != ULX3S_SPI_CHECK_LOG_ONLY) {
+                pass_count++;
+            }
+        }
+        else {
+            fail_count++;
+        }
+    }
+
+    ret = ulx3s_spi_check_raw_changes(&pass_count, &fail_count);
+    if ((ret != ESP_OK) && (ret != ESP_FAIL)) {
+        return ret;
+    }
+
+#ifdef FPGA_TRNG_BIG16_SPI_REG
+    ESP_LOGI(TAG,
+        "SPI self-check pins: ui=0x%02X uo=0x%02X uio_in=0x%02X uio_out=0x%02X uio_oe=0x%02X",
+        regs[TT_REG_UI_IN],
+        regs[TT_REG_UO_OUT],
+        regs[TT_REG_UIO_IN],
+        regs[TT_REG_UIO_OUT],
+        regs[TT_REG_UIO_OE]);
+#endif
+
+    if (fail_count != 0U) {
+        ESP_LOGE(TAG,
+            "SPI self-check result: FAIL, pass=%u fail=%u",
+            pass_count,
+            fail_count);
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG,
+        "SPI self-check result: PASS, pass=%u fail=%u",
+        pass_count,
+        fail_count);
+
+    return ESP_OK;
+}
+
+/*
 *  Show TT SPI Registers
 */
 esp_err_t ulx3s_spi_dump_regs(void)
