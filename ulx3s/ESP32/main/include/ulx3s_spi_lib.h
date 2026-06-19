@@ -14,11 +14,15 @@
 #define _ULX3S_SPI_LIB_H_
 
 #include <stdint.h>
+
+/* Espressif */
 #include <esp_err.h>
 
 #include "fpga_trng.h"
 
-/* TODO pull this from project_config.v */
+ /* Generated defined from src/project_config.v */
+#include "tt_effective_defines_asic.h"
+
 #ifndef FPGA_TRNG_BIG16_SPI_REG
     #define FPGA_TRNG_BIG16_SPI_REG
 #endif

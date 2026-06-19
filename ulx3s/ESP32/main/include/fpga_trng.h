@@ -15,13 +15,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "esp_err.h"
+/* Espressif */
+#include <esp_err.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* TODO pull this from project_config.v */
+/* Generated defined from src/project_config.v */
+#include "tt_effective_defines_asic.h"
+
+
 #ifndef FPGA_TRNG_BIG16_SPI_REG
     #define FPGA_TRNG_BIG16_SPI_REG
 #endif

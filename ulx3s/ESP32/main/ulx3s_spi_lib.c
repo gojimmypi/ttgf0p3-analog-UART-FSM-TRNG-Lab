@@ -37,6 +37,9 @@
 
 #define TT_SPI_READ_FLAG    0x80U
 
+/* Generated defined from src/project_config.v */
+#include "tt_effective_defines_asic.h"
+
 #ifdef FPGA_TRNG_BIG16_SPI_REG
     #define TT_SPI_ADDR_MASK    0x0FU
 #else
