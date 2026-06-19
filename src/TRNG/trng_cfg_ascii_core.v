@@ -173,15 +173,16 @@ module trng_cfg_ascii_core
     reg [3:0] hex1;
     reg [3:0] hex2;
     reg       need_two_digits;
-    reg [2:0] read_addr;
 
-`ifdef MAX_SPI_REG
-    wire [`SPI_ADDR_MSB:0] read_reg_addr = {4'b0000, read_addr};
-`elsif BIG16_SPI_REG
-    wire [`SPI_ADDR_MSB:0] read_reg_addr = {1'b0, read_addr};
-`else
-    wire [`SPI_ADDR_MSB:0] read_reg_addr = read_addr;
-`endif
+    localparam UART_READ_ADDR_MSB = (`SPI_ADDR_MSB < 3) ? 3 : `SPI_ADDR_MSB;
+    localparam UART_READ_ADDR_WIDTH = UART_READ_ADDR_MSB + 1;
+    localparam [7:0] UART_READ_ADDR_LIMIT = (8'd1 << (`SPI_ADDR_MSB + 1));
+
+    reg [UART_READ_ADDR_MSB:0] read_addr;
+    wire [`SPI_ADDR_MSB:0] read_reg_addr = read_addr[`SPI_ADDR_MSB:0];
+
+    /* ASCII to_hex_ascii() nibble helper: */
+    wire [3:0] read_addr_nib = read_addr[3:0];
     reg [7:0] reply_value;
 
 `ifdef ADJUSTABLE_BAUD_ENABLED
@@ -202,9 +203,7 @@ module trng_cfg_ascii_core
 `endif
 `endif
 
-    /* This is a GDC linting hack */
     wire [3:0] decoded_hex;
-    wire _unused_decoded_hex = decoded_hex[3];
 
     /* Optionally make UART command letters case-insensitive. */
     wire [7:0] rx_cmd;
@@ -476,7 +475,7 @@ module trng_cfg_ascii_core
             hex1                  <= 4'h0;
             hex2                  <= 4'h0;
             need_two_digits       <= 1'b0;
-            read_addr             <= 3'd0;
+            read_addr             <= {UART_READ_ADDR_WIDTH{1'b0}};
             reply_value           <= 8'h00;
 `ifdef ADJUSTABLE_BAUD_ENABLED
             pending_baud_valid    <= 1'b0;
@@ -639,12 +638,9 @@ module trng_cfg_ascii_core
 `else
                             if (cmd == "R") begin
 `endif
-                                /* Only registers 0..7 are addressable. */
-                                if (hex_value(rx_byte) < 4'd8) begin
-                                    // Passes Verilator, not GDS:
-                                    // read_addr <= hex_value(rx_byte)[2:0];
-                                    // So:
-                                    read_addr <= decoded_hex[2:0];
+                                /* UART R accepts one hex digit; valid range follows SPI address width. */
+                                if ({4'h0, decoded_hex} < UART_READ_ADDR_LIMIT) begin
+                                    read_addr <= decoded_hex;
                                     
                                     state <= ST_WAIT_CR;
                                 end else begin
@@ -764,8 +760,7 @@ module trng_cfg_ascii_core
 
                 ST_Q_N: begin
                     if (!queued_tx_valid) begin
-                        /* UART R command still only replies R0 through R7 */
-                        queue_tx(to_hex_ascii({1'b0, read_addr}));
+                        queue_tx(to_hex_ascii(read_addr_nib));
                         next_state_after_send <= ST_Q_EQ;
                         state <= ST_WAIT_SEND;
                     end

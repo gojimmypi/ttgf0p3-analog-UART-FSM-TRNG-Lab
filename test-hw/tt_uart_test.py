@@ -31,7 +31,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 VERSION_SCRIPT = PROJECT_ROOT / "scripts" / "get_expected_version.sh"
 VERSION_CONFIG = PROJECT_ROOT / "src" / "project_config.v"
-
+BIG16_SPI_REG=True
 
 def get_expected_version():
     if not VERSION_SCRIPT.is_file():
@@ -466,7 +466,11 @@ def test_error_cases(ser, args):
 
     ok = expect_exact("Unknown command", send_command(ser, b"?\r", args), b"?\r") and ok
     ok = expect_exact("Bad hex digit", send_command(ser, b"EG\r", args), b"?\r") and ok
-    ok = expect_exact("Bad read register", send_command(ser, b"R8\r", args), b"?\r") and ok
+    if not BIG16_SPI_REG:
+        ok = expect_exact("Bad read register", send_command(ser, b"R8\r", args), b"?\r") and ok
+    else:
+        print("SKIP: Bad read register; BIG16_SPI_REG makes R8..RF valid")
+
     ok = expect_exact("Missing second digit", send_command(ser, b"D1\r", args), b"?\r") and ok
     ok = expect_exact("Unexpected extra byte", send_command(ser, b"E10\r", args), b"?\r") and ok
 

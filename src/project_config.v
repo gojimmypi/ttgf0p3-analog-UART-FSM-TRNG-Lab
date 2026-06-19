@@ -77,8 +77,9 @@
      *   4 bits: 0..15 with BIG16_SPI_REG 
      *   7 bits: 0..127 with MAX_SPI_REG  */
     // `define MAX_SPI_REG
+
+    /* See tt_uart_test.py for manual edit: BIG16_SPI_REG=True */
     `define BIG16_SPI_REG
-    /* Testing with ESP32 regs TODO remove this comment */
 
     `define TRNG_ENABLED
     `define TRNG_BINARY_STREAM
@@ -227,6 +228,7 @@
     `ifdef SPI_REG_ACCESS
         `ifdef MAX_SPI_REG
             `define SPI_ADDR_MSB 6
+            `define MAX
         `elsif BIG16_SPI_REG
             `define SPI_ADDR_MSB 3
         `else
