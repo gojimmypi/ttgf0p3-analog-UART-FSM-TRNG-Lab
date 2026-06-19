@@ -88,6 +88,13 @@
 
 static const char* const TAG = "main";
 
+static void main_log_section(const char* title)
+{
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ESP_LOGI(TAG, "%s", title);
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+}
+
 /*
 * ------------------------------------------------------------------------------
 * 
@@ -102,7 +109,11 @@ static esp_err_t trng_lfsr_demo(void)
     sample.status = 0U;
     sample.raw = 0U;
 
-    ESP_LOGI(TAG, "TRNG deterministic LFSR test");
+    main_log_section("TRNG deterministic LFSR test");
+    ESP_LOGI(TAG,
+        "TRNG LFSR purpose: verify the deterministic test-mode sequence still responds through the normal read path");
+    ESP_LOGI(TAG,
+        "TRNG LFSR expectation: samples should match the known firmware/RTL deterministic sequence");
 
     err = fpga_trng_configure_lfsr_test_mode();
     if (err != ESP_OK) {
@@ -144,7 +155,15 @@ static esp_err_t trng_live_source_demo(
     sample.status = 0U;
     sample.raw = 0U;
 
-    ESP_LOGI(TAG, "TRNG live source test: %s", name);
+    main_log_section("TRNG live source test");
+    ESP_LOGI(TAG,
+        "TRNG live source: %s source=%u divider=0x%02X oscen=0x%02X",
+        name,
+        (unsigned int)source,
+        0x01U,
+        oscillator_mask);
+    ESP_LOGI(TAG,
+        "TRNG live purpose: confirm this source selection produces changing raw/status samples through the fpga_trng API");
 
     err = fpga_trng_configure_live(source, 0x01U, oscillator_mask);
     if (err != ESP_OK) {
@@ -186,7 +205,11 @@ static esp_err_t trng_pin_regs_demo(void)
     pins.uio_out = 0U;
     pins.uio_oe = 0U;
 
-    ESP_LOGI(TAG, "TRNG SPI pin register test");
+    main_log_section("TRNG SPI pin register test");
+    ESP_LOGI(TAG,
+        "TRNG pin purpose: read SPI-visible snapshots R8/R9/RA/RB/RC and confirm the debug view of TT pins");
+    ESP_LOGI(TAG,
+        "TRNG pin expectation: RC should normally be 0xF4 with SPI enabled; R8 should include UART RX idle high");
 
     err = fpga_trng_read_pin_regs(&pins);
     if (err != ESP_OK) {
@@ -319,24 +342,37 @@ void app_main(void)
     ESP_LOGW(TAG, "Tiny Tapeout SPI Test (version unknown)");
 #endif
 
+    main_log_section("Initialize ESP32 SPI bus");
+    ESP_LOGI(TAG,
+        "Main step: configure ESP32 SPI peripheral and attach the ULX3S FPGA SPI device");
+
     ret = ulx3s_spi_init(true);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "Failed to initialize ULX3S SPI");
         return;
     }
 
+    main_log_section("Run SPI register self-check");
+    ESP_LOGI(TAG,
+        "Main step: validate R0-RF register map, pin snapshot registers, and active R6/R7 raw-change behavior");
+
     ret = ulx3s_spi_self_check_regs_once();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "ulx3s_spi_self_check_regs_once failed: %s", esp_err_to_name(ret));
-        // return;
+        return;
     }
+
+    main_log_section("Run RO activity characterization");
+    ESP_LOGI(TAG,
+        "Main step: sweep one-hot oscillator enables in S2 and S3 modes and summarize activity statistics");
 
     ret = ulx3s_spi_characterize_ro_sources_once();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "ulx3s_spi_characterize_ro_sources_once failed: %s", esp_err_to_name(ret));
-        // return;
+        return;
     }
 
+    main_log_section("Apply post-diagnostic SPI write policy");
 #if (ULX3S_SPI_WRITE_MODE == ULX3S_SPI_WRITE_MODE_BOOT_CONFIG_ONCE)
     ESP_LOGI(TAG, "SPI write mode: boot config once");
     ulx3s_spi_apply_default_config_once();
@@ -349,15 +385,27 @@ void app_main(void)
 
     vTaskDelay(pdMS_TO_TICKS(100));
 
+    main_log_section("Run TRNG demo sequence");
+    ESP_LOGI(TAG,
+        "Main step: run deterministic LFSR plus S1/S2/S3 live-source demonstrations");
+
     ret = trng_demo();
     if (ret != ESP_OK) {
         return;
     }
 
+    main_log_section("Run SPI pin snapshot demo");
+    ESP_LOGI(TAG,
+        "Main step: read R8/R9/RA/RB/RC through fpga_trng_read_pin_regs()");
+
     ret = trng_pin_regs_demo();
     if (ret != ESP_OK) {
         return;
     }
+
+    main_log_section("Restore default SPI config before monitor loop");
+    ESP_LOGI(TAG,
+        "Main step: reset R0-R4 to defaults and dump R0-RF before entering monitor loop");
 
     ret = ulx3s_spi_reset_config_registers();
     if (ret != ESP_OK) {

@@ -429,6 +429,13 @@ static unsigned int ulx3s_spi_popcount16(uint16_t value)
     return count;
 }
 
+static void ulx3s_spi_log_section(const char* title)
+{
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ESP_LOGI(TAG, "%s", title);
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+}
+
 static unsigned int ulx3s_spi_check_reg_value(
     const uint8_t regs[ULX3S_SPI_REG_COUNT],
     const ulx3s_spi_reg_check_t* check)
@@ -536,7 +543,19 @@ static esp_err_t ulx3s_spi_check_trng_raw_changes(
     uint8_t index;
     uint8_t seen;
 
-    ESP_LOGI(TAG, "SPI self-check: enabling TRNG source for R6/R7 raw-change check");
+    ulx3s_spi_log_section("SPI self-check: active R6/R7 raw-change test");
+    ESP_LOGI(TAG,
+        "SPI self-check purpose: prove R6/R7 are not fixed when the TRNG is explicitly enabled");
+    ESP_LOGI(TAG,
+        "SPI self-check active config: write R0=00, R1=0x%02X, R2=0x%02X, R3=0x%02X, R4=0x%02X, then R0=0x%02X",
+        (unsigned int)ULX3S_SPI_SELF_CHECK_TRNG_SRC,
+        (unsigned int)ULX3S_SPI_SELF_CHECK_TRNG_DIV,
+        (unsigned int)ULX3S_SPI_SELF_CHECK_TRNG_MODE,
+        (unsigned int)ULX3S_SPI_SELF_CHECK_TRNG_OSCEN,
+        (unsigned int)ULX3S_SPI_SELF_CHECK_TRNG_ENABLE);
+    ESP_LOGI(TAG,
+        "SPI self-check pass rule: at least two unique 16-bit raw values across %u samples",
+        (unsigned int)ULX3S_SPI_SELF_CHECK_TRNG_SAMPLES);
 
     ret = ulx3s_spi_write_reg(TT_REG_CTRL, ULX3S_REG_CTRL_DEFAULT);
     if (ret != ESP_OK) {
@@ -577,6 +596,10 @@ static esp_err_t ulx3s_spi_check_trng_raw_changes(
         (void)ulx3s_spi_restore_trng_regs(saved_regs);
         return ret;
     }
+
+    ESP_LOGI(TAG,
+        "SPI self-check active config applied; settling for %u ms before sampling...",
+        (unsigned int)ULX3S_SPI_SELF_CHECK_TRNG_SETTLE_MS);
 
     vTaskDelay(pdMS_TO_TICKS(ULX3S_SPI_SELF_CHECK_TRNG_SETTLE_MS));
 
@@ -619,6 +642,8 @@ static esp_err_t ulx3s_spi_check_trng_raw_changes(
         vTaskDelay(pdMS_TO_TICKS(ULX3S_SPI_SELF_CHECK_TRNG_DELAY_MS));
     }
 
+    ESP_LOGI(TAG, "SPI self-check: restoring saved config after active raw-change test");
+
     ret = ulx3s_spi_restore_trng_regs(saved_regs);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "SPI self-check restore failed: %s", esp_err_to_name(ret));
@@ -642,6 +667,7 @@ static esp_err_t ulx3s_spi_check_trng_raw_changes(
         samples[ULX3S_SPI_SELF_CHECK_TRNG_SAMPLES - 1U]);
 
     (*pass_count)++;
+    ESP_LOGI(TAG, "--------------------------------------------------------");
 
     return ESP_OK;
 #else
@@ -659,6 +685,18 @@ static esp_err_t ulx3s_spi_start_trng_source(
     uint8_t oscen)
 {
     esp_err_t ret;
+
+    ESP_LOGI(TAG,
+        "RO characterize setup: source=%u oscen=0x%02X; disabling sampling before config writes",
+        (unsigned int)source,
+        (unsigned int)oscen);
+    ESP_LOGI(TAG,
+        "RO characterize setup writes: R0=00, R1=0x%02X, R2=0x%02X, R3=0x%02X, R4=0x%02X, R0=0x%02X",
+        (unsigned int)source,
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_DIV,
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_MODE,
+        (unsigned int)oscen,
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_ENABLE);
 
     ret = ulx3s_spi_write_reg(TT_REG_CTRL, ULX3S_REG_CTRL_DEFAULT);
     if (ret != ESP_OK) {
@@ -696,6 +734,10 @@ static esp_err_t ulx3s_spi_start_trng_source(
         return ret;
     }
 
+    ESP_LOGI(TAG,
+        "RO characterize setup applied; settling for %u ms before collecting samples...",
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_SETTLE_MS);
+
     vTaskDelay(pdMS_TO_TICKS(ULX3S_SPI_RO_CHARACTERIZE_SETTLE_MS));
 
     return ESP_OK;
@@ -732,6 +774,8 @@ static esp_err_t ulx3s_spi_characterize_ro_mask(
     uint16_t min_raw;
     uint16_t max_raw;
     uint16_t previous_raw;
+    uint16_t first_raw;
+    uint16_t last_raw;
     unsigned int sample;
     unsigned int index;
     unsigned int unique_count;
@@ -743,6 +787,16 @@ static esp_err_t ulx3s_spi_characterize_ro_mask(
     uint8_t status_and;
     uint8_t seen;
     uint8_t failed;
+
+    ESP_LOGI(TAG,
+        "RO characterize test: src=%u %s %s oscen=0x%02X",
+        (unsigned int)source,
+        source_label,
+        ro_label,
+        (unsigned int)oscen);
+    ESP_LOGI(TAG,
+        "RO characterize test purpose: one-hot activity screen using %u samples; this is not a frequency measurement",
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_SAMPLES);
 
     ret = ulx3s_spi_start_trng_source(source, oscen);
     if (ret != ESP_OK) {
@@ -757,6 +811,8 @@ static esp_err_t ulx3s_spi_characterize_ro_mask(
     min_raw = 0xFFFFU;
     max_raw = 0U;
     previous_raw = 0U;
+    first_raw = 0U;
+    last_raw = 0U;
 
     for (sample = 0U; sample < ULX3S_SPI_RO_CHARACTERIZE_SAMPLES; sample++) {
         ret = ulx3s_spi_read_regs(regs);
@@ -767,6 +823,11 @@ static esp_err_t ulx3s_spi_characterize_ro_mask(
 
         raw = ulx3s_spi_raw_from_regs(regs);
         samples[sample] = raw;
+
+        if (sample == 0U) {
+            first_raw = raw;
+        }
+        last_raw = raw;
 
         if ((sample != 0U) && (raw != previous_raw)) {
             change_count++;
@@ -806,20 +867,34 @@ static esp_err_t ulx3s_spi_characterize_ro_mask(
     failed = 0U;
 
     if (unique_count <= 1U) {
+        ESP_LOGE(TAG,
+            "RO characterize reason: FAIL because unique_count <= 1 for src=%u %s oscen=0x%02X",
+            (unsigned int)source,
+            ro_label,
+            (unsigned int)oscen);
         failed = 1U;
     }
 
     if ((ones_count == 0U) || (ones_count == bit_count)) {
+        ESP_LOGE(TAG,
+            "RO characterize reason: FAIL because ones_count is all-zero or all-one for src=%u %s oscen=0x%02X",
+            (unsigned int)source,
+            ro_label,
+            (unsigned int)oscen);
         failed = 1U;
     }
 
     if (change_count == 0U) {
+        ESP_LOGE(TAG,
+            "RO characterize reason: FAIL because no adjacent raw samples changed for src=%u %s oscen=0x%02X",
+            (unsigned int)source,
+            ro_label,
+            (unsigned int)oscen);
         failed = 1U;
     }
 
     ESP_LOGI(TAG,
-        "RO characterize %s src=%u %s %s oscen=0x%02X unique=%u/%u changes=%u/%u ones=%u/%u (%u.%u%%) min=0x%04X max=0x%04X status_or=0x%02X status_and=0x%02X",
-        (failed == 0U) ? "PASS" : "FAIL",
+        "src=%u %s %s oscen=0x%02X unique=%u/%u changes=%u/%u ones=%u/%u (%u.%u%%) first=0x%04X last=0x%04X min=0x%04X max=0x%04X status_or=0x%02X status_and=0x%02X",
         (unsigned int)source,
         source_label,
         ro_label,
@@ -832,10 +907,13 @@ static esp_err_t ulx3s_spi_characterize_ro_mask(
         bit_count,
         percent_x10 / 10U,
         percent_x10 % 10U,
+        first_raw,
+        last_raw,
         min_raw,
         max_raw,
         status_or,
         status_and);
+    ESP_LOGI(TAG, "RO characterize %s", (failed == 0U) ? "PASS" : "FAIL");
 
     if (failed != 0U) {
         (*fail_count)++;
@@ -843,6 +921,7 @@ static esp_err_t ulx3s_spi_characterize_ro_mask(
     }
 
     (*pass_count)++;
+    ESP_LOGI(TAG, ".....................");
 
     return ESP_OK;
 #else
@@ -881,17 +960,34 @@ esp_err_t ulx3s_spi_characterize_ro_sources_once(void)
     pass_count = 0U;
     fail_count = 0U;
 
+    ulx3s_spi_log_section("RO characterize: begin");
     ESP_LOGI(TAG,
-        "RO characterize: samples=%u div=0x%02X mode=0x%02X",
+        "RO characterize purpose: verify each one-hot oscillator-enable path produces non-fixed SPI-visible raw samples");
+    ESP_LOGI(TAG,
+        "RO characterize scope: S2 ROX/fallback RO0-RO7, S3 MIX/fallback RO0-RO7, then S3 ALL oscen=0xFF");
+    ESP_LOGI(TAG,
+        "RO characterize config: samples=%u div=0x%02X mode=0x%02X sample_delay_ms=%u settle_ms=%u",
         (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_SAMPLES,
         (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_DIV,
-        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_MODE);
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_MODE,
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_DELAY_MS,
+        (unsigned int)ULX3S_SPI_RO_CHARACTERIZE_SETTLE_MS);
+    ESP_LOGI(TAG,
+        "RO characterize pass rules: unique_count > 1, change_count > 0, ones_count not all 0 or all 1");
+    ESP_LOGI(TAG,
+        "RO characterize note: this is an activity screen, not a per-RO frequency or entropy proof");
 
     ret = ulx3s_spi_read_regs(saved_regs);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "RO characterize failed to save registers: %s", esp_err_to_name(ret));
         return ret;
     }
+
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ESP_LOGI(TAG,
+        "RO characterize phase 1/3: src=2 %s, one-hot RO0-RO7",
+        ulx3s_spi_ro_source_name(ULX3S_SPI_RO_CHARACTERIZE_SOURCE_ROX));
+    ESP_LOGI(TAG, "--------------------------------------------------------");
 
     for (ro_index = 0U; ro_index < ULX3S_SPI_RO_CHARACTERIZE_RO_COUNT; ro_index++) {
         oscen = (uint8_t)(1U << ro_index);
@@ -910,6 +1006,12 @@ esp_err_t ulx3s_spi_characterize_ro_sources_once(void)
         }
     }
 
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ESP_LOGI(TAG,
+        "RO characterize phase 2/3: src=3 %s, one-hot RO0-RO7",
+        ulx3s_spi_ro_source_name(ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX));
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+
     for (ro_index = 0U; ro_index < ULX3S_SPI_RO_CHARACTERIZE_RO_COUNT; ro_index++) {
         oscen = (uint8_t)(1U << ro_index);
 
@@ -927,6 +1029,12 @@ esp_err_t ulx3s_spi_characterize_ro_sources_once(void)
         }
     }
 
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ESP_LOGI(TAG,
+        "RO characterize phase 3/3: src=3 %s, all oscillator enables oscen=0xFF",
+        ulx3s_spi_ro_source_name(ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX));
+    ESP_LOGI(TAG, "--------------------------------------------------------");
+
     ret = ulx3s_spi_characterize_ro_mask(
         ULX3S_SPI_RO_CHARACTERIZE_SOURCE_MIX,
         0xFFU,
@@ -940,11 +1048,15 @@ esp_err_t ulx3s_spi_characterize_ro_sources_once(void)
         return ret;
     }
 
+    ESP_LOGI(TAG, "RO characterize: restoring saved SPI config after characterization sweep");
+
     ret = ulx3s_spi_restore_trng_regs(saved_regs);
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "RO characterize restore failed: %s", esp_err_to_name(ret));
         return ret;
     }
+
+    ESP_LOGI(TAG, "RO characterize: restore complete");
 
     if (fail_count != 0U) {
         ESP_LOGE(TAG,
@@ -1019,8 +1131,26 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
     pass_count = 0U;
     fail_count = 0U;
 
-    ESP_LOGI(TAG, "SPI self-check: resetting config registers to known defaults");
-    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ulx3s_spi_log_section("SPI self-check: begin");
+    ESP_LOGI(TAG,
+        "SPI self-check purpose: verify R0-RF SPI register map, expected defaults, pin snapshots, and active raw movement");
+    ESP_LOGI(TAG,
+        "SPI self-check expected defaults after reset: R0=0x%02X R1=0x%02X R2=0x%02X R3=0x%02X R4=0x%02X R5=0x%02X",
+        (unsigned int)ULX3S_REG_CTRL_DEFAULT,
+        (unsigned int)ULX3S_REG_SRC_DEFAULT,
+        (unsigned int)ULX3S_REG_DIV_DEFAULT,
+        (unsigned int)ULX3S_REG_MODE_DEFAULT,
+        (unsigned int)ULX3S_REG_OSCEN_DEFAULT,
+        (unsigned int)ULX3S_REG_STATUS_EXPECTED);
+#ifdef TT_MACRO_BIG16_SPI_REG
+    ESP_LOGI(TAG,
+        "SPI self-check expected BIG16 registers: R8 has UART RX idle bit set, RC=0xF4, RD/RE/RF=0x00");
+#endif
+
+#if (ULX3S_SPI_WRITE_MODE != ULX3S_SPI_WRITE_MODE_MONITOR_ONLY)
+    ulx3s_spi_log_section("SPI self-check: reset config registers to known defaults");
+    ESP_LOGI(TAG,
+        "SPI self-check reset reason: ESP32 reset may not reset the FPGA register state");
 
     ret = ulx3s_spi_reset_config_registers();
     if (ret != ESP_OK) {
@@ -1029,9 +1159,11 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
     }
 
     vTaskDelay(pdMS_TO_TICKS(ULX3S_SPI_SELF_CHECK_TRNG_SETTLE_MS));
+#else
+    ESP_LOGW(TAG, "SPI self-check: not resetting config registers because SPI writes are disabled");
+#endif
 
-    ESP_LOGI(TAG, "SPI self-check: reading all known registers");
-    ESP_LOGI(TAG, "--------------------------------------------------------");
+    ulx3s_spi_log_section("SPI self-check: read R0-RF and compare register-map expectations");
 
     ret = ulx3s_spi_read_regs(regs);
     if (ret != ESP_OK) {
@@ -1040,6 +1172,9 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
     }
 
     ulx3s_spi_log_regs(regs);
+
+    ESP_LOGI(TAG,
+        "SPI self-check step 1/3: compare stable registers and log dynamic pin snapshot registers");
 
     for (index = 0U; index < (sizeof(reg_checks) / sizeof(reg_checks[0])); index++) {
         if (reg_checks[index].addr >= ULX3S_SPI_REG_COUNT) {
@@ -1063,8 +1198,13 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
     }
 
     ESP_LOGI(TAG,
+        "SPI self-check step 2/3: record passive R6/R7 snapshot before active TRNG check");
+    ESP_LOGI(TAG,
         "SPI self-check INFO R6/R7 raw initial snapshot: 0x%04X",
         ulx3s_spi_raw_from_regs(regs));
+
+    ESP_LOGI(TAG,
+        "SPI self-check step 3/3: temporarily enable TRNG and require R6/R7 to change");
 
     ret = ulx3s_spi_check_trng_raw_changes(regs, &pass_count, &fail_count);
     if ((ret != ESP_OK) && (ret != ESP_FAIL)) {
@@ -1073,7 +1213,7 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
 
 #ifdef TT_MACRO_BIG16_SPI_REG
     ESP_LOGI(TAG,
-        "SPI self-check pins: ui=0x%02X uo=0x%02X uio_in=0x%02X uio_out=0x%02X uio_oe=0x%02X",
+        "SPI self-check final pin snapshot from initial read: ui=0x%02X uo=0x%02X uio_in=0x%02X uio_out=0x%02X uio_oe=0x%02X",
         regs[TT_REG_UI_IN],
         regs[TT_REG_UO_OUT],
         regs[TT_REG_UIO_IN],
@@ -1156,29 +1296,43 @@ void ulx3s_spi_apply_default_config_once(void)
      *
      * R5..R7 are read-only status/raw outputs.
      */
-    ret = ulx3s_spi_write_reg(TT_REG_DIV, 0x10U);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "ulx3s_spi_write_reg failed: %s", esp_err_to_name(ret));
-        return;
-    }
 
-    ret = ulx3s_spi_write_reg(TT_REG_MODE, 0x00U);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "ulx3s_spi_write_reg failed: %s", esp_err_to_name(ret));
-        return;
-    }
+    //ret = ulx3s_spi_write_reg(TT_REG_DIV, 0x10U);
+    //if (ret != ESP_OK) {
+    //    ESP_LOGE(TAG, "ulx3s_spi_write_reg failed: %s", esp_err_to_name(ret));
+    //    return;
+    //}
 
-    ret = ulx3s_spi_write_reg(TT_REG_OSCEN, 0x01U);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "ulx3s_spi_write_reg failed: %s", esp_err_to_name(ret));
-        return;
-    }
+    //ret = ulx3s_spi_write_reg(TT_REG_MODE, 0x00U);
+    //if (ret != ESP_OK) {
+    //    ESP_LOGE(TAG, "ulx3s_spi_write_reg failed: %s", esp_err_to_name(ret));
+    //    return;
+    //}
+
+    //ret = ulx3s_spi_write_reg(TT_REG_OSCEN, 0x01U);
+    //if (ret != ESP_OK) {
+    //    ESP_LOGE(TAG, "ulx3s_spi_write_reg failed: %s", esp_err_to_name(ret));
+    //    return;
+    //}
+
+    ulx3s_spi_log_section("SPI boot config: apply safe defaults once");
+    ESP_LOGI(TAG,
+        "SPI boot config purpose: leave firmware/demo in monitor-friendly defaults after diagnostics");
+    ESP_LOGI(TAG,
+        "SPI boot config writes: R0=0x%02X R1=0x%02X R2=0x%02X R3=0x%02X R4=0x%02X",
+        (unsigned int)ULX3S_REG_CTRL_DEFAULT,
+        (unsigned int)ULX3S_REG_SRC_DEFAULT,
+        (unsigned int)ULX3S_REG_DIV_DEFAULT,
+        (unsigned int)ULX3S_REG_MODE_DEFAULT,
+        (unsigned int)ULX3S_REG_OSCEN_DEFAULT);
 
     ret = ulx3s_spi_reset_config_registers();
     if (ret != ESP_OK) {
         ESP_LOGE(TAG, "ulx3s_spi_reset_config_registers failed: %s", esp_err_to_name(ret));
         return;
     }
+
+    ESP_LOGI(TAG, "SPI boot config: defaults written; dumping registers for confirmation");
 
     ret = ulx3s_spi_dump_regs();
     if (ret != ESP_OK) {
