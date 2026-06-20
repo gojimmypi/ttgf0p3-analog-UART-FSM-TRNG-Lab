@@ -190,10 +190,11 @@ initial begin
     ena = 1'b0;
 
     /*
-     * ui_in[4] = 0 selects JTAG.
+     * ui_in[4] = 0 (default, input dip switch "up") selects SPI
+     * ui_in[4] = 1 selects JTAG in the TT/non-ULX3S build used by this test.
      * ui_in[3] = 1 keeps UART RX idle.
      */
-    ui_in = 8'h08;
+    ui_in = 8'h18; /* 0001 1000 */
 
     uio_in = 8'h00;
     uio_in[0] = 1'b1; /* TMS idle high during reset setup */
@@ -305,7 +306,7 @@ initial begin
     /******************************************************************************/
     $display("Test 4: switch to SPI mode disables JTAG TDO path");
     /******************************************************************************/
-    ui_in[4] = 1'b1;             /* SPI mode, not JTAG */
+    ui_in[4] = 1'b0;             /* SPI mode = 0, not JTAG */
     #2000;
 
     if (uio_out[2] !== 1'b0 && uio_out[2] !== 1'b1) begin
