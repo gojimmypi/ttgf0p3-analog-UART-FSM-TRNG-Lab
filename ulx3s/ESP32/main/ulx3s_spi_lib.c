@@ -52,8 +52,160 @@
     #define TT_SPI_ADDR_MASK    0x07U
 #endif
 
+#ifndef TT_BUILD_TARGET_UNKNOWN
+#define TT_BUILD_TARGET_UNKNOWN                 0x00U
+#endif
+
+#ifndef TT_BUILD_TARGET_ASIC_SKY130
+#define TT_BUILD_TARGET_ASIC_SKY130             0x41U
+#endif
+
+#ifndef TT_BUILD_TARGET_ASIC_GF180
+#define TT_BUILD_TARGET_ASIC_GF180              0x42U
+#endif
+
+#ifndef TT_BUILD_TARGET_ASIC_UNKNOWN
+#define TT_BUILD_TARGET_ASIC_UNKNOWN            0x43U
+#endif
+
+#ifndef TT_BUILD_TARGET_PDK_SKY130
+#define TT_BUILD_TARGET_PDK_SKY130              0x44U
+#endif
+
+#ifndef TT_BUILD_TARGET_PDK_GF180
+#define TT_BUILD_TARGET_PDK_GF180               0x45U
+#endif
+
+#ifndef TT_BUILD_TARGET_ASIC_SKY130_MANUAL
+#define TT_BUILD_TARGET_ASIC_SKY130_MANUAL      0x46U
+#endif
+
+#ifndef TT_BUILD_TARGET_ASIC_GF180_MANUAL
+#define TT_BUILD_TARGET_ASIC_GF180_MANUAL       0x47U
+#endif
+
+#ifndef TT_BUILD_TARGET_FPGA_ULX3S_GF180
+#define TT_BUILD_TARGET_FPGA_ULX3S_GF180        0x85U
+#endif
+
+#ifndef TT_BUILD_TARGET_FPGA_ULX3S_SKY130
+#define TT_BUILD_TARGET_FPGA_ULX3S_SKY130       0x86U
+#endif
+
+#ifndef TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN
+#define TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN      0x87U
+#endif
+
+#ifndef TT_BUILD_TARGET_FPGA_ULX3S_12K
+#define TT_BUILD_TARGET_FPGA_ULX3S_12K          0x88U
+#endif
+
+#ifndef TT_BUILD_TARGET_FPGA_ULX3S_85F
+#define TT_BUILD_TARGET_FPGA_ULX3S_85F          0x89U
+#endif
+
+#ifndef TT_BUILD_TARGET_FPGA_DEMOBOARD
+#define TT_BUILD_TARGET_FPGA_DEMOBOARD          0x8AU
+#endif
+
+#ifndef TT_BUILD_TARGET_FPGA
+#define TT_BUILD_TARGET_FPGA                    0x8EU
+#endif
+
+#ifndef TT_BUILD_TARGET_SIM
+#define TT_BUILD_TARGET_SIM                     0xF0U
+#endif
+
+#ifndef TT_BUILD_TARGET_CLASS_MASK
+#define TT_BUILD_TARGET_CLASS_MASK              0xF0U
+#endif
+
+#ifndef TT_BUILD_TARGET_CLASS_ASIC
+#define TT_BUILD_TARGET_CLASS_ASIC              0x40U
+#endif
+
+#ifndef TT_BUILD_TARGET_CLASS_FPGA
+#define TT_BUILD_TARGET_CLASS_FPGA              0x80U
+#endif
+
+#ifndef TT_BUILD_TARGET_CLASS_SIM
+#define TT_BUILD_TARGET_CLASS_SIM               0xF0U
+#endif
+
 static const char* const TAG = "ulx3s_spi";
 static spi_device_handle_t ulx3s_spi;
+
+static const char* ulx3s_spi_build_target_name(uint8_t target)
+{
+    switch (target)
+    {
+    case TT_BUILD_TARGET_UNKNOWN:
+        return "UNKNOWN";
+
+    case TT_BUILD_TARGET_ASIC_SKY130:
+        return "ASIC SKY130";
+
+    case TT_BUILD_TARGET_ASIC_GF180:
+        return "ASIC GF180";
+
+    case TT_BUILD_TARGET_ASIC_UNKNOWN:
+        return "ASIC UNKNOWN";
+
+    case TT_BUILD_TARGET_PDK_SKY130:
+        return "PDK SKY130 FALLBACK";
+
+    case TT_BUILD_TARGET_PDK_GF180:
+        return "PDK GF180 FALLBACK";
+
+    case TT_BUILD_TARGET_ASIC_SKY130_MANUAL:
+        return "ASIC SKY130 MANUAL";
+
+    case TT_BUILD_TARGET_ASIC_GF180_MANUAL:
+        return "ASIC GF180 MANUAL";
+
+    case TT_BUILD_TARGET_FPGA_ULX3S_GF180:
+        return "FPGA ULX3S GF180 CONTEXT";
+
+    case TT_BUILD_TARGET_FPGA_ULX3S_SKY130:
+        return "FPGA ULX3S SKY130 CONTEXT";
+
+    case TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN:
+        return "FPGA ULX3S UNKNOWN CONTEXT";
+
+    case TT_BUILD_TARGET_FPGA_ULX3S_12K:
+        return "FPGA ULX3S 12K";
+
+    case TT_BUILD_TARGET_FPGA_ULX3S_85F:
+        return "FPGA ULX3S 85F";
+
+    case TT_BUILD_TARGET_FPGA_DEMOBOARD:
+        return "FPGA TT DEMOBOARD";
+
+    case TT_BUILD_TARGET_FPGA:
+        return "FPGA GENERIC";
+
+    case TT_BUILD_TARGET_SIM:
+        return "SIM";
+
+    default:
+        return "UNRECOGNIZED";
+    }
+}
+
+/* Which build targets are considered valid? */
+static unsigned int ulx3s_spi_build_target_is_allowed(uint8_t target)
+{
+    if ((target == TT_BUILD_TARGET_ASIC_GF180) ||
+        (target == TT_BUILD_TARGET_FPGA_ULX3S_GF180) ||
+        (target == TT_BUILD_TARGET_FPGA_ULX3S_SKY130) ||
+        (target == TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN) ||
+        (target == TT_BUILD_TARGET_FPGA_ULX3S_12K) ||
+        (target == TT_BUILD_TARGET_FPGA_ULX3S_85F)) {
+        return 1U;
+    }
+
+    return 0U;
+}
 
 /*
 *  Initialize the SPI on the ULX3S ESP32
@@ -305,13 +457,15 @@ void ulx3s_spi_log_regs(const uint8_t regs[ULX3S_SPI_REG_COUNT])
         regs[15]);
 
     ESP_LOGI(TAG,
-        "raw=0x%04X status=0x%02X src=%u div=0x%02X mode=0x%02X oscen=0x%02X ui=0x%02X uo=0x%02X uio_in=0x%02X uio_out=0x%02X uio_oe=0x%02X",
+        "raw=0x%04X status=0x%02X src=%u div=0x%02X mode=0x%02X oscen=0x%02X build=0x%02X(%s) ui=0x%02X uo=0x%02X uio_in=0x%02X uio_out=0x%02X uio_oe=0x%02X",
         raw,
         regs[TT_REG_STATUS],
         (unsigned int)regs[TT_REG_SRC],
         regs[TT_REG_DIV],
         regs[TT_REG_MODE],
         regs[TT_REG_OSCEN],
+        regs[TT_REG_BUILD],
+        ulx3s_spi_build_target_name(regs[TT_REG_BUILD]),
         regs[TT_REG_UI_IN],
         regs[TT_REG_UO_OUT],
         regs[TT_REG_UIO_IN],
@@ -403,7 +557,8 @@ esp_err_t ulx3s_spi_reset_config_registers(void)
 typedef enum {
     ULX3S_SPI_CHECK_EQUAL = 0,
     ULX3S_SPI_CHECK_MASK,
-    ULX3S_SPI_CHECK_LOG_ONLY
+    ULX3S_SPI_CHECK_LOG_ONLY,
+    ULX3S_SPI_CHECK_BUILD_TARGET
 } ulx3s_spi_check_type_t;
 
 typedef struct {
@@ -453,6 +608,30 @@ static unsigned int ulx3s_spi_check_reg_value(
     if (check->type == ULX3S_SPI_CHECK_LOG_ONLY) {
         ESP_LOGI(TAG, "SPI self-check INFO %s: %02X", check->name, actual);
         return 0U;
+    }
+
+    if (check->type == ULX3S_SPI_CHECK_BUILD_TARGET) {
+        if (ulx3s_spi_build_target_is_allowed(actual) != 0U) {
+            ESP_LOGI(TAG,
+                "SPI self-check PASS %s: actual %02X (%s)",
+                check->name,
+                actual,
+                ulx3s_spi_build_target_name(actual));
+            return 0U;
+        }
+
+        ESP_LOGE(TAG,
+            "SPI self-check FAIL %s: expected ASIC GF180 %02X or ULX3S FPGA %02X/%02X/%02X/%02X/%02X, actual %02X (%s)",
+            check->name,
+            (unsigned int)TT_BUILD_TARGET_ASIC_GF180,
+            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_GF180,
+            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_SKY130,
+            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN,
+            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_12K,
+            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_85F,
+            actual,
+            ulx3s_spi_build_target_name(actual));
+        return 1U;
     }
 
     if (check->type == ULX3S_SPI_CHECK_MASK) {
@@ -1170,9 +1349,12 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
         { TT_REG_UIO_OE,   "RC UIO_OE",             0xF4U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
 
         /*
+         * Encoded build target 
+         */
+        { TT_REG_BUILD,    "RD BUILD_TARGET ASIC_GF180_OR_ULX3S",  0x00U, 0x00U, ULX3S_SPI_CHECK_BUILD_TARGET },
+        /*
          * Unused readable addresses should return 00.
          */
-        { TT_REG_UNUSED_D, "RD UNUSED",             0x00U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
         { TT_REG_UNUSED_E, "RE UNUSED",             0x00U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
         { TT_REG_UNUSED_F, "RF UNUSED",             0x00U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
 #endif
@@ -1197,7 +1379,7 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
         (unsigned int)ULX3S_REG_STATUS_EXPECTED);
 #ifdef TT_MACRO_BIG16_SPI_REG
     ESP_LOGI(TAG,
-        "SPI self-check expected BIG16 registers: R8 has UART RX idle bit set, RC=0xF4, RD/RE/RF=0x00");
+        "SPI self-check expected BIG16 registers: R8 has UART RX idle bit set, RC=0xF4, RD=ASIC GF180 or ULX3S build target, RE/RF=0x00");
 #endif
 
 #if (ULX3S_SPI_WRITE_MODE != ULX3S_SPI_WRITE_MODE_MONITOR_ONLY)

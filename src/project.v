@@ -55,6 +55,7 @@
         `define TRNG_USE_RO
         `define TRNG_ALLOW_REAL_RO
         `define FOUND_TT_PDK
+        `define FOUND_TT_PDK_SKY130
 
         /* To confirm only this path is taken, enable the next line. Only GSD GH Action should fail: */
         /* PROJECT_FOUND_TT_PDK_SKY130 u_stop (); */
@@ -65,6 +66,7 @@
         `define TRNG_USE_RO
         `define TRNG_ALLOW_REAL_RO
         `define FOUND_TT_PDK
+        `define FOUND_TT_PDK_GF180
 
         /* To confirm only this path is taken, enable the next line. Only GSD GH Action should fail: */
         /* PROJECT_FOUND_TT_PDK_GF180 u_stop (); */
@@ -80,8 +82,10 @@
         /* To confirm only this path is taken, enable the next line. Only GSD GH Action should fail: */
         /* PROJECT_FOUND_TT_PDK_UNKNOWN u_stop (); */
 
+        /* End of possible TT ASIC PDK detection.  */
     `else
-        /* End of possible TT detection. Assume we are in some other non-ULX3S, non-ASIC environment. */
+        /* Assume we are in some other non-ULX3S, non-ASIC environment, probably the TT FPGA Demoboard? */
+        `define TT_NON_ASIC_BUILD
 
         /* some other non ULX3S, non ASIC path. Detect if REAL RO defined externally and abort */
         `ifdef TRNG_USE_RO

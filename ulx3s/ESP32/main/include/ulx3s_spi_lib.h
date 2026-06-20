@@ -65,7 +65,8 @@
     #define TT_REG_UIO_IN                       10U
     #define TT_REG_UIO_OUT                      11U
     #define TT_REG_UIO_OE                       12U
-    #define TT_REG_UNUSED_D                     13U
+    #define TT_REG_BUILD                        13U
+    #define TT_REG_UNUSED_D                     TT_REG_BUILD
     #define TT_REG_UNUSED_E                     14U
     #define TT_REG_UNUSED_F                     15U
     #define ULX3S_SPI_REG_COUNT                    16U
@@ -73,6 +74,17 @@
     /* Just the basic list, above */
     #define ULX3S_SPI_REG_COUNT                     8U
 #endif
+
+#define TT_BUILD_TARGET_UNKNOWN             0x00U
+#define TT_BUILD_TARGET_ASIC_SKY130          0x41U
+#define TT_BUILD_TARGET_ASIC_GF180           0x42U
+#define TT_BUILD_TARGET_FPGA                 0x81U
+#define TT_BUILD_TARGET_FPGA_ULX3S_12K       0x82U
+#define TT_BUILD_TARGET_FPGA_ULX3S_85F       0x83U
+#define TT_BUILD_TARGET_SIM                  0xF0U
+
+#define TT_BUILD_TARGET_CLASS_MASK           0xF0U
+#define TT_BUILD_TARGET_CLASS_FPGA           0x80U
 
 #define ULX3S_REG_CTRL_DEFAULT     0x00U
 #define ULX3S_REG_SRC_DEFAULT      0x00U

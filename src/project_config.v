@@ -7,6 +7,10 @@
  * file: project_config.v
  *
  * Project-wide configuration settings for the Tiny Tapeout project
+ *
+ * See the [project]/scripts/show_effective_defines.sh to view summary of
+ * active project macros and optionally generate an equivalent C header.
+ *
  */
 `default_nettype none
 
@@ -23,7 +27,7 @@
 
     `ifdef USE_LONG_STRINGS
         `define VERSION_STRING_LEN 23 /* 123456789012345678901234 */   
-        `define VERSION_STRING          "Version 1.0.4 6/18/2026"
+        `define VERSION_STRING          "Version 1.0.4 6/19/2026"
         /* GF26a deadline: June 22, 1:00PM PDT */
     `else
         /* no long strings */

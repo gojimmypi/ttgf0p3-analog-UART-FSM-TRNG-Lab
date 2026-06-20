@@ -19,7 +19,7 @@
  * High-level command format:
  * - Single-nibble write commands: Ex, Sx, Ux, Vx, Wx followed by CR
  * - Two-nibble write commands: Dxxy, Mxy, Oxy followed by CR
- * - Register reads: Rx followed by CR, where x is 0..7
+ * - Register reads: Rx followed by CR, where x is 0..7, or 0..F when BIG16_SPI_REG is enabled
  * - Binary raw stream: Bxy followed by CR, where xy is 01..FF bytes
  * - Conditioned binary stream: Cxy followed by CR, where xy is 01..FF bytes
  *   when TRNG_CONDITIONED_STREAM is enabled
@@ -34,6 +34,7 @@
  * - Cxy<CR>    : Cxy: stream xy conditioned bytes, waiting for a fresh TRNG sample before each byte.
  * - U3<CR>     : select 921600 UART baud after OK<CR> completes.
  * - V<CR>      : replies Version 1.0.2 6/16/2026<CR>
+ * - RD<CR>     : Replies with Build Target ID. 85 == ULX3S, 42 == target GF180
  *
  * Reply format:
  * - Successful write: OK<CR>
@@ -148,6 +149,87 @@ module trng_cfg_ascii_core
     localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_IN  = 10;
     localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_OUT = 11;
     localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_OE  = 12;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_BUILD   = 13;
+
+    /*
+     * Build Target ID:
+     *
+     * 0x00: unknown, legacy build, or no target macro matched
+     *
+     * 0x4n: ASIC / PDK-class builds
+     * - 41: ASIC SKY130 detected by project wrapper
+     * - 42: ASIC GF180 detected by project wrapper
+     * - 43: ASIC/PDK detected by project wrapper, unknown PDK flavor
+     * - 44: SKY130 PDK fallback only
+     * - 45: GF180 PDK fallback only
+     * - 46: manual ASIC SKY130 target define
+     * - 47: manual ASIC GF180 target define
+     *
+     * 0x8n: FPGA / non-ASIC builds
+     * - 85: ULX3S build using GF180 project PDK context
+     * - 86: ULX3S build using SKY130 project PDK context
+     * - 87: ULX3S build with no recognized PDK context
+     * - 88: explicit FPGA ULX3S 12K target define
+     * - 89: explicit FPGA ULX3S 85F target define
+     * - 8A: non-ASIC build, assumed TT FPGA demoboard
+     * - 8E: generic FPGA target define
+     *
+     * 0xFn: simulation/test
+     * - F0: simulation/test build
+     */
+
+    /* 0x4[n] for ASIC */
+    `ifdef FOUND_TT_PDK_SKY130
+        /* SKY130 PDK Detected for ASIC Build */
+        localparam [7:0] BUILD_TARGET_ID = 8'h41;
+    `elsif FOUND_TT_PDK_GF180
+        /* GF180 PDK Detected for ASIC Build */
+        localparam [7:0] BUILD_TARGET_ID = 8'h42;
+    `elsif FOUND_TT_PDK
+        /* PDH but not SKY130, not GF130 ? Probably not good */
+        localparam [7:0] BUILD_TARGET_ID = 8'h43;
+    /* Other manual TT ASIC definitions (not used?)  */
+    `elsif TT_TARGET_ASIC_SKY130
+        localparam [7:0] BUILD_TARGET_ID = 8'h46;
+    `elsif TT_TARGET_ASIC_GF180
+        localparam [7:0] BUILD_TARGET_ID = 8'h47;
+
+    /* 0x8[n] for FPGA */
+    `elsif ULX3S
+        `ifdef PDK_TARGET_GF180
+            localparam [7:0] BUILD_TARGET_ID = 8'h85;
+        `elsif PDK_TARGET_SKY130
+            localparam [7:0] BUILD_TARGET_ID = 8'h86;
+        `else
+            localparam [7:0] BUILD_TARGET_ID = 8'h87;
+        `endif
+    `elsif TT_TARGET_FPGA_ULX3S_12K
+        localparam [7:0] BUILD_TARGET_ID = 8'h88;
+    `elsif TT_TARGET_FPGA_ULX3S_85F
+        localparam [7:0] BUILD_TARGET_ID = 8'h89;
+
+    /* Other generic FPGA */
+    `elsif TT_TARGET_FPGA
+        localparam [7:0] BUILD_TARGET_ID = 8'h8E;
+
+    /* We don't really know how to detect TT Demoboard */
+    `elsif TT_NON_ASIC_BUILD
+        /* We'll assume this is the FPGA Demoboard. See project.v  */
+        localparam [7:0] BUILD_TARGET_ID = 8'h8A;
+
+
+    /* Simulation */
+    `elsif TT_TARGET_SIM
+        localparam [7:0] BUILD_TARGET_ID = 8'hF0;
+
+    /* From our target_pdk.v include, after none of the above  */
+    `elsif PDK_TARGET_SKY130
+        localparam [7:0] BUILD_TARGET_ID = 8'h44;
+    `elsif PDK_TARGET_GF180
+        localparam [7:0] BUILD_TARGET_ID = 8'h45;
+    `else
+        localparam [7:0] BUILD_TARGET_ID = 8'h00;
+    `endif
 `endif
 
 `ifdef USE_LONG_STRINGS
@@ -306,12 +388,12 @@ module trng_cfg_ascii_core
                 SPI_REG_ADDR_UIO_IN:  read_reg = uio_in;
                 SPI_REG_ADDR_UIO_OUT: read_reg = uio_out;
                 SPI_REG_ADDR_UIO_OE:  read_reg = uio_oe;
-                /* 13 unused */
+                SPI_REG_ADDR_BUILD:   read_reg = BUILD_TARGET_ID;
                 /* 14 unused */
                 /* 15 unused */
 `endif
 
-                default:             read_reg = 8'h00;
+                default:              read_reg = 8'h00;
             endcase
         end
     endfunction
@@ -355,6 +437,7 @@ module trng_cfg_ascii_core
             SPI_REG_ADDR_UIO_IN:  spi_reg_rdata = uio_in;
             SPI_REG_ADDR_UIO_OUT: spi_reg_rdata = uio_out;
             SPI_REG_ADDR_UIO_OE:  spi_reg_rdata = uio_oe;
+            SPI_REG_ADDR_BUILD:   spi_reg_rdata = BUILD_TARGET_ID;
         `endif
 
             default:             spi_reg_rdata = 8'h00;
