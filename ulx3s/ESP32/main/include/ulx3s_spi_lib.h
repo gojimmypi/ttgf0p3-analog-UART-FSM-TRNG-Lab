@@ -75,7 +75,7 @@
     #define ULX3S_SPI_REG_COUNT                     8U
 #endif
 
-#define TT_BUILD_TARGET_UNKNOWN             0x00U
+#define TT_BUILD_TARGET_UNKNOWN              0x00U
 #define TT_BUILD_TARGET_ASIC_SKY130          0x41U
 #define TT_BUILD_TARGET_ASIC_GF180           0x42U
 #define TT_BUILD_TARGET_FPGA                 0x81U
