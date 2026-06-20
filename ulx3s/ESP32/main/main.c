@@ -334,6 +334,12 @@ void app_main(void)
     ESP_LOGI(TAG, "Stack HWM: %d", uxTaskGetStackHighWaterMark(NULL));
     ESP_LOGI(TAG, "Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
 
+#ifdef ESP32_WAIT_BOOT_ONLY
+    /* Optional no SPI, quiet idle wait */
+    while(1) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+#endif
     ret = plain_text_project_summary();
 
 #ifdef TT_MACRO_VERSION_STRING
