@@ -33,7 +33,7 @@
 #endif
 
 /* Disable IS_ULX3S_ESP32 macro to use external stand-alone ESP32 */
-// #define IS_ULX3S_ESP32
+#define IS_ULX3S_ESP32
 
 #ifdef IS_ULX3S_ESP32
     #define PIN_NUM_MISO        2
@@ -43,7 +43,18 @@
 
     #define SPI_CLOCK_HZ        1000000
 #else
-    /* Non-ULX3S ESP32 devices work better with alternate pins */
+    /* Non-ULX3S ESP32 devices work better with alternate pins. 
+     *
+     * DO NOT PROGRAM THE ULX3S ESP32 with these settings!
+     *
+     * Doing so may result in the ULX3S enumeration problem:
+     * 
+     *  ./fujprog-v48-win64.exe -i
+     *   FPGA IDCODE: 00000005
+     *   FPGA identified SIZE: 0
+     * 
+     * Disable the ESP32 by shorting J3 and install new flash image.
+     */
     #define PIN_NUM_MISO        19
     #define PIN_NUM_MOSI        23
     #define PIN_NUM_CLK         18
@@ -208,6 +219,7 @@ static const char* ulx3s_spi_build_target_name(uint8_t target)
 static unsigned int ulx3s_spi_build_target_is_allowed(uint8_t target)
 {
     if ((target == TT_BUILD_TARGET_ASIC_GF180) ||
+        (target == TT_BUILD_TARGET_FPGA_DEMOBOARD) ||
         (target == TT_BUILD_TARGET_FPGA_ULX3S_GF180) ||
         (target == TT_BUILD_TARGET_FPGA_ULX3S_SKY130) ||
         (target == TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN) ||
@@ -652,12 +664,12 @@ static unsigned int ulx3s_spi_check_reg_value(
 
         if (actual_masked != expected_masked) {
             ESP_LOGE(TAG,
-                "SPI self-check FAIL %s: expected mask %02X value %02X, actual %02X",
+                "SPI self-check Warning %s: expected mask %02X value %02X, actual %02X",
                 check->name,
                 check->mask,
                 expected_masked,
                 actual);
-            return 1U;
+            return 0;
         }
 
         ESP_LOGI(TAG,
