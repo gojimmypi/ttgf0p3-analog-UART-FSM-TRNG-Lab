@@ -32,12 +32,24 @@
     #define PIN_NUM_CS          5
 #endif
 
-#define PIN_NUM_MISO        2
-#define PIN_NUM_MOSI        15
-#define PIN_NUM_CLK         14
-#define PIN_NUM_CS          13
+/* Disable IS_ULX3S_ESP32 macro to use external stand-alone ESP32 */
+// #define IS_ULX3S_ESP32
 
-#define SPI_CLOCK_HZ        1000000
+#ifdef IS_ULX3S_ESP32
+    #define PIN_NUM_MISO        2
+    #define PIN_NUM_MOSI        15
+    #define PIN_NUM_CLK         14
+    #define PIN_NUM_CS          13
+
+    #define SPI_CLOCK_HZ        1000000
+#else
+    /* Non-ULX3S ESP32 devices work better with alternate pins */
+    #define PIN_NUM_MISO        19
+    #define PIN_NUM_MOSI        23
+    #define PIN_NUM_CLK         18
+    #define PIN_NUM_CS          21
+    #define SPI_CLOCK_HZ        1000000
+#endif
 
 #define TT_SPI_READ_FLAG    0x80U
 

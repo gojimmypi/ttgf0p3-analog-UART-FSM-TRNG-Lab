@@ -246,7 +246,7 @@ See the `[project]/ulx3s` and `[project]/test-hw` directories.
 
 All pins are 3v3 and assumed to NOT be 5v tolerant.
 
-Soft UART:
+Soft External UART:
 
 - `GND` on `J1` pin 4; Ground connection. Beware of adjacent `3v3` on `J1` pins 1 and 2.
 - `GP0` for `Rx` (connect to external UART `Tx`)
@@ -256,11 +256,55 @@ Soft SPI:
 
 Set `shared_spi_jtag_select` = 0
 
+This is already connected to the on-board ESP32 but for debugging reference:
+
 - `GND` on `J1` pin 5; Ground connection. Beware of adjacent `3v3` on `J1` pins 1 and 2.
 - `GN2` -> (TT `uio[0]`) TMS
 - `GP2` -> (TT `uio[1]`) TDI
 - `GN3` <- (TT `uio[2]`) TDO
 - `GP3` -> (TT `uio[3]`) TCK
+
+See `/ulx3s/ESP32/main/ulx3s_spi_lib.c`
+
+
+ULX3S ESP32:
+
+```c
+#define PIN_NUM_MISO        2
+#define PIN_NUM_MOSI        15
+#define PIN_NUM_CLK         14
+#define PIN_NUM_CS          13
+#define SPI_CLOCK_HZ        1000000
+```
+
+| ESP32 signal     | ESP32 GPIO | TT/PMOD pin | TT signal | JTAG-style name | Direction     | wire |
+| ---------------- | ---------: | ----------- | --------- | --------------- | ------------- | -----
+| `PIN_NUM_CS`     |     GPIO13 | `GN2`       | `uio[0]`  | `TMS`           | ESP32 -> TT   | brown |
+| `PIN_NUM_MOSI`   |     GPIO15 | `GP2`       | `uio[1]`  | `TDI`           | ESP32 -> TT   | red |
+| `PIN_NUM_MISO`   |      GPIO2 | `GN3`       | `uio[2]`  | `TDO`           | TT -> ESP32   | orange |
+| `PIN_NUM_CLK`    |     GPIO14 | `GP3`       | `uio[3]`  | `TCK`           | ESP32 -> TT   | yellow |
+| `GND`            |  ESP32 GND | `J1` pin 5  | `GND`     | -               | common ground | green
+
+Stand-alone ESP32:
+
+Disable `IS_ULX3S_ESP32` macro in `ulx3s_spi_lib.c` to use external stand-alone ESP32:
+
+```c
+#define PIN_NUM_MISO        19
+#define PIN_NUM_MOSI        23
+#define PIN_NUM_CLK         18
+#define PIN_NUM_CS          21
+#define SPI_CLOCK_HZ        1000000
+```
+
+| ESP32 signal   | safer ESP32 GPIO | TT/PMOD pin | TT signal             | Direction     | wire   |
+| -------------- | ---------------: | ----------- | --------------------- | ------------- | ------ |
+| `PIN_NUM_CS`   |           GPIO21 | `GN2`       | `uio[0]` / CS / TMS   | ESP32 -> TT   | brown  |
+| `PIN_NUM_MOSI` |           GPIO23 | `GP2`       | `uio[1]` / MOSI / TDI | ESP32 -> TT   | red    |
+| `PIN_NUM_MISO` |           GPIO19 | `GN3`       | `uio[2]` / MISO / TDO | TT -> ESP32   | orange |
+| `PIN_NUM_CLK`  |           GPIO18 | `GP3`       | `uio[3]` / SCK / TCK  | ESP32 -> TT   | yellow |
+| `GND`          |        ESP32 GND | `J1` pin 5  | `GND`                 | common ground | green  |
+
 
 ![ULX3S-Pin-Connections.jpg](./ULX3S-Pin-Connections.jpg)
 
