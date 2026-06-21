@@ -37,6 +37,8 @@ See presentations:
 
 ## SPI vs JTAG Special Note
 
+JTAG is experimental only
+
 | Build / board |                 Physical setting | `ui_in[4]` | `debug_is_jtag` | Active interface |
 | ------------- | -------------------------------: | ---------: | --------------: | ---------------- |
 | TT Demoboard  |           INPUT `SW4/IN4` up/off |        `0` |             `0` | SPI              |
