@@ -1,5 +1,7 @@
 # ULX3S FPGA Wrapper for Tiny Tapeout
 
+Version 1.0.5 6/21/2026
+
 This directory includes a [top_ulx3s.v wrapper](./top_ulx3s.v) for testing the TT project on the [ULX3S FPGA board](https://www.crowdsupply.com/radiona/ulx3s). 
 
 See the separate [../test](../test) directory for testing native Tiny Tapeout.
