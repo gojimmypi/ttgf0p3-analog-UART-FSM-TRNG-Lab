@@ -13,8 +13,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build GDS
-        uses: TinyTapeout/tt-gds-action@ttgf26a
+      - name: Build GDS custom_gds ttgf26a
+        uses: TinyTapeout/tt-gds-action/custom_gds@ttgf26a
         with:
           pdk: gf180mcuD
 
