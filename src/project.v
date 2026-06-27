@@ -147,6 +147,9 @@
     `ifdef PIN_DIAG
         `include "PINS/pin_id_core.v"
     `endif
+    `ifdef ANALOG_ENABLED
+        `include "ANALOG/analog_experiment_stub.v"
+    `endif
     `ifdef TRNG_ENABLED
         `include "TRNG/trng_lab_core.v"
     `else
@@ -154,12 +157,7 @@
     `endif /* TRNG_ENABLED */
 `endif /* ULX3S */
 
-/* Some analog sanity checks */
-`ifdef ANALOG_ENABLED
-    `ifdef PDK_TARGET_GF180
-        MODULE_ANALOG_NOT_SUPPORTED_IN_GF180 u_stop (); /* Error as there's no analog features here. See SKY130 */
-    `endif
-`endif
+/* GF 0p3 analog experiment: analog pins are enabled for GF180. */
 
 /* See companion project: SKY130 (ChipFoundry) tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab */
 
@@ -208,8 +206,9 @@ module UART_FSM_TRNG_Lab
     input  wire [7:0] uio_in,   // IOs: Input path
     output wire [7:0] uio_out,  // IOs: Output path
     output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-
-    //    inout  wire [7:0] ua,       // Analog pins, only ua[5:0] can be used
+`ifdef ANALOG_ENABLED
+    inout  wire [7:0] ua,       // Analog pins, only ua[5:0] can be connected to pads
+`endif
 
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
@@ -258,15 +257,13 @@ module UART_FSM_TRNG_Lab
         .uio_in(uio_in),
         .uio_out(uio_out),
         .uio_oe(uio_oe),
+`ifdef ANALOG_ENABLED
+        .ua(ua),
+`endif
         .ena(ena),
         .clk(clk),
         .rst_n(rst_n)
     );
-
-`ifdef ANALOG_ENABLED
-    // Optional Analog
-    // assign unused_ok = &{VGND, VDPWR, ena, clk, rst_n, uio_in, ua};
-`endif
 
     assign unused_ok = &{ena, clk, rst_n, uio_in};
 

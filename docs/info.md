@@ -27,6 +27,17 @@ At a high level:
 - Control and configuration are managed through memory-mapped registers
 - Data and status are read back over the same UART interface
 
+GF 0p3 analog experiment update:
+
+- `info.yaml` enables `analog_pins: 6` so all available Tiny Tapeout analog pins are requested.
+- `ua[0]` is an external analog stimulus/noise input.
+- `ua[1]` is reserved for a DAC monitor output.
+- `ua[2]` is an external comparator/reference input.
+- `ua[3]` is reserved for an analog monitor mux output.
+- `ua[4]` is reserved for an oscillator monitor output.
+- `ua[5]` is reserved for a PUF/noise probe pad.
+- The current RTL includes a digital/FPGA-safe analog stub. Real GF180 analog behavior requires the custom analog schematic/layout/SPICE/PEX implementation and cannot be validated by the FPGA bitstream.
+
 Why? The National Institute of Standards and Technology ([NIST](https://www.nist.gov/)) notes that random numbers are essential for cryptographic and security applications, and that cryptography 
 makes extensive use of random numbers and random bits, particularly for generating cryptographic keying material.
 
@@ -70,7 +81,8 @@ This project can be tested on an FPGA such as these examples:
 Note that the ring oscillators will not be implemented on the FPGA builds, rather a deterministic 
 [Linear-Feedback Shift Register](https://en.wikipedia.org/wiki/Linear-feedback_shift_register) (LFSR) is used 
 in [trng_lab_core.v](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/src/TRNG/trng_lab_core.v) to
-simulate the TRNG bitstream.
+simulate the TRNG bitstream. The analog pins are locally unconnected in the FPGA/RTL stub, so FPGA testing
+validates only the digital control plane and deterministic surrogate behavior.
 
 See the `FPGA_NIST_PRNG_SOURCE` and `FPGA_BASIC_LFSR_RO_TAPS` options in [`project_config.v`](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/src/project_config.v) 
 that are disabled for the TT build.
@@ -741,8 +753,8 @@ cd test-hw
 
 ## UART FSM TRNG Lab Datasheet
 
-Document revision: 1.0.5
-RTL revision string: `Version 1.0.5 6/27/2026`  
+Document revision: 1.1.0
+RTL revision string: `Version 1.1.0 6/27/2026`  
 Project family: Tiny Tapeout UART/SPI configurable TRNG experiment  
 Primary top modules: `tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab` (conditional based on build)
 License: Apache-2.0, as declared in the source files
@@ -965,7 +977,7 @@ Invalid syntax returns `?<CR>`.
 #### UART command examples
 
 ```text
-V<CR>       -> Version 1.0.5 6/27/2026<CR>
+V<CR>       -> Version 1.1.0 6/27/2026<CR>
 R2<CR>      -> R2=10<CR>
 E1<CR>      -> OK<CR>
 D10<CR>     -> OK<CR>

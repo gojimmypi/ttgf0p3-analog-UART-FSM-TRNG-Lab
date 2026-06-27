@@ -164,6 +164,9 @@ module top_ulx3s (
     wire [7:0] uo_out;
     wire [7:0] uio_out;
     wire [7:0] uio_oe;
+`ifdef ANALOG_ENABLED
+    wire [7:0] ua;
+`endif
 
     wire rst_n;
     wire ena;
@@ -390,6 +393,9 @@ module top_ulx3s (
         .uio_in(uio_in),
         .uio_out(uio_out),
         .uio_oe(uio_oe),
+`ifdef ANALOG_ENABLED
+        .ua(ua),
+`endif
         .ena(ena),
         .clk(clk_ulx3s),
         .rst_n(rst_n)  // TODO - add a reset button and connect it here instead of hardcoding rst_n=1
