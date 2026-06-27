@@ -14,8 +14,17 @@ jobs:
           submodules: recursive
 
       - name: Build GDS custom_gds ttgf26a
+        id: top_module
+        run: |
+          echo "TOP_MODULE=$(yq '.project.top_module' info.yaml)" | tee "$GITHUB_OUTPUT"
+
+      - name: Create and publish the custom GDS artifact
         uses: TinyTapeout/tt-gds-action/custom_gds@ttgf26a
         with:
+          top_module: ${{ steps.top_module.outputs.TOP_MODULE }}
+          gds_path: gds/${{ steps.top_module.outputs.TOP_MODULE }}.gds
+          lef_path: lef/${{ steps.top_module.outputs.TOP_MODULE }}.lef
+          verilog_path: src/${{ steps.top_module.outputs.TOP_MODULE }}.v
           pdk: gf180mcuD
 
   precheck:
