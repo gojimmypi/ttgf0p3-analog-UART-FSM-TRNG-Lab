@@ -13,10 +13,27 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build GDS custom_gds ttgf26a
+      - name: Read top module name
         id: top_module
         run: |
           echo "TOP_MODULE=$(yq '.project.top_module' info.yaml)" | tee "$GITHUB_OUTPUT"
+
+
+      - name: Check custom analog submission files
+        run: |
+          TOP="${{ steps.top_module.outputs.TOP_MODULE }}"
+
+          # PROJECT="project.v"
+
+
+          echo "TOP_MODULE=${TOP}"
+          echo "Expected custom GDS: gds/${TOP}.gds"
+          echo "Expected custom LEF: lef/${TOP}.lef"
+          echo "Expected Verilog model: src/project.v"
+
+          test -f "gds/${TOP}.gds"
+          test -f "lef/${TOP}.lef"
+          test -f "src/project.v"
 
       - name: Create and publish the custom GDS artifact
         uses: TinyTapeout/tt-gds-action/custom_gds@ttgf26a
@@ -24,7 +41,7 @@ jobs:
           top_module: ${{ steps.top_module.outputs.TOP_MODULE }}
           gds_path: gds/${{ steps.top_module.outputs.TOP_MODULE }}.gds
           lef_path: lef/${{ steps.top_module.outputs.TOP_MODULE }}.lef
-          verilog_path: src/${{ steps.top_module.outputs.TOP_MODULE }}.v
+          verilog_path: src/project.v
           pdk: gf180mcuD
 
   precheck:
