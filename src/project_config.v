@@ -26,9 +26,10 @@
     `define USE_LONG_STRINGS
 
     `ifdef USE_LONG_STRINGS
-        `define VERSION_STRING_LEN 23 /* 123456789012345678901234 */   
-        `define VERSION_STRING          "Version 1.0.5 6/21/2026"
-        /* GF26a deadline: June 22, 1:00PM PDT */
+        /* This is a duplicate of Project 4337, but submitted to experimental 0p3, with only a date change from 21 to 27: */
+        `define VERSION_STRING_LEN 23 /* 123456789012345678901234 */
+        `define VERSION_STRING          "Version 1.0.5 6/27/2026"
+        /* GF 0p3 deadline: July 3, 1:00PM PDT */
     `else
         /* no long strings */
     `endif
@@ -76,9 +77,9 @@
     `define SPI_ENABLED
     `define SPI_REG_ACCESS
 
-    /* Default SPI register size is 3 bits. (0..7) 
+    /* Default SPI register size is 3 bits. (0..7)
      * Optionally expand to:
-     *   4 bits: 0..15 with BIG16_SPI_REG 
+     *   4 bits: 0..15 with BIG16_SPI_REG
      *   7 bits: 0..127 with MAX_SPI_REG  */
     // `define MAX_SPI_REG
 
@@ -96,8 +97,8 @@
      *
      * Manually set TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT in /test/test.py as needed. */
     // `define DEBUG_PAGE_SELECT
-    
-    /* 
+
+    /*
      * --------------------------------------------------------------------------------------------
      * See trng_lab_core.v for various conditioning options
      *
@@ -109,12 +110,12 @@
      */
     `define TRNG_CONDITIONED_STREAM
 
-    /* 
+    /*
      * --------------------------------------------------------------------------------------------
      * Optional 64 bit XOR stream whitening conditioner: TRNG_CONDITIONED_STREAM_64_XOR
      * --------------------------------------------------------------------------------------------
      * Enabling TRNG_CONDITIONED_STREAM_64_XOR on sky130, repair 20/20
-     * increases 1x2 cell utilization from 71% to 88% 
+     * increases 1x2 cell utilization from 71% to 88%
      * See #206 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27421859298
      *  vs
      * #205: https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27393236624
@@ -122,7 +123,7 @@
      */
     // `define TRNG_CONDITIONED_STREAM_64_XOR
 
-    /* 
+    /*
      * --------------------------------------------------------------------------------------------
      * Optional 16 bit CRC whitening conditioner: TRNG_CONDITIONED_STREAM_CRC
      * --------------------------------------------------------------------------------------------
@@ -135,7 +136,7 @@
      */
     // `define TRNG_CONDITIONED_STREAM_CRC
 
-    /* 
+    /*
      * --------------------------------------------------------------------------------------------
      * Optional 32 bit Galois whitening conditioner: TRNG_CONDITIONED_STREAM_GALOIS
      * --------------------------------------------------------------------------------------------
@@ -143,20 +144,20 @@
      *    vs
      * Enable: 73.4% in GDS #213 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27437193873
      *    vs
-     * Galois V2: 75.708% in GDS #216 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27443295824 
+     * Galois V2: 75.708% in GDS #216 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27443295824
      *    vs
      * Galois V3: 84.278% in GDS #217 https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27444743537
      * --------------------------------------------------------------------------------------------
      * config.json fails:
      *   "DESIGN_REPAIR_MAX_SLEW_PCT": 40,
      *   "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 40,
-     * 
+     *
      * Current (default): 20/20
      * last run #220: 72.978% https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27447050050
      */
      `define TRNG_CONDITIONED_STREAM_GALOIS
 
-    /* 
+    /*
      * --------------------------------------------------------------------------------------------
      * Optional selected_bit clean or not: TRNG_RAW_CLEAN_MIX
      * --------------------------------------------------------------------------------------------
@@ -176,9 +177,9 @@
     /* TODO: */
     // `define TRNG_CONDITIONED_STREAM_VON_NEUMANN
 
-    /* 
+    /*
      * --------------------------------------------------------------------------------------------
-     *  With all the above features enabled, there's not enough room on 1x2 SKY130 to enable JTAG 
+     *  With all the above features enabled, there's not enough room on 1x2 SKY130 to enable JTAG
      * --------------------------------------------------------------------------------------------
      */
     `ifdef PDK_TARGET_SKY130
@@ -196,13 +197,13 @@
     `ifdef ULX3S
         // `define PIN_DIAG
 
-        /* FPGA only: A practical lightweight candidate is a xoshiro-style 128-bit PRNG. 
+        /* FPGA only: A practical lightweight candidate is a xoshiro-style 128-bit PRNG.
          * It is not cryptographic, but it is much more likely to pass STS than the current 16-bit LFSR tap source */
         //`define FPGA_NIST_PRNG_SOURCE
 
         `define ULX3S_SPI_ENABLED
 
-    `elsif IS_MY_IVERILOG_SIMULATION 
+    `elsif IS_MY_IVERILOG_SIMULATION
         /* This is used by the [project]/test/my_test.sh simulation test script */
         // `define PIN_DIAG
 

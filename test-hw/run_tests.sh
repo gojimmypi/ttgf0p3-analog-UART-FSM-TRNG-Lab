@@ -64,7 +64,15 @@
 # Use the --port option to change the target serial port
 #    --port /dev/ttyS4
 #
-PORT=/dev/ttyS7
+if [ -z "${PORT:-}" ]; then
+    if [ -n "${TT_UART_PORT:-}" ]; then
+        PORT="${TT_UART_PORT}"
+    elif [ -n "${MY_TT_UART_PORT:-}" ]; then
+        PORT="${MY_TT_UART_PORT}"
+    else
+        PORT=/dev/ttyS7
+    fi
+fi
 
 # Run shellcheck to ensure this is a good script.
 # Specify the executable shell checker you want to use:

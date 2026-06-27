@@ -17,7 +17,12 @@ set -euo pipefail
 # Linux:   PORT=/dev/ttyUSB5 or /dev/ttyACM5
 # macOS:   PORT=/dev/tty.usbserial-0005
 
-TT_PORT=/dev/ttyS6
+# Setup environment. This provides TT_PORT and TT_TOP_NAME.
+# TT_PORT is preserved if the user already exported it.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=env_ice40.sh
+source "${SCRIPT_DIR}/env_ice40.sh"
+
 BAUD=115200
 
 if [ -z "${TT_PORT:-}" ]; then
@@ -36,7 +41,7 @@ fi
 
 echo "Configuring and resetting board for ${TT_TOP_NAME} on TT repl port: ${TT_PORT}"
 
-#    port        baud   8 bits, 1 stop, no parity, no flow control, no RTS/CTS, raw mode, no echo, min 0 chars, timeout 5 
+#    port        baud   8 bits, 1 stop, no parity, no flow control, no RTS/CTS, raw mode, no echo, min 0 chars, timeout 5
 stty -F "$TT_PORT" "$BAUD"  cs8   -cstopb  -parenb    -ixon -ixoff     -crtscts    raw      -echo min 0 time 5
 
 exec 3<>"$TT_PORT"

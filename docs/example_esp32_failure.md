@@ -92,10 +92,10 @@ TT_MACRO_TRNG_RAW_CLEAN_MIX: 1
 TT_MACRO_UART_ENABLED: 1
 TT_MACRO_USE_LONG_STRINGS: 1
 TT_MACRO_VERSION_STRING_LEN: 23
-TT_MACRO_VERSION_STRING: Version 1.0.5 6/21/2026
+TT_MACRO_VERSION_STRING: Version 1.0.5 6/27/2026
 -----------------------------------------------------------
 This is esp32 chip with 2 CPU core(s), WiFi/BTBLE, silicon revision v1.0, 2MB external flash
-I (449) main: Tiny Tapeout SPI Test Version 1.0.5 6/21/2026
+I (449) main: Tiny Tapeout SPI Test Version 1.0.5 6/27/2026
 I (459) main: --------------------------------------------------------
 I (469) main: Initialize ESP32 SPI bus
 I (469) main: --------------------------------------------------------

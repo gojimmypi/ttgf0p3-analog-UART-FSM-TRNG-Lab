@@ -5,7 +5,7 @@ Build with ESP-ISF v5.5
 Set the `TT_PROJECT_ROOT` environment variable to the root of the project directory before running the tests or other scripts.
 
 ```bash
-export TT_PROJECT_NAME="ttgf-UART-FSM-TRNG-Lab"
+export TT_PROJECT_NAME="ttgf0p3-UART-FSM-TRNG-Lab"
 export TT_PROJECT_ROOT="/mnt/c/workspace/$TT_PROJECT_NAME"
 ```
 

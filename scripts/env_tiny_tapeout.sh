@@ -23,7 +23,7 @@ if [ -z "${MY_WORKSPACE:-}" ]; then
     MY_WORKSPACE="/mnt/c/workspace"
 fi
 
-# The cloned repository name. For example: "ttsky-UART-FSM-TRNG-Lab" or "ttgf-UART-FSM-TRNG-Lab"
+# The cloned repository name. For example: "ttsky-UART-FSM-TRNG-Lab" or "ttgf0p3-UART-FSM-TRNG-Lab"
 if [ -z "${MY_PROJECT_NAME:-}" ]; then
     MY_PROJECT_NAME="$(basename "$(dirname "$PWD")")"
 fi
@@ -43,7 +43,11 @@ fi
 
 echo "Setting up environment variables for Tiny Tapeout FPGA project..."
 
-export TT_PORT=${MY_TT_PORT}
+if [ -z "${TT_PORT:-}" ]; then
+    TT_PORT="${MY_TT_PORT}"
+fi
+
+export TT_PORT
 echo  "TT_PORT:              ${TT_PORT}"
 
 # For example on WSL, the C:\workspace directory is mounted at /mnt/c/workspace
@@ -59,12 +63,21 @@ echo  "TT_PROJECT_NAME:      ${TT_PROJECT_NAME}"
 export TT_PROJECT_NAME_ALT="${TT_PROJECT_NAME//-/_}"
 echo  "TT_PROJECT_NAME_ALT:  ${TT_PROJECT_NAME_ALT}"
 
-# For example:  "/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab"  or  "/mnt/c/workspace/ttsky-UART-FSM-TRNG-Lab"
+# For example:  "/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab"  or  "/mnt/c/workspace/ttsky-UART-FSM-TRNG-Lab"
 export TT_PROJECT_ROOT="${WORKSPACE}/${TT_PROJECT_NAME}"
 echo  "TT_PROJECT_ROOT:      ${TT_PROJECT_ROOT}"
 
-# For example:  "tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab"  or  "tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab"
-export TT_TOP_NAME="tt_um_${USER}_${TT_PROJECT_NAME_ALT}"
+# Read the top module name from info.yaml instead of deriving it from the repo name.
+# This keeps renamed repos, such as ttgf0p3, aligned with the submitted module name.
+INFO_YAML="${TT_PROJECT_ROOT}/info.yaml"
+TT_TOP_NAME_FROM_INFO="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' "${INFO_YAML}")"
+
+if [ -z "${TT_TOP_NAME_FROM_INFO}" ]; then
+    echo "ERROR: Could not find top_module in ${INFO_YAML}" >&2
+    return 1 2>/dev/null || exit 1
+fi
+
+export TT_TOP_NAME="${TT_TOP_NAME_FROM_INFO}"
 echo  "TT_TOP_NAME:          ${TT_TOP_NAME}"
 
 # For example:  "/mnt/c/workspace/tt-support-tools-gojimmypi"

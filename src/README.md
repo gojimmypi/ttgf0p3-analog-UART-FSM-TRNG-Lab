@@ -45,20 +45,20 @@ These changes have been applied / added to `src\config.json`:
 
 The design is intended for 25 MHz but is intentionally set to `"CLOCK_PERIOD": 20` (50 MHz) over-constraint.
 
-First GDS Post Design Repair log in GF180: [GRT / GPL Design Repair Test #49](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27211329394/job/80340895326) 
-in [Commit d3155f9](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/commit/d3155f9d3418fc884a32badff31be2cce4a5a792).
+First GDS Post Design Repair log in GF180: [GRT / GPL Design Repair Test #49](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/runs/27211329394/job/80340895326) 
+in [Commit d3155f9](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/commit/d3155f9d3418fc884a32badff31be2cce4a5a792).
 
-Second Max Slew Rate 30% Percent log in GF180: [Add REPAIR_MAX_SLEW_PCT 30% #50](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27216708803)
-in [commit b7862a0](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/commit/b7862a07a85e2058a95b6d6190a75b42c49837e5).
+Second Max Slew Rate 30% Percent log in GF180: [Add REPAIR_MAX_SLEW_PCT 30% #50](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/runs/27216708803)
+in [commit b7862a0](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/commit/b7862a07a85e2058a95b6d6190a75b42c49837e5).
 
 
-GF180 failure: [Increase slew repair to 40 percent #52](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27223337383)
+GF180 failure: [Increase slew repair to 40 percent #52](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/runs/27223337383)
 
-GF180 was not better at 35/40: [Decrease DESIGN_REPAIR_MAX_SLEW_PCT to 35 #53](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27225823087/job/80392609949)
+GF180 was not better at 35/40: [Decrease DESIGN_REPAIR_MAX_SLEW_PCT to 35 #53](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/runs/27225823087/job/80392609949)
 
-GF180 mixed result at 30/35: [Decrease Design/GRT to 30/35 #54](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27226761526/job/80395909787)
+GF180 mixed result at 30/35: [Decrease Design/GRT to 30/35 #54](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/runs/27226761526/job/80395909787)
 
-GF180 mixed result at 32/32: [Test Design/GRT repairs to 32/32 #55](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27228008872/job/80400293219)
+GF180 mixed result at 32/32: [Test Design/GRT repairs to 32/32 #55](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/runs/27228008872/job/80400293219)
 
 ```text
 30/30 = best balanced GF180 result
@@ -76,7 +76,7 @@ nom_ss_125C_3v00: WNS -1.2557 ns, TNS  -6.4502 ns, 13 violations
 min_ss_125C_3v00: WNS -0.9883 ns, TNS  -3.1216 ns,  9 violations
 ```
 
-As the target test clock is 25 MHz, the design was also tested at `"CLOCK_PERIOD": 40,` See [CLOCK_PERIOD: 40 #87](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27361579885)
+As the target test clock is 25 MHz, the design was also tested at `"CLOCK_PERIOD": 40,` See [CLOCK_PERIOD: 40 #87](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/runs/27361579885)
 
 The result was _better_ but not perfect.
 

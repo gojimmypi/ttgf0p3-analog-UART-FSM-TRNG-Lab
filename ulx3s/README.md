@@ -1,6 +1,6 @@
 # ULX3S FPGA Wrapper for Tiny Tapeout
 
-Version 1.0.5 6/21/2026
+Version 1.0.5 6/27/2026
 
 This directory includes a [top_ulx3s.v wrapper](./top_ulx3s.v) for testing the TT project on the [ULX3S FPGA board](https://www.crowdsupply.com/radiona/ulx3s). 
 
@@ -9,7 +9,7 @@ See the separate [../test](../test) directory for testing native Tiny Tapeout.
 Set the `TT_PROJECT_ROOT` environment variable to the root of the project directory before running the tests or other scripts.
 
 ```bash
-export TT_PROJECT_NAME="ttgf-UART-FSM-TRNG-Lab"
+export TT_PROJECT_NAME="ttgf0p3-UART-FSM-TRNG-Lab"
 export TT_PROJECT_ROOT="/mnt/c/workspace/$TT_PROJECT_NAME"
 ```
 

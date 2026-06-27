@@ -2,7 +2,7 @@
 
 <!-- breadcrumb file for testing workflows -->
 
-Version 1.0.5 6/21/2026
+Version 1.0.5 6/27/2026
 
 ## Status
 
@@ -31,7 +31,7 @@ Version 1.0.5 6/21/2026
 - Check For safe JTAG default ui_in[4] = 1 , consider dip switches, tt.ui_in = int(tt.ui_in) | 0x10
 - Review IO pin documentation vs code
 - Check for stray TODO text
-- sample scripts should have generic `PROJECT` variable instead of hardcoding `ttgf-UART-FSM-TRNG-Lab`.
+- sample scripts should have generic `PROJECT` variable instead of hardcoding `ttgf0p3-UART-FSM-TRNG-Lab`.
 - Remove ttsky references from ttgf project.
 - Test JTAG on hardware. See [ULX3S ESP32 Demo](../ulx3s/ESP32/README.md) for SPI testing on ULX3S.
 - Revisit https://github.com/TinyTapeout/ttsky-verilog-template/issues/22

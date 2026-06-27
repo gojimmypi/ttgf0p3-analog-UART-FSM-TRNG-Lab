@@ -20,22 +20,30 @@ echo "**************************************************************************
 # macOS:   PORT=/dev/tty.usbserial-0008
 #
 # The TT_UART_PORT is the external USB TTY device, typically connected to IN3/Rx and OUT4/Tx.
-MY_TT_UART_PORT=/dev/ttyS8
-TT_PORT=/dev/ttyS6
+# The TT port is the board with the REPL prompt, not the connected external UART adapter.
+if [ -z "${MY_TT_UART_PORT:-}" ]; then
+    MY_TT_UART_PORT=/dev/ttyS8
+fi
 
-export TT_UART_PORT=${MY_TT_UART_PORT}
+if [ -z "${MY_TT_PORT:-}" ]; then
+    MY_TT_PORT=/dev/ttyS6
+fi
+
+if [ -z "${TT_UART_PORT:-}" ]; then
+    TT_UART_PORT="${MY_TT_UART_PORT}"
+fi
+
+if [ -z "${TT_PORT:-}" ]; then
+    TT_PORT="${MY_TT_PORT}"
+fi
+
+export TT_UART_PORT
+export TT_PORT
 
 # WARNING: This is NOT the TT_PORT for the Tiny Tapeout Demoboard.
 # This port is the external UART connected to the PMOD pins!
-    echo "TT_UART_PORT: ${TT_UART_PORT}"
-
-# The TT port is the board with the repl prompt, NOT the connected external UART adapter.
-if [ -z "$TT_PORT" ]; then
-    echo  "info: no TT_PORT found" >&2
-    exit 1
-else
-    echo "TT_PORT:      ${TT_PORT}"
-fi
+echo "TT_UART_PORT: ${TT_UART_PORT}"
+echo "TT_PORT:      ${TT_PORT}"
 
 # Run shellcheck to ensure this is a good script.
 # Specify the executable shell checker you want to use:

@@ -33,13 +33,13 @@
  * - Bxy<CR>    : stream xy raw bytes, waiting for a fresh TRNG sample before each byte.
  * - Cxy<CR>    : Cxy: stream xy conditioned bytes, waiting for a fresh TRNG sample before each byte.
  * - U3<CR>     : select 921600 UART baud after OK<CR> completes.
- * - V<CR>      : replies Version 1.0.5 6/21/2026<CR>
+ * - V<CR>      : replies Version 1.0.5 6/27/2026<CR>
  * - RD<CR>     : Replies with Build Target ID. 85 == ULX3S, 42 == target GF180
  *
  * Reply format:
  * - Successful write: OK<CR>
  * - Successful read : Rn=HH<CR>
- * - Version query   : Version 1.0.5 6/21/2026<CR>
+ * - Version query   : Version 1.0.5 6/27/2026<CR>
  * - Parse/error     : ?<CR>
  */
 `default_nettype none

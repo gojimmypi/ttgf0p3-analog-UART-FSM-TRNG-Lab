@@ -7,31 +7,31 @@
 This is the example output for the [Tiny Tapeout FPGA Demoboard](https://tinytapeout.com/guides/get-started-demoboard-etr/) 
 for the [Hardware Entropy Explorer: UART/SPI TRNG and PUF](https://app.tinytapeout.com/projects/4337) project.
 
-The source code for this test is in [ice40](`https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ice40`).
+The source code for this test is in [ice40](`https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ice40`).
 
 ```text
-gojimmypi:/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
+gojimmypi:/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
 $ ./build_and_flash.sh
 
 [ ..snip ..]
 
 Info: Program finished normally.
-2026-06-20 20:21:31,172 - tt_fpga    - INFO     - Bitstream created successfully: /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/build/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.bin
+2026-06-20 20:21:31,172 - tt_fpga    - INFO     - Bitstream created successfully: /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/build/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.bin
 **************************************************************************
 Build complete, TT_PORT = /dev/ttyS6 - proceeding to flash...
 **************************************************************************
-Uploading build/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.bin
-cp build/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.bin :/bitstreams/tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.bin
+Uploading build/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.bin
+cp build/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.bin :/bitstreams/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.bin
 cp :/config.ini /tmp/ttconf-ndkzpzl2.tmp
 cp /tmp/ttconf-ndkzpzl2.tmp :/config.ini
 Completed with TT_PORT: /dev/ttyS6
-/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
-gojimmypi:/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
+/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
+gojimmypi:/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
 $ ./run_tests.sh
-gojimmypi:/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
+gojimmypi:/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
 $ ./run_tests.sh
 **************************************************************************
-**  Begin ./run_tests.sh from /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
+**  Begin ./run_tests.sh from /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
 This test requires external UART TTY connected to TT RX == IN3, TX == OUT0
 **************************************************************************
 TT_UART_PORT: /dev/ttyS8
@@ -40,28 +40,28 @@ TT_PORT:      /dev/ttyS6
 **  Setup environment
 **************************************************************************
 **************************************************************************
-**  Begin ./env_ice40.sh from /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
+**  Begin ./env_ice40.sh from /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
 **************************************************************************
 Setting up environment variables for Tiny Tapeout FPGA project...
 TT_PORT:              /dev/ttyS6
 WORKSPACE:            /mnt/c/workspace
-TT_PROJECT_NAME:      ttgf-UART-FSM-TRNG-Lab
+TT_PROJECT_NAME:      ttgf0p3-UART-FSM-TRNG-Lab
 TT_PROJECT_NAME_ALT:  ttgf_UART_FSM_TRNG_Lab
-TT_PROJECT_ROOT:      /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab
-TT_TOP_NAME:          tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab
+TT_PROJECT_ROOT:      /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab
+TT_TOP_NAME:          tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
 TT_TOOLS:             /mnt/c/workspace/tt-support-tools-gojimmypi
 **************************************************************************
 **  Calling project reset script on TT Port /dev/ttyS6
 **************************************************************************
 **************************************************************************
-**  Begin ./project_reset.sh from /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
+**  Begin ./project_reset.sh from /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
 **************************************************************************
 TT_PORT:     /dev/ttyS6
-TT_TOP_NAME: tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab
-Configuring and resetting board for tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab on TT repl port: /dev/ttyS6
->>> tt.shuttle.tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.enable()
-tt.shuttle.tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.enable()
-ttboard.fpga.fpga_mux: Enable design tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab
+TT_TOP_NAME: tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+Configuring and resetting board for tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab on TT repl port: /dev/ttyS6
+>>> tt.shuttle.tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.enable()
+tt.shuttle.tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.enable()
+ttboard.fpga.fpga_mux: Enable design tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
 Configuring PIO with frequency: 16000000 Hz
 State machine activated
 SS low, starting transmission
@@ -87,12 +87,12 @@ tt.reset_project(False)
 **************************************************************************
 **  Calling test scripts on UART Port /dev/ttyS8
 **************************************************************************
-Expected version: Version 1.0.5 6/21/2026
+Expected version: Version 1.0.5 6/27/2026
 
 Skipping register reset. Use --reset-registers to start from configured defaults.
 
 Running: version_if_present
-Version probe response: b'Version 1.0.5 6/21/2026\r'
+Version probe response: b'Version 1.0.5 6/27/2026\r'
 PASS: Version command exact match
 
 Running: power_on_defaults
@@ -154,7 +154,7 @@ Tests skipped: 0
 Tests failed: 0
 
 PASS
-Expected version: Version 1.0.5 6/21/2026
+Expected version: Version 1.0.5 6/27/2026
 
 Running: reset_config_registers
 PASS: Reset E0
@@ -166,7 +166,7 @@ PASS: Reset M00
 PASS: Reset O01
 
 Running: version_if_present
-Version probe response: b'Version 1.0.5 6/21/2026\r'
+Version probe response: b'Version 1.0.5 6/27/2026\r'
 PASS: Version command exact match
 
 Running: power_on_defaults
@@ -505,7 +505,7 @@ Sequence quality check:
 PASS: deterministic sequence is not stuck
 
 PASS
-Expected version: Version 1.0.5 6/21/2026
+Expected version: Version 1.0.5 6/27/2026
 
 Running: reset_config_registers
 PASS: Reset E0
@@ -517,7 +517,7 @@ PASS: Reset M00
 PASS: Reset O01
 
 Running: version_if_present
-Version probe response: b'Version 1.0.5 6/21/2026\r'
+Version probe response: b'Version 1.0.5 6/27/2026\r'
 PASS: Version command exact match
 
 Running: power_on_defaults
@@ -593,6 +593,6 @@ PASS
 **************************************************************************
 TT_UART_PORT: /dev/ttyS8
 TT_PORT:      /dev/ttyS6
-gojimmypi:/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
+gojimmypi:/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
 $
 ```

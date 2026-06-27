@@ -1,16 +1,23 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg) ![](../../workflows/fpga/badge.svg)
 
-# Tiny Tapeout Project: ttgf-UART-FSM-TRNG-Lab
+# Tiny Tapeout Project: ttgfa-UART-FSM-TRNG-Lab
 
-Version 1.0.5 6/21/2026
+Version 1.0.5 6/27/2026
 
 Details of this project are located in [docs/info.md](./docs/info.md)
 
-This project is part of [Tiny Tapeout GF 26a](https://app.tinytapeout.com/shuttles/ttgf26a) shuttle in [Project #4337](https://app.tinytapeout.com/projects/4337).
+This project is part of [EXPERIMENTAL Tiny Tapeout GF ttgf0p3 Analog](https://app.tinytapeout.com/shuttles/ttgf0p3) shuttle in [Project #5271](https://app.tinytapeout.com/projects/5271).
+
+Other than a different version text baked into the silicon `Version 1.0.5 6/27/2026` (27 vs 21), this project is identical to [Project #4337](https://app.tinytapeout.com/projects/4337) in the [Tiny Tapeout GF 26a](https://app.tinytapeout.com/shuttles/ttgf26a) shuttle.
+
+The regular `@ttgf26a` GH actions are used in `.github/workflows/gds.yaml` and no analog pins enabled in `info.yaml`.
+
+This project's top module is `tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab`, which adds the GF analog `a` suffix (`ttgfa`) compared with the #4337 name `tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab`.
 
 See companion projects developed in parallel:
 
-- This https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab (Global Foundry 180)
+- This https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab (Global Foundry 180 GFMCU180 Open Source PDK)
+- Companion https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab (Global Foundry 180 GFMCU180 Open Source PDK)
 - Companion https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab (Sky130, draft [4338](https://app.tinytapeout.com/projects/4338))
 
 ## Files and Directories

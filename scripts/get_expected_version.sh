@@ -11,7 +11,7 @@
 #   EXPECTED_VERSION="$(./get_expected_version.sh src/project_config.v)"
 #
 # Expected Verilog line:
-#   `define VERSION_STRING "Version 1.0.5 6/21/2026"
+#   `define VERSION_STRING "Version 1.0.5 6/27/2026"
 #
 
 set -euo pipefail

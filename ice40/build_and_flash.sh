@@ -54,7 +54,7 @@ mpremote connect "$TT_PORT" fs cat :config.ini > config_old.ini
 echo "**************************************************************************"
 echo "Write config.ini"
 echo "**************************************************************************"
-mpremote connect /dev/ttyS6 fs cp ./config.ini :config.ini
+mpremote connect "$TT_PORT" fs cp ./config.ini :config.ini
 
 # Build
 echo "Change to parent directory:"
@@ -90,3 +90,5 @@ echo "**************************************************************************
 echo "Completed with TT_PORT: ${TT_PORT}"
 
 popd  || exit 1
+
+echo "Connect to repl prompt on TT_PORT ${TT_PORT} or external TT_UART_PORT to interact."

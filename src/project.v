@@ -8,7 +8,7 @@
  *
  * Top-level wrapper for the Tiny Tapeout project.
  *
- * If the ULX3S FPGA is used, see the /ulx3s/top_ulx3s.v wrapper file and define ULX3S when building. 
+ * If the ULX3S FPGA is used, see the /ulx3s/top_ulx3s.v wrapper file and define ULX3S when building.
  *
  *
  *                              ***** NO USER DEFINES IN THIS FILE *****
@@ -50,7 +50,7 @@
 
     /* HACK ALERT: checking __pnr__,  SCL_gf180mcu_fd_sc_mcu7t5v0, SCL_sky130_fd_sc_hd may not be 100% reliable!! */
     `ifdef SCL_sky130_fd_sc_hd
-        /* Less hacky is to detect the presence of a cell that is only available in the real RO-based TRNG for SKY130, 
+        /* Less hacky is to detect the presence of a cell that is only available in the real RO-based TRNG for SKY130,
          * but this also isn't perfect since it could be used in a non-TT context. */
         `define TRNG_USE_RO
         `define TRNG_ALLOW_REAL_RO
@@ -61,7 +61,7 @@
         /* PROJECT_FOUND_TT_PDK_SKY130 u_stop (); */
 
     `elsif SCL_gf180mcu_fd_sc_mcu7t5v0
-        /* Less hacky is to detect the presence of a cell that is only available in the real RO-based TRNG for GF180, 
+        /* Less hacky is to detect the presence of a cell that is only available in the real RO-based TRNG for GF180,
          * but this also isn't perfect since it could be used in a non-TT context. */
         `define TRNG_USE_RO
         `define TRNG_ALLOW_REAL_RO
@@ -73,7 +73,7 @@
         /* See example: https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/26890757755 */
 
     `elsif __pnr__
-        /* More hacky is __pnr__ and still does not conclusively prove that we are building for Tiny Tapeout, 
+        /* More hacky is __pnr__ and still does not conclusively prove that we are building for Tiny Tapeout,
          * but it is a strong indicator that we are in an environment where the real RO-based TRNG can be used. */
         `define TRNG_USE_RO
         `define TRNG_ALLOW_REAL_RO
@@ -125,7 +125,7 @@
 
     /* Beware of a potentially generated file: "[project]/src/_tt_fpga_top.v" */
 
-`elsif IS_MY_IVERILOG_SIMULATION 
+`elsif IS_MY_IVERILOG_SIMULATION
     /* We want iverilog to be more like the TT build without the target_pdk.v included in wildcard */
 
     /* Note the module is named tt_um_example for this path */
@@ -134,8 +134,8 @@
     /* Tiny Tapeout needs to include all the files explicitly since `tt_fpga.py harden` doesn't use Makefiles.
      *  (see https://github.com/TinyTapeout/tt-support-tools.git )
      *    ** OR **
-     *  list them in /info.yaml file (pick one, don't mix) 
-     * 
+     *  list them in /info.yaml file (pick one, don't mix)
+     *
      * Note the ice40 TT Demoboard build uses this path with `tt_fpga.py harden` */
     `include "tt_um_main.v"
     `include "JTAG/jtag_core.v"
@@ -163,13 +163,13 @@
 
 /* See companion project: SKY130 (ChipFoundry) tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab */
 
-/* Assume TT needs this file to be called project.v 
- * but the module is called tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab - so disable warning: */
+/* Assume TT needs this file to be called project.v
+ * but the module is called tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab - so disable warning: */
 
- /* Define a unique name for the module based on the target PDK. 
-  * This allows the same project.v file to be used across different PDK targets without modification, 
-  * while still adhering to any naming requirements imposed by the Tiny Tapeout platform. 
-  * 
+ /* Define a unique name for the module based on the target PDK.
+  * This allows the same project.v file to be used across different PDK targets without modification,
+  * while still adhering to any naming requirements imposed by the Tiny Tapeout platform.
+  *
   * There's no Makefile to extract name from info.yaml, so the module name is hardcoded here: */
 `ifdef PDK_TARGET_SKY130
 /* verilator lint_off DECLFILENAME */
@@ -178,14 +178,14 @@ module tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab
 
 `elsif PDK_TARGET_GF180
 /* verilator lint_off DECLFILENAME */
-module tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab
+module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
 /* verilator lint_on DECLFILENAME */
 
 `elsif IS_MY_IVERILOG_SIMULATION
 module tt_um_example
 
 `else
-/* Only SKY130 and GF180 supported at this time. See target_pdk.v 
+/* Only SKY130 and GF180 supported at this time. See target_pdk.v
  * There will likely be an error later with this name and the need for real RO */
 module UART_FSM_TRNG_Lab
 `endif
@@ -278,7 +278,7 @@ module UART_FSM_TRNG_Lab
             end
         end
     `else
-        /* FORCE_LOOPBACK not supported outside of ULX3S since it relies on specific pin mappings 
+        /* FORCE_LOOPBACK not supported outside of ULX3S since it relies on specific pin mappings
          *  and test features that may not be present in other environments. */
         `ifdef FORCE_LOOPBACK
             MODULE_FORCE_LOOPBACK_MUST_NOT_BE_ENABLED u_stop ();

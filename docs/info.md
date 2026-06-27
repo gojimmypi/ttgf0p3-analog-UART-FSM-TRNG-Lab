@@ -64,15 +64,15 @@ Most of the scripts to test assume the external UART. Testing and interactive co
 
 This project can be tested on an FPGA such as these examples:
 
-- [Tiny Tapeout FPGA Development Kit Demoboard](https://store.tinytapeout.com/products/FPGA-Development-Kit-p813805747) in the [`ice40`](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ice40) directory.
-- [ULX3S ECP5 + ESP32 FPGA Development Board](https://radiona.org/ulx3s/) in the [`ulx3s`](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s) directory, and [ESP32 SPI Example](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32).
+- [Tiny Tapeout FPGA Development Kit Demoboard](https://store.tinytapeout.com/products/FPGA-Development-Kit-p813805747) in the [`ice40`](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ice40) directory.
+- [ULX3S ECP5 + ESP32 FPGA Development Board](https://radiona.org/ulx3s/) in the [`ulx3s`](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ulx3s) directory, and [ESP32 SPI Example](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32).
 
 Note that the ring oscillators will not be implemented on the FPGA builds, rather a deterministic 
 [Linear-Feedback Shift Register](https://en.wikipedia.org/wiki/Linear-feedback_shift_register) (LFSR) is used 
-in [trng_lab_core.v](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/blob/main/src/TRNG/trng_lab_core.v) to
+in [trng_lab_core.v](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/src/TRNG/trng_lab_core.v) to
 simulate the TRNG bitstream.
 
-See the `FPGA_NIST_PRNG_SOURCE` and `FPGA_BASIC_LFSR_RO_TAPS` options in [`project_config.v`](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/blob/main/src/project_config.v) 
+See the `FPGA_NIST_PRNG_SOURCE` and `FPGA_BASIC_LFSR_RO_TAPS` options in [`project_config.v`](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/src/project_config.v) 
 that are disabled for the TT build.
 
 ## Commander App Tests
@@ -92,11 +92,11 @@ Don't confuse the TT board serial connection with the external UART.
 
 Ensure all the dip input switches are in the `up` default (off) position.
 
-Select the project, set the clock to 25 MHz, and reset. (see [project_reset.py](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/blob/main/ice40/project_reset.py)):
+Select the project, set the clock to 25 MHz, and reset. (see [project_reset.py](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/ice40/project_reset.py)):
 
 ```
 # select project and reset ttgf
-tt.shuttle.tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab.enable()
+tt.shuttle.tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.enable()
 
 tt.clock_project_PWM(25000000)
 tt.reset_project(True)
@@ -172,7 +172,7 @@ Send the appropriate commands to configure and read from the TRNG core. See [Reg
 
 _Image credit: screen snip from [csrc.nist.gov/Projects/random-bit-generation](https://csrc.nist.gov/Projects/random-bit-generation)_
 
-See the [`capture_trng_raw_uart.py`](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/test-hw/capture_trng_raw_uart.py) 
+See the [`capture_trng_raw_uart.py`](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/test-hw/capture_trng_raw_uart.py) 
 script to capture a binary file of random data from this project, large enough for 100 runs of 1,000,000-bit 
 [NIST-style tests](https://csrc.nist.gov/projects/random-bit-generation/documentation-and-software):
 
@@ -223,7 +223,7 @@ For further testing information see [NIST Random Bit Generation RBG - Guide to t
 ### Quickstart Simulation
 
 ```bash
-cd /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/test
+cd /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/test
 
 ./my_test.sh
 
@@ -235,7 +235,7 @@ cd /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/test
 If all the toolchains are installed:
 
 ```bash
-cd /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ice40
+cd /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ice40
 
 source ./env_ice40.sh
 ./build_and_flash.sh
@@ -335,7 +335,7 @@ Disable `IS_ULX3S_ESP32` macro in `ulx3s_spi_lib.c` to use external stand-alone 
 Build and run tests from the `./test-hw` directory.
 
 ```bash
-cd /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/test-hw
+cd /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/test-hw
 
 # may need to remove generated file
 rm  ../src/_tt_fpga_top.v
@@ -350,7 +350,7 @@ The onboard ESP32 is pre-configured to work with this TT project. No external wi
 
 ```bash
 # [project]/ulx3s/ESP32
-cd /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ulx3s/ESP32
+cd /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ulx3s/ESP32
 
 PORT=/dev/ttyS3
 
@@ -523,7 +523,7 @@ There are TT simulation tests and local ULX3S FPGA tests.
 Set the `TT_PROJECT_ROOT` environment variable to the root of the project directory before running the tests or other scripts.
 
 ```bash
-export TT_PROJECT_NAME="ttgf-UART-FSM-TRNG-Lab"
+export TT_PROJECT_NAME="ttgf0p3-UART-FSM-TRNG-Lab"
 export TT_PROJECT_ROOT="/mnt/c/workspace/$TT_PROJECT_NAME"
 ```
 
@@ -564,13 +564,13 @@ idf.py -p /dev/ttyS3 -b 115200 monitor
 ```
 
 There should be output from the ESP32 showing the SPI transactions and register values. 
-This can be used to verify that the SPI interface is working correctly and that the TRNG lab core is responding to commands. (See [example output](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/blob/main/docs/example_esp32_output.md)):
+This can be used to verify that the SPI interface is working correctly and that the TRNG lab core is responding to commands. (See [example output](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/docs/example_esp32_output.md)):
 ```text
-gojimmypi:/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ulx3s/ESP32
+gojimmypi:/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ulx3s/ESP32
 $ idf.py -p /dev/ttyS3 -b 115200 monitor
 Executing action: monitor
-Running idf_monitor in directory /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ulx3s/ESP32
-Executing "/home/gojimmypi/.espressif/python_env/idf5.5_py3.10_env/bin/python /mnt/c/SysGCC/esp32-master/esp-idf/v5.5/tools/idf_monitor.py -p /dev/ttyS3 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ulx3s/ESP32/build/ulx3s_esp32.elf /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ulx3s/ESP32/build/bootloader/bootloader.elf -m '/home/gojimmypi/.espressif/python_env/idf5.5_py3.10_env/bin/python' '/mnt/c/SysGCC/esp32-master/esp-idf/v5.5/tools/idf.py' '-p' '/dev/ttyS3' '-b' '115200'"...
+Running idf_monitor in directory /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ulx3s/ESP32
+Executing "/home/gojimmypi/.espressif/python_env/idf5.5_py3.10_env/bin/python /mnt/c/SysGCC/esp32-master/esp-idf/v5.5/tools/idf_monitor.py -p /dev/ttyS3 -b 115200 --toolchain-prefix xtensa-esp32-elf- --target esp32 --revision 0 /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ulx3s/ESP32/build/ulx3s_esp32.elf /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ulx3s/ESP32/build/bootloader/bootloader.elf -m '/home/gojimmypi/.espressif/python_env/idf5.5_py3.10_env/bin/python' '/mnt/c/SysGCC/esp32-master/esp-idf/v5.5/tools/idf.py' '-p' '/dev/ttyS3' '-b' '115200'"...
 --- esp-idf-monitor 1.6.2 on /dev/ttyS3 115200
 --- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H
 I (13) boot: ESP-IDF v5.5 2nd stage bootloader
@@ -590,19 +590,19 @@ I (740) ulx3s_spi: SPI regs: R0=00 R1=00 R2=10 R3=00 R4=01 R5=04 R6=3E R7=84 raw
 ```
 
 If the `./run_tests.sh` was left at the `Press Enter to continue...` prompt, press `Enter` to continue with the next set of tests.
-The output should look something like [this example](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/blob/main/docs/example_test_results.md):
+The output should look something like [this example](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/docs/example_test_results.md):
 
 ```text
 Build PASSED
 Flash...
 Flashing file:
--rw-r--r-- 1 gojimmypi gojimmypi 294455 Jun  4 08:22 /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ulx3s/ulx3s.bit
+-rw-r--r-- 1 gojimmypi gojimmypi 294455 Jun  4 08:22 /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ulx3s/ulx3s.bit
 ULX2S / ULX3S JTAG programmer v4.8 (git 96ebb45 built Oct  7 2020 22:42:00)
 Copyright (C) Marko Zec, EMARD, gojimmypi, kost and contributors
 Using USB cable: ULX3S FPGA 12K v3.0.3
 Programming: 100%
 Completed in 12.78 seconds.
-/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/test-hw
+/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/test-hw
 Press Enter to continue...
 
 Skipping register reset. Use --reset-registers to start from configured defaults.
@@ -629,9 +629,9 @@ I (188760) ulx3s_spi: SPI regs: R0=00 R1=00 R2=10 R3=00 R4=01 R5=04 R6=00 R7=00 
 
 ### TT Simulation tests
 
-Commit changes. See results in [actions](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/).
+Commit changes. See results in [actions](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/).
 
-In particular, note the output of the [gds workflow](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/workflows/gds.yaml):
+In particular, note the output of the [gds workflow](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/workflows/gds.yaml):
 
 - Linter output
 - Routing Stats
@@ -644,11 +644,11 @@ In particular, note the output of the [gds workflow](https://github.com/gojimmyp
 
 Build and flash the bitstream to the FPGA, then run the test script. The test script will print the output of the FSM and TRNG.
 
-Test locally with [ULX3S](https://radiona.org/ulx3s/) ECP5 FPGA in [/ulx3s/](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/ulx3s/README.md) directory.
+Test locally with [ULX3S](https://radiona.org/ulx3s/) ECP5 FPGA in [/ulx3s/](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/actions/ulx3s/README.md) directory.
 
-- [verilator_lint.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/scripts/verilator_lint.sh)
-- [ulx3s_build.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ulx3s_build.sh)
-- [ulx3s_flash.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ulx3s_flash.sh)
+- [verilator_lint.sh](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/scripts/verilator_lint.sh)
+- [ulx3s_build.sh](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ulx3s/ulx3s_build.sh)
+- [ulx3s_flash.sh](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ulx3s/ulx3s_flash.sh)
 
 Example:
 
@@ -724,10 +724,10 @@ cd "$TT_PROJECT_ROOT/test-hw
 
 ### Local Automated Hardware Operation Tests
 
-Generic local hardware operation tests in [/test-hw/](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/test-hw/README.md).
+Generic local hardware operation tests in [/test-hw/](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/test-hw/README.md).
 
-- [tt_uart_test.py](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/test-hw/tt_uart_test.py) - Python script to test the UART functionality of the FSM and TRNG on the ULX3S FPGA. It sends commands to the FPGA and reads the responses to verify correct operation.
-- [run_tests.sh](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/test-hw/test-hw/run_tests.sh) - Shell script to run the hardware tests. It can be configured to build the FPGA bitstream, flash it to the FPGA, and run the Python test script.
+- [tt_uart_test.py](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/test-hw/tt_uart_test.py) - Python script to test the UART functionality of the FSM and TRNG on the ULX3S FPGA. It sends commands to the FPGA and reads the responses to verify correct operation.
+- [run_tests.sh](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/test-hw/test-hw/run_tests.sh) - Shell script to run the hardware tests. It can be configured to build the FPGA bitstream, flash it to the FPGA, and run the Python test script.
 
 ```bash
 cd test-hw
@@ -742,9 +742,9 @@ cd test-hw
 ## UART FSM TRNG Lab Datasheet
 
 Document revision: 1.0.5
-RTL revision string: `Version 1.0.5 6/21/2026`  
+RTL revision string: `Version 1.0.5 6/27/2026`  
 Project family: Tiny Tapeout UART/SPI configurable TRNG experiment  
-Primary top modules: `tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab` (conditional based on build)
+Primary top modules: `tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab` (conditional based on build)
 License: Apache-2.0, as declared in the source files
 
 ### 1. Overview
@@ -965,7 +965,7 @@ Invalid syntax returns `?<CR>`.
 #### UART command examples
 
 ```text
-V<CR>       -> Version 1.0.5 6/21/2026<CR>
+V<CR>       -> Version 1.0.5 6/27/2026<CR>
 R2<CR>      -> R2=10<CR>
 E1<CR>      -> OK<CR>
 D10<CR>     -> OK<CR>

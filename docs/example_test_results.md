@@ -7,7 +7,7 @@
 This is the example output for the [Radiona ULX3S FPGA](https://radiona.org/ulx3s/) 
 for the [Hardware Entropy Explorer: UART/SPI TRNG and PUF](https://app.tinytapeout.com/projects/4337) project.
 
-The source code for this test is in [`ulx3s`](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s)
+The source code for this test is in [`ulx3s`](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ulx3s)
 
 ```text
 Info: Program finished normally.
@@ -19,16 +19,16 @@ NOTE: Ignoring ABC combinational network warning as requested
 Build PASSED
 Flash...
 Flashing file: ulx3s.bit
--rw-r--r-- 1 gojimmypi gojimmypi 299495 Jun 20 20:29 /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/ulx3s/ulx3s.bit
+-rw-r--r-- 1 gojimmypi gojimmypi 299495 Jun 20 20:29 /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/ulx3s/ulx3s.bit
 WSL Calling ./fujprog-v48-win64.exe (should auto-detect ULX3S port) ...
 ULX2S / ULX3S JTAG programmer v4.8 (git 96ebb45 built Oct  7 2020 22:42:00)
 Copyright (C) Marko Zec, EMARD, gojimmypi, kost and contributors
 Using USB cable: ULX3S FPGA 12K v3.0.3
 Programming: 100%
 Completed in 13.05 seconds.
-/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/test-hw
+/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/test-hw
 Ready to test external ULX3S UART () on port /dev/ttyS7 - Press Enter to continue ...
-Configuration in: /mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/src/project_config.v
+Configuration in: /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/src/project_config.v
 ADJUSTABLE_BAUD_ENABLED= (defined)
 BIG16_SPI_REG= (defined)
 JTAG_ADDR_MSB=3
@@ -50,13 +50,13 @@ TRNG_RAW_CLEAN_MIX= (defined)
 UART_ENABLED= (defined)
 USE_LONG_STRINGS= (defined)
 VERSION_STRING_LEN=23
-VERSION_STRING="Version 1.0.5 6/21/2026"
-Expected version: Version 1.0.5 6/21/2026
+VERSION_STRING="Version 1.0.5 6/27/2026"
+Expected version: Version 1.0.5 6/27/2026
 
 Skipping register reset. Use --reset-registers to start from configured defaults.
 
 Running: version_if_present
-Version probe response: b'Version 1.0.5 6/21/2026\r'
+Version probe response: b'Version 1.0.5 6/27/2026\r'
 PASS: Version command exact match
 
 Running: power_on_defaults
@@ -118,7 +118,7 @@ Tests skipped: 0
 Tests failed: 0
 
 PASS
-Expected version: Version 1.0.5 6/21/2026
+Expected version: Version 1.0.5 6/27/2026
 
 Running: reset_config_registers
 PASS: Reset E0
@@ -130,7 +130,7 @@ PASS: Reset M00
 PASS: Reset O01
 
 Running: version_if_present
-Version probe response: b'Version 1.0.5 6/21/2026\r'
+Version probe response: b'Version 1.0.5 6/27/2026\r'
 PASS: Version command exact match
 
 Running: power_on_defaults
@@ -470,6 +470,6 @@ PASS: deterministic sequence is not stuck
 
 PASS
 Port used: /dev/ttyS7
-gojimmypi:/mnt/c/workspace/ttgf-UART-FSM-TRNG-Lab/test-hw
+gojimmypi:/mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/test-hw
 $
 ```

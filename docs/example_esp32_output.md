@@ -4,14 +4,14 @@
 
 <!--- # Use only Fully Qualified URLs. This file is copied out of the GitHub repo for publication. --->
 
-This is the example output for the [ESP32 example app](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32) 
+This is the example output for the [ESP32 example app](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32) 
 on the [Radiona ULX3S FPGA](https://radiona.org/ulx3s/) 
 for the [Hardware Entropy Explorer: UART/SPI TRNG and PUF](https://app.tinytapeout.com/projects/4337) project.
 
-The source code for this test is in [`ulx3s/ESP32`](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32).
+The source code for this test is in [`ulx3s/ESP32`](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32).
 
 Users of the [VisualGDB](https://visualgdb.com/) Extension for Visual Studio can 
-find a project file in [ulx3s/ESP32/VisualGDB](https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32/VisualGDB)
+find a project file in [ulx3s/ESP32/VisualGDB](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/tree/main/ulx3s/ESP32/VisualGDB)
 
 ```text
 ets Jun  8 2016 00:22:57
@@ -103,10 +103,10 @@ TT_MACRO_TRNG_RAW_CLEAN_MIX: 1
 TT_MACRO_UART_ENABLED: 1
 TT_MACRO_USE_LONG_STRINGS: 1
 TT_MACRO_VERSION_STRING_LEN: 23
-TT_MACRO_VERSION_STRING: Version 1.0.5 6/21/2026
+TT_MACRO_VERSION_STRING: Version 1.0.5 6/27/2026
 -----------------------------------------------------------
 This is esp32 chip with 2 CPU core(s), WiFi/BTBLE, silicon revision v1.0, 2MB external flash
-I (449) main: Tiny Tapeout SPI Test Version 1.0.5 6/21/2026
+I (449) main: Tiny Tapeout SPI Test Version 1.0.5 6/27/2026
 I (459) main: --------------------------------------------------------
 I (469) main: Initialize ESP32 SPI bus
 I (469) main: --------------------------------------------------------
