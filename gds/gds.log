@@ -25,9 +25,9 @@ Diagnostic:  Scale value is 0.005000
    Generating output for cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
 
 Generated files:
--rw-r--r-- 1 gojimmypi gojimmypi 6.6K Jun 28 10:11 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
--rw-r--r-- 1 gojimmypi gojimmypi 8.6K Jun 28 10:11 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef
--rw-r--r-- 1 gojimmypi gojimmypi 12K Jun 28 10:11 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.gds
+-rw-r--r-- 1 gojimmypi gojimmypi 6.6K Jun 28 10:33 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
+-rw-r--r-- 1 gojimmypi gojimmypi 8.3K Jun 28 10:33 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef
+-rw-r--r-- 1 gojimmypi gojimmypi 12K Jun 28 10:33 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.gds
 
 Pin checks:
 LEF PIN count: 53
@@ -48,10 +48,10 @@ LEF PIN count: 53
 78:flabel metal4 s 6374 0 6674 100 0 FreeSans 736 0 0 0 ua[6]
 80:flabel metal4 s 2006 0 2306 100 0 FreeSans 736 0 0 0 ua[7]
 418:  PIN VGND
-162:flabel metal4 s 0 2000 100 30536 0 FreeSans 736 90 0 0 VGND
+162:flabel metal4 s 0 0 100 32536 0 FreeSans 736 90 0 0 VGND
 426:  PIN VDPWR
-164:flabel metal4 s 34564 2000 34664 30536 0 FreeSans 736 90 0 0 VDPWR
+164:flabel metal4 s 34564 0 34664 32536 0 FreeSans 736 90 0 0 VDPWR
 
 Size checks:
-445 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef
+436 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef
 12K	gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.gds

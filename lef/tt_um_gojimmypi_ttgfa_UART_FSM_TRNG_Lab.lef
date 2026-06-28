@@ -36,7 +36,7 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
     USE SIGNAL ;
     PORT
       LAYER Metal4 ;
-        RECT 325.820 0.000 328.820 30.000 ;
+        RECT 325.820 0.000 328.820 1.000 ;
     END
   END ua[0]
   PIN ua[1]
@@ -44,7 +44,7 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
     USE SIGNAL ;
     PORT
       LAYER Metal4 ;
-        RECT 282.140 0.000 285.140 30.000 ;
+        RECT 282.140 0.000 285.140 1.000 ;
     END
   END ua[1]
   PIN ua[2]
@@ -52,7 +52,7 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
     USE SIGNAL ;
     PORT
       LAYER Metal4 ;
-        RECT 238.460 0.000 241.460 30.000 ;
+        RECT 238.460 0.000 241.460 1.000 ;
     END
   END ua[2]
   PIN ua[3]
@@ -60,7 +60,7 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
     USE SIGNAL ;
     PORT
       LAYER Metal4 ;
-        RECT 194.780 0.000 197.780 30.000 ;
+        RECT 194.780 0.000 197.780 1.000 ;
     END
   END ua[3]
   PIN ua[4]
@@ -68,7 +68,7 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
     USE SIGNAL ;
     PORT
       LAYER Metal4 ;
-        RECT 151.100 0.000 154.100 30.000 ;
+        RECT 151.100 0.000 154.100 1.000 ;
     END
   END ua[4]
   PIN ua[5]
@@ -76,7 +76,7 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
     USE SIGNAL ;
     PORT
       LAYER Metal4 ;
-        RECT 107.420 0.000 110.420 30.000 ;
+        RECT 107.420 0.000 110.420 1.000 ;
     END
   END ua[5]
   PIN ua[6]
@@ -420,7 +420,7 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
     USE GROUND ;
     PORT
       LAYER Metal4 ;
-        RECT 0.000 20.000 1.000 305.360 ;
+        RECT 0.000 0.000 1.000 325.360 ;
     END
   END VGND
   PIN VDPWR
@@ -428,18 +428,9 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
     USE POWER ;
     PORT
       LAYER Metal4 ;
-        RECT 345.640 20.000 346.640 305.360 ;
+        RECT 345.640 0.000 346.640 325.360 ;
     END
   END VDPWR
-  OBS
-      LAYER Metal4 ;
-        RECT 107.420 1.000 110.420 30.000 ;
-        RECT 151.100 1.000 154.100 30.000 ;
-        RECT 194.780 1.000 197.780 30.000 ;
-        RECT 238.460 1.000 241.460 30.000 ;
-        RECT 282.140 1.000 285.140 30.000 ;
-        RECT 325.820 1.000 328.820 30.000 ;
-  END
 END tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
 END LIBRARY
 

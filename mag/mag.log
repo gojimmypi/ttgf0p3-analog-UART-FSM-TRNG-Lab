@@ -27,7 +27,7 @@ This action cannot be undone.
   Processed 51 nets total.
 DEF read: Processed 363 lines.
 Created analog Magic layout:
--rw-r--r-- 1 gojimmypi gojimmypi 6.6K Jun 28 10:11 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
+-rw-r--r-- 1 gojimmypi gojimmypi 6.6K Jun 28 10:33 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
 
 Analog pin labels:
 66:flabel metal4 s 32582 0 32882 100 0 FreeSans 736 0 0 0 ua[0]
@@ -40,5 +40,5 @@ Analog pin labels:
 80:flabel metal4 s 2006 0 2306 100 0 FreeSans 736 0 0 0 ua[7]
 
 Power labels:
-162:flabel metal4 s 0 2000 100 30536 0 FreeSans 736 90 0 0 VGND
-164:flabel metal4 s 34564 2000 34664 30536 0 FreeSans 736 90 0 0 VDPWR
+162:flabel metal4 s 0 0 100 32536 0 FreeSans 736 90 0 0 VGND
+164:flabel metal4 s 34564 0 34664 32536 0 FreeSans 736 90 0 0 VDPWR
