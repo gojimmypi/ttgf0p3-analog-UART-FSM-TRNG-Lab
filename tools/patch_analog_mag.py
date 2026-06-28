@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Patch the generated GF180 analog frame MAG file.
 
-The raw tt_analog_1x2.def frame provides the TT signal and analog pins, but it
-has no local inward analog stubs and no VGND/VDPWR project ports.  This patch
-adds short Metal4 stubs for ua[0]..ua[5] and Metal4 power pins so the custom
-analog scaffold matches Tiny Tapeout precheck expectations.
+The raw tt_analog_1x2.def frame provides the TT signal and analog pins.  Keep
+those analog pin geometries unchanged so the exported LEF matches the Tiny
+Tapeout analog template exactly.  Add only project power ports here; inward
+analog connectivity stubs are added to the GDS after export so they do not
+change LEF pin dimensions.
 """
 from __future__ import annotations
 
@@ -12,36 +13,19 @@ import argparse
 import re
 from pathlib import Path
 
-UA_STUBS = {
-    "ua[0]": (32582, 0, 32882, 3000),
-    "ua[1]": (28214, 0, 28514, 3000),
-    "ua[2]": (23846, 0, 24146, 3000),
-    "ua[3]": (19478, 0, 19778, 3000),
-    "ua[4]": (15110, 0, 15410, 3000),
-    "ua[5]": (10742, 0, 11042, 3000),
-}
-
+# Magic internal units.  These rails are full-height edge ports so precheck
+# does not report the project power pins as too far from the top/bottom edges.
 POWER_PORTS = [
-    ("VGND", 0, 2000, 100, 30536, "ground", "bidirectional"),
-    ("VDPWR", 34564, 2000, 34664, 30536, "power", "bidirectional"),
+    ("VGND", 0, 0, 100, 32536, "ground", "bidirectional"),
+    ("VDPWR", 34564, 0, 34664, 32536, "power", "bidirectional"),
 ]
 
 
-def replace_or_add_rects(text: str) -> str:
-    for _, rect in UA_STUBS.items():
-        x1, y1, x2, y2 = rect
-        old_re = re.compile(rf"^rect {x1} 0 {x2} 100$", re.MULTILINE)
-        new_line = f"rect {x1} {y1} {x2} {y2}"
-        if old_re.search(text):
-            text = old_re.sub(new_line, text)
-        elif new_line not in text:
-            text = text.replace("<< labels >>", new_line + "\n<< labels >>", 1)
-
+def add_power_rects(text: str) -> str:
     for _, x1, y1, x2, y2, _, _ in POWER_PORTS:
         line = f"rect {x1} {y1} {x2} {y2}"
         if line not in text:
             text = text.replace("<< labels >>", line + "\n<< labels >>", 1)
-
     return text
 
 
@@ -76,7 +60,7 @@ def main() -> int:
 
     path = Path(args.mag_file)
     text = path.read_text()
-    text = replace_or_add_rects(text)
+    text = add_power_rects(text)
     text = add_power_labels(text)
     path.write_text(text)
 

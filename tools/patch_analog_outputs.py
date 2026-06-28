@@ -1,25 +1,20 @@
 #!/usr/bin/env python3
 """Patch generated LEF/GDS for the GF180 analog scaffold.
 
-Magic exports the analog frame pins, but the scaffold also needs short inward
-metal stubs for the enabled analog pins and explicit VGND/VDPWR project power
-pins for Tiny Tapeout precheck.  This script makes those edits deterministic
-for the local export flow.
+Keep the LEF analog pin dimensions identical to the TT analog template.  Add
+only the post-export items that do not belong in the template pin geometry:
+explicit full-height project power ports in LEF/GDS and short inward GDS metal
+stubs for enabled analog pins.
 """
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
-UA_LEF_RECTS = {
-    "325.820 0.000 328.820 1.000": "325.820 0.000 328.820 30.000",
-    "282.140 0.000 285.140 1.000": "282.140 0.000 285.140 30.000",
-    "238.460 0.000 241.460 1.000": "238.460 0.000 241.460 30.000",
-    "194.780 0.000 197.780 1.000": "194.780 0.000 197.780 30.000",
-    "151.100 0.000 154.100 1.000": "151.100 0.000 154.100 30.000",
-    "107.420 0.000 110.420 1.000": "107.420 0.000 110.420 30.000",
-}
-
+# GDS coordinates are in microns.  These stubs intentionally start just above
+# the template ua pin rectangles so the LEF pin rectangles remain unchanged
+# while the GDS has adjacent inward metal for precheck connectivity.
 GDS_STUBS = [
     (325.82, 1.0, 328.82, 30.0),
     (282.14, 1.0, 285.14, 30.0),
@@ -34,7 +29,7 @@ POWER_LEF = '''  PIN VGND
     USE GROUND ;
     PORT
       LAYER Metal4 ;
-        RECT 0.000 20.000 1.000 305.360 ;
+        RECT 0.000 0.000 1.000 325.360 ;
     END
   END VGND
   PIN VDPWR
@@ -42,22 +37,32 @@ POWER_LEF = '''  PIN VGND
     USE POWER ;
     PORT
       LAYER Metal4 ;
-        RECT 345.640 20.000 346.640 305.360 ;
+        RECT 345.640 0.000 346.640 325.360 ;
     END
   END VDPWR
 '''
 
 
+def remove_pin_block(text: str, pin: str) -> str:
+    pattern = re.compile(
+        rf"^[ \t]*PIN[ \t]+{re.escape(pin)}\n.*?^[ \t]*END[ \t]+{re.escape(pin)}\n",
+        re.MULTILINE | re.DOTALL,
+    )
+    return pattern.sub("", text)
+
+
 def patch_lef(path: Path, top: str) -> None:
     text = path.read_text()
-    for old, new in UA_LEF_RECTS.items():
-        text = text.replace(f"RECT {old} ;", f"RECT {new} ;")
 
-    if "PIN VGND" not in text:
-        marker = f"END {top}\n"
-        if marker not in text:
-            raise RuntimeError(f"Could not find LEF macro end marker {marker.strip()}")
-        text = text.replace(marker, POWER_LEF + marker)
+    # Normalize project power pins.  Do not modify the template ua[*] pin
+    # rectangles; precheck compares those dimensions against tt_analog_1x2.def.
+    text = remove_pin_block(text, "VGND")
+    text = remove_pin_block(text, "VDPWR")
+
+    marker = f"END {top}\n"
+    if marker not in text:
+        raise RuntimeError(f"Could not find LEF macro end marker {marker.strip()}")
+    text = text.replace(marker, POWER_LEF + marker)
 
     path.write_text(text)
 
@@ -74,8 +79,8 @@ def patch_gds(path: Path) -> None:
     for x1, y1, x2, y2 in GDS_STUBS:
         cell.add(gdstk.rectangle((x1, y1), (x2, y2), layer=46, datatype=0))
 
-    cell.add(gdstk.rectangle((0.0, 20.0), (1.0, 305.36), layer=46, datatype=0))
-    cell.add(gdstk.rectangle((345.64, 20.0), (346.64, 305.36), layer=46, datatype=0))
+    cell.add(gdstk.rectangle((0.0, 0.0), (1.0, 325.36), layer=46, datatype=0))
+    cell.add(gdstk.rectangle((345.64, 0.0), (346.64, 325.36), layer=46, datatype=0))
 
     labels = {label.text for label in cell.labels}
     if "VGND" not in labels:

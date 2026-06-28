@@ -22,6 +22,9 @@ jobs:
       - name: Build custom-GDS Verilog model
         run: |
           python3 tools/build_custom_gds_verilog.py --out build/custom_gds/project.v
+          grep -Eq '^ *`include +' build/custom_gds/project.v && echo "BAD: include remains" && exit 1 || echo "OK: no active includes"
+          wc -l build/custom_gds/project.v
+          grep -n "module ${{ steps.top_module.outputs.TOP_MODULE }}" build/custom_gds/project.v
 
       - name: Check custom analog submission files
         run: |
@@ -47,6 +50,26 @@ jobs:
           lef_path: lef/${{ steps.top_module.outputs.TOP_MODULE }}.lef
           verilog_path: build/custom_gds/project.v
           pdk: gf180mcuD
+
+      - name: Add PDK metadata for gl_test
+        run: |
+          jq '. + {
+            PDK_SOURCE: "ciel",
+            PDK_VERSION: "e8daeda73ca8f5814dbc0b11d1d05802251a3750"
+          }' tt_submission/pdk.json > tt_submission/pdk.json.tmp
+          mv tt_submission/pdk.json.tmp tt_submission/pdk.json
+          cat tt_submission/pdk.json
+
+      - name: Re-publish tt_submission artifact for gl_test
+        uses: actions/upload-artifact@v7
+        with:
+          name: tt_submission
+          overwrite: true
+          path: |
+            info.yaml
+            LICENSE
+            docs/*
+            tt_submission/*
 
   precheck:
     needs: gds
