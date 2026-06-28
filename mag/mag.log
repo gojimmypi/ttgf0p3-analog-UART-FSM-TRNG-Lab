@@ -22,23 +22,21 @@ Creating new cell
 Reading DEF data from file mag/tt_analog_1x2.def.
 This action cannot be undone.
   Processed 0 subcell instances total.
-  Processed 51 pins total.
+  Processed 49 pins total.
   Processed 2 special nets total.
-  Processed 51 nets total.
-DEF read: Processed 363 lines.
+  Processed 49 nets total.
+DEF read: Processed 353 lines.
 Created analog Magic layout:
--rw-r--r-- 1 gojimmypi gojimmypi 6.6K Jun 28 11:24 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
+-rw-r--r-- 1 gojimmypi gojimmypi 6.4K Jun 28 15:46 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
 
 Analog pin labels:
-66:flabel metal4 s 32582 0 32882 100 0 FreeSans 736 0 0 0 ua[0]
-68:flabel metal4 s 28214 0 28514 100 0 FreeSans 736 0 0 0 ua[1]
-70:flabel metal4 s 23846 0 24146 100 0 FreeSans 736 0 0 0 ua[2]
-72:flabel metal4 s 19478 0 19778 100 0 FreeSans 736 0 0 0 ua[3]
-74:flabel metal4 s 15110 0 15410 100 0 FreeSans 736 0 0 0 ua[4]
-76:flabel metal4 s 10742 0 11042 100 0 FreeSans 736 0 0 0 ua[5]
-78:flabel metal4 s 6374 0 6674 100 0 FreeSans 736 0 0 0 ua[6]
-80:flabel metal4 s 2006 0 2306 100 0 FreeSans 736 0 0 0 ua[7]
+64:flabel metal4 s 32582 0 32882 100 0 FreeSans 736 0 0 0 ua[0]
+66:flabel metal4 s 28214 0 28514 100 0 FreeSans 736 0 0 0 ua[1]
+68:flabel metal4 s 23846 0 24146 100 0 FreeSans 736 0 0 0 ua[2]
+70:flabel metal4 s 19478 0 19778 100 0 FreeSans 736 0 0 0 ua[3]
+72:flabel metal4 s 15110 0 15410 100 0 FreeSans 736 0 0 0 ua[4]
+74:flabel metal4 s 10742 0 11042 100 0 FreeSans 736 0 0 0 ua[5]
 
 Power labels:
-162:flabel metal4 s 0 0 100 32536 0 FreeSans 736 90 0 0 VGND
-164:flabel metal4 s 34564 0 34664 32536 0 FreeSans 736 90 0 0 VDPWR
+156:flabel metal4 s 0 0 100 32536 0 FreeSans 736 90 0 0 VGND
+158:flabel metal4 s 34564 0 34664 32536 0 FreeSans 736 90 0 0 VDPWR
