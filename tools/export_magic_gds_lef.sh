@@ -44,10 +44,12 @@ gds write ${GDS_FILE}
 quit -noprompt
 EOF
 
- python3 tools/patch_analog_outputs.py \
+python3 tools/patch_analog_outputs.py \
     --top "${TOP}" \
     --lef "${LEF_FILE}" \
     --gds "${GDS_FILE}"
+
+python3 tools/check_gds_content.py "${GDS_FILE}"
 
 echo
 echo "Generated files:"

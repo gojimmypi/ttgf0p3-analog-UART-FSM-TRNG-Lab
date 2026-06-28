@@ -1,0 +1,68 @@
+name: harden-gds-lef
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  harden:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      PDK: gf180mcuD
+      PDK_ROOT: ${{ github.workspace }}/.pdk
+      TT_TOOL: ${{ github.workspace }}/.tt/tt-support-tools/tt_tool.py
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.10'
+
+      - name: Install Tiny Tapeout tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y git python3-pip
+
+          mkdir -p .tt
+          git clone --depth 1 https://github.com/TinyTapeout/tt-support-tools .tt/tt-support-tools
+
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r .tt/tt-support-tools/requirements.txt
+          python3 -m pip install librelane==2.4.2
+
+          docker --version
+          python3 "${TT_TOOL}" --help >/dev/null
+
+      - name: Harden and collect GDS/LEF
+        run: |
+          chmod +x tools/full_harden_artifact.sh
+          ./tools/full_harden_artifact.sh 2>&1 | tee harden-gds-lef.log
+
+      - name: Show generated files
+        if: always()
+        run: |
+          TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' info.yaml)"
+          echo "TOP=${TOP}"
+          ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef" 2>/dev/null || true
+          test -f harden-gds-lef.log && tail -200 harden-gds-lef.log || true
+
+      - name: Upload hardened GDS/LEF artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: hardened-gds-lef
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            gds/*.gds
+            lef/*.lef
+            harden-gds-lef.log
+            runs/**
+            build/full_harden/**
