@@ -1,0 +1,56 @@
+$ ./tools/export_magic_gds_lef.sh
+
+Magic 8.3 revision 668 - Compiled on Sun Jun 28 07:47:20 AM PDT 2026.
+Starting magic under Tcl interpreter
+Using the terminal as the console.
+Using NULL graphics device.
+Processing system .magicrc file
+Switching to WIRING tool.
+Switching to NETLIST tool.
+Switching to PICK tool.
+Switching to BOX tool.
+Sourcing design .magicrc for technology gf180mcuD ...
+10 Magic internal units = 1 Lambda
+Input style import: scaleFactor=10, multiplier=2
+The following types are not handled by extraction and will be treated as non-electrical types:
+    obsactive mvobsactive filldiff fillpoly m1hole obsm1 fillm1 obsv1 m2hole obsm2 fillm2 obsv2 m3hole obsm3 fillm3 m4hole obsm4 fillm4 m5hole obsm5 fillm5 glass fillblock lvstext obscomment
+Scaled tech values by 10 / 1 to match internal grid scaling
+Loading gf180mcuD Device Generator Menu ...
+Using technology "gf180mcuD", version 1.0.572-0-g5443591
+Cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab read from path mag
+Scaled magic input cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab geometry by factor of 2
+Generating LEF output lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef for cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab:
+Diagnostic:  Write LEF header for cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+Diagnostic:  Writing LEF output for cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+Diagnostic:  Scale value is 0.005000
+   Generating output for cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+
+Generated files:
+-rw-r--r-- 1 gojimmypi gojimmypi 6.4K Jun 28 08:46 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
+-rw-r--r-- 1 gojimmypi gojimmypi 8.0K Jun 28 08:46 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef
+-rw-r--r-- 1 gojimmypi gojimmypi 11K Jun 28 08:46 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.gds
+
+Pin checks:
+LEF PIN count: 51
+34:  PIN ua[0]
+42:  PIN ua[1]
+50:  PIN ua[2]
+58:  PIN ua[3]
+66:  PIN ua[4]
+74:  PIN ua[5]
+82:  PIN ua[6]
+90:  PIN ua[7]
+64:flabel metal4 s 32582 0 32882 100 0 FreeSans 736 0 0 0 ua[0]
+66:flabel metal4 s 28214 0 28514 100 0 FreeSans 736 0 0 0 ua[1]
+68:flabel metal4 s 23846 0 24146 100 0 FreeSans 736 0 0 0 ua[2]
+70:flabel metal4 s 19478 0 19778 100 0 FreeSans 736 0 0 0 ua[3]
+72:flabel metal4 s 15110 0 15410 100 0 FreeSans 736 0 0 0 ua[4]
+74:flabel metal4 s 10742 0 11042 100 0 FreeSans 736 0 0 0 ua[5]
+76:flabel metal4 s 6374 0 6674 100 0 FreeSans 736 0 0 0 ua[6]
+78:flabel metal4 s 2006 0 2306 100 0 FreeSans 736 0 0 0 ua[7]
+
+Size checks:
+420 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef
+12K     gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.gds
+(venv) gojimmypi:/mnt/c/workspace/ttgf0p3-analog-UART-FSM-TRNG-Lab
+$
