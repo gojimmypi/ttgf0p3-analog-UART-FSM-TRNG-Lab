@@ -30,13 +30,13 @@ At a high level:
 GF 0p3 analog experiment update:
 
 - `info.yaml` enables `analog_pins: 6` so all available Tiny Tapeout analog pins are requested.
-- `ua[0]` is an external analog stimulus/noise input.
-- `ua[1]` is reserved for a DAC monitor output.
-- `ua[2]` is an external comparator/reference input.
-- `ua[3]` is reserved for an analog monitor mux output.
-- `ua[4]` is reserved for an oscillator monitor output.
-- `ua[5]` is reserved for a PUF/noise probe pad.
-- The current RTL includes a digital/FPGA-safe analog stub. Real GF180 analog behavior requires the custom analog schematic/layout/SPICE/PEX implementation and cannot be validated by the FPGA bitstream.
+- `ua[0]` is an external analog stimulus/noise input sampled by a CMOS threshold.
+- `ua[1]` is a 1-bit sigma-delta DAC output. Add an external RC filter to observe an analog voltage.
+- `ua[2]` is an external comparator/reference-style input sampled by a CMOS threshold.
+- `ua[3]` is a digital monitor mux output for DAC/comparator/probe/TRNG/status observation.
+- `ua[4]` is a divider or TRNG-bit monitor output for scope/frequency tests.
+- `ua[5]` is a charge/release/sample probe pad for RC, touch, leakage, and PUF-style experiments.
+- The current RTL includes a digital/FPGA-safe analog pad exerciser. It is useful for control-plane testing and post-silicon experiments with external RC/test equipment, but real GF180 analog behavior still requires schematic/layout/SPICE/PEX work and cannot be validated by the FPGA bitstream.
 
 Why? The National Institute of Standards and Technology ([NIST](https://www.nist.gov/)) notes that random numbers are essential for cryptographic and security applications, and that cryptography 
 makes extensive use of random numbers and random bits, particularly for generating cryptographic keying material.
@@ -81,8 +81,7 @@ This project can be tested on an FPGA such as these examples:
 Note that the ring oscillators will not be implemented on the FPGA builds, rather a deterministic 
 [Linear-Feedback Shift Register](https://en.wikipedia.org/wiki/Linear-feedback_shift_register) (LFSR) is used 
 in [trng_lab_core.v](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/src/TRNG/trng_lab_core.v) to
-simulate the TRNG bitstream. The analog pins are locally unconnected in the FPGA/RTL stub, so FPGA testing
-validates only the digital control plane and deterministic surrogate behavior.
+simulate the TRNG bitstream. In the TT FPGA and ULX3S wrappers the `ua` pins are locally wired into the design but are not routed to physical analog pads, so FPGA testing validates the digital control plane, register control, and deterministic surrogate behavior. Real GF180 pad behavior still needs ASIC silicon or extracted analog simulation.
 
 See the `FPGA_NIST_PRNG_SOURCE` and `FPGA_BASIC_LFSR_RO_TAPS` options in [`project_config.v`](https://github.com/gojimmypi/ttgf0p3-UART-FSM-TRNG-Lab/blob/main/src/project_config.v) 
 that are disabled for the TT build.

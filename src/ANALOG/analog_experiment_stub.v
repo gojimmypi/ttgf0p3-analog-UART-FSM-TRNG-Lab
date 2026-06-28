@@ -6,23 +6,61 @@
  *
  * file: analog_experiment_stub.v
  *
- * Digital/FPGA-safe placeholder for the GF180 analog experiment block.
+ * GF 0p3 analog experiment pad exerciser.
  *
- * This module intentionally does not model the real analog behavior. It exists
- * so the mixed-signal top-level has a stable place to connect all ua[5:0]
- * pins while the real GF180 analog layout/SPICE block is developed.
+ * This block replaces the original high-Z placeholder with a small,
+ * FPGA-safe mixed-signal experiment that uses all six GF 0p3 analog pins.
+ * It is intentionally simple Verilog so it can still be built by the same
+ * Tiny Tapeout/FPGA flows as the UART/SPI/TRNG control shell.
  *
- * Planned analog pin roles:
- * - ua[0]: external analog stimulus/noise input
- * - ua[1]: DAC monitor output
- * - ua[2]: external comparator/reference input
- * - ua[3]: analog monitor mux output
- * - ua[4]: oscillator monitor output
- * - ua[5]: PUF/noise probe pad
+ * Important limitation:
+ * - This is not a precision analog macro and it is not a substitute for
+ *   GF180 schematic/layout/SPICE/PEX work.
+ * - The output pins are standard digital 0/1/Z drives that are useful when
+ *   connected to external RC filters, scopes, counters, or Analog Discovery.
+ * - The input pins are sampled through ordinary CMOS input thresholds, which
+ *   is useful for threshold/noise experiments but not a real comparator model.
  *
- * FPGA builds and ordinary RTL simulation cannot reproduce GF180 analog
- * resistor mismatch, comparator offset, pad capacitance, oscillator jitter,
- * leakage, or analog noise. They only validate the digital control shell.
+ * Analog pin roles:
+ * - ua[0]: ain_ext       high-Z input, sampled by the CMOS threshold
+ * - ua[1]: dac_out       1-bit sigma-delta DAC output; RC-filter externally
+ * - ua[2]: cmp_ref_ext   high-Z input, sampled by the CMOS threshold
+ * - ua[3]: amon_out      monitor mux output
+ * - ua[4]: osc_out       clock-divider/TRNG monitor output
+ * - ua[5]: puf_probe     charge/release/sample probe pad
+ *
+ * Control through the existing UART/SPI registers:
+ * - R0/reg_ctrl[0]       global analog enable, via E1/E0
+ * - R0/reg_ctrl[1]       invert driven analog outputs, via V1/V0
+ * - R0/reg_ctrl[2]       puf_probe discharge polarity, via W1/W0
+ * - R1/reg_src[1:0]      DAC source select
+ *                         0: reg_div[4:0]
+ *                         1: reg_rawlo[4:0]
+ *                         2: reg_rawhi[4:0]
+ *                         3: entropy mix from raw bytes and trng_bit
+ * - R2/reg_div           DAC code in [4:0] and osc divider reload value
+ * - R3/reg_mode[2:0]     amon_out mux select
+ *                         0: dac_out bit
+ *                         1: ain_ext sampled threshold
+ *                         2: cmp_ref_ext sampled threshold
+ *                         3: ain_ext & ~cmp_ref_ext threshold compare
+ *                         4: puf_probe sampled threshold
+ *                         5: trng_bit
+ *                         6: osc_out bit
+ *                         7: reg_status[0]
+ * - R3/reg_mode[4:3]     puf_probe charge/release/sample timing scale
+ * - R3/reg_mode[5]       osc_out source: 0 = local divider, 1 = trng_bit
+ * - R4/reg_oscen[0]      enable ua[1] dac_out driver
+ * - R4/reg_oscen[1]      enable ua[3] amon_out driver
+ * - R4/reg_oscen[2]      enable ua[4] osc_out driver
+ * - R4/reg_oscen[3]      enable ua[5] puf_probe charge/release driver
+ *
+ * Example bring-up commands:
+ * - E1, D10, O01          enable half-scale sigma-delta DAC on ua[1]
+ * - E1, D08, M00, O03     enable DAC and monitor DAC bit on ua[3]
+ * - E1, M03, O02          monitor sampled ain_ext & ~cmp_ref_ext on ua[3]
+ * - E1, D20, M00, O05     enable DAC plus divided-clock output on ua[4]
+ * - E1, M18, O08          run puf_probe charge/release/sample sequence
  */
 `default_nettype none
 
@@ -42,26 +80,183 @@ module analog_experiment_stub
     inout  wire [7:0] ua
 );
 
-    /* Leave the analog pins high-Z in the digital stub. The custom analog
-     * layout is expected to connect the real circuits to ua[5:0]. */
-    assign ua[5:0] = 6'bzzzzzz;
+    wire       analog_enable;
+    wire       analog_invert;
+    wire       probe_discharge;
+    wire [1:0] dac_src_sel;
+    wire [2:0] amon_sel;
+    wire [1:0] probe_rate_sel;
+    wire       osc_src_trng;
+    wire       dac_pin_oe;
+    wire       amon_pin_oe;
+    wire       osc_pin_oe;
+    wire       probe_pin_enable;
+    wire [4:0] dac_code;
+    wire [5:0] dac_sum;
+    wire [7:0] osc_reload;
+    wire       cmp_threshold;
+    wire       amon_mux;
+    wire       dac_pin_out;
+    wire       amon_pin_out;
+    wire       osc_pin_out;
+
+    reg        ain_meta;
+    reg        ain_sync;
+    reg        ref_meta;
+    reg        ref_sync;
+    reg        probe_meta;
+    reg        probe_sync;
+
+    reg  [4:0] dac_accum;
+    reg        dac_out_q;
+
+    reg  [7:0] osc_ctr;
+    reg        osc_out_q;
+
+    reg  [7:0] probe_ctr;
+    reg        probe_drive_oe_q;
+    reg        probe_drive_q;
+    reg        probe_sample_q;
+    reg  [1:0] probe_phase;
+
+    assign analog_enable    = reg_ctrl[0];
+    assign analog_invert    = reg_ctrl[1];
+    assign probe_discharge  = reg_ctrl[2];
+    assign dac_src_sel      = reg_src[1:0];
+    assign amon_sel         = reg_mode[2:0];
+    assign probe_rate_sel   = reg_mode[4:3];
+    assign osc_src_trng     = reg_mode[5];
+
+    assign dac_pin_oe       = analog_enable & reg_oscen[0];
+    assign amon_pin_oe      = analog_enable & reg_oscen[1];
+    assign osc_pin_oe       = analog_enable & reg_oscen[2];
+    assign probe_pin_enable = analog_enable & reg_oscen[3];
+
+    assign dac_code = (dac_src_sel == 2'd1) ? reg_rawlo[4:0] :
+                      (dac_src_sel == 2'd2) ? reg_rawhi[4:0] :
+                      (dac_src_sel == 2'd3) ? ({reg_rawhi[1:0], reg_rawlo[2:0]} ^ {4'b0000, trng_bit}) :
+                                             reg_div[4:0];
+
+    assign dac_sum = {1'b0, dac_accum} + {1'b0, dac_code};
+
+    assign osc_reload = (reg_div == 8'h00) ? 8'h01 : reg_div;
+
+    assign cmp_threshold = ain_sync & ~ref_sync;
+
+    assign amon_mux = (amon_sel == 3'd1) ? ain_sync :
+                      (amon_sel == 3'd2) ? ref_sync :
+                      (amon_sel == 3'd3) ? cmp_threshold :
+                      (amon_sel == 3'd4) ? probe_sample_q :
+                      (amon_sel == 3'd5) ? trng_bit :
+                      (amon_sel == 3'd6) ? (osc_src_trng ? trng_bit : osc_out_q) :
+                      (amon_sel == 3'd7) ? reg_status[0] :
+                                           dac_out_q;
+
+    assign dac_pin_out  = dac_out_q ^ analog_invert;
+    assign amon_pin_out = amon_mux ^ analog_invert;
+    assign osc_pin_out  = (osc_src_trng ? trng_bit : osc_out_q) ^ analog_invert;
+
+    assign ua[0] = 1'bz;
+    assign ua[1] = dac_pin_oe ? dac_pin_out : 1'bz;
+    assign ua[2] = 1'bz;
+    assign ua[3] = amon_pin_oe ? amon_pin_out : 1'bz;
+    assign ua[4] = osc_pin_oe ? osc_pin_out : 1'bz;
+    assign ua[5] = (probe_pin_enable & probe_drive_oe_q) ? probe_drive_q : 1'bz;
     assign ua[7:6] = 2'bzz;
 
-    /* Keep the intended control/status hooks visible without adding logic. */
+    always @(*) begin
+        case (probe_rate_sel)
+            2'd0: probe_phase = probe_ctr[3:2];
+            2'd1: probe_phase = probe_ctr[5:4];
+            2'd2: probe_phase = probe_ctr[7:6];
+            default: probe_phase = {probe_ctr[7], probe_ctr[5]};
+        endcase
+    end
+
+    always @(posedge clk) begin
+        if (!rst_n) begin
+            ain_meta         <= 1'b0;
+            ain_sync         <= 1'b0;
+            ref_meta         <= 1'b0;
+            ref_sync         <= 1'b0;
+            probe_meta       <= 1'b0;
+            probe_sync       <= 1'b0;
+            dac_accum        <= 5'd0;
+            dac_out_q        <= 1'b0;
+            osc_ctr          <= 8'h00;
+            osc_out_q        <= 1'b0;
+            probe_ctr        <= 8'h00;
+            probe_drive_oe_q <= 1'b0;
+            probe_drive_q    <= 1'b0;
+            probe_sample_q   <= 1'b0;
+        end else begin
+            ain_meta   <= ua[0];
+            ain_sync   <= ain_meta;
+            ref_meta   <= ua[2];
+            ref_sync   <= ref_meta;
+            probe_meta <= ua[5];
+            probe_sync <= probe_meta;
+
+            if (dac_pin_oe) begin
+                dac_accum <= dac_sum[4:0];
+                dac_out_q <= dac_sum[5];
+            end else begin
+                dac_accum <= 5'd0;
+                dac_out_q <= 1'b0;
+            end
+
+            if (osc_pin_oe && !osc_src_trng) begin
+                if (osc_ctr >= osc_reload) begin
+                    osc_ctr   <= 8'h00;
+                    osc_out_q <= ~osc_out_q;
+                end else begin
+                    osc_ctr <= osc_ctr + 8'h01;
+                end
+            end else begin
+                osc_ctr   <= 8'h00;
+                osc_out_q <= 1'b0;
+            end
+
+            if (probe_pin_enable) begin
+                probe_ctr <= probe_ctr + 8'h01;
+
+                case (probe_phase)
+                    2'd0: begin
+                        probe_drive_oe_q <= 1'b1;
+                        probe_drive_q    <= ~probe_discharge;
+                    end
+                    2'd1: begin
+                        probe_drive_oe_q <= 1'b0;
+                        probe_drive_q    <= ~probe_discharge;
+                    end
+                    2'd2: begin
+                        probe_drive_oe_q <= 1'b0;
+                        probe_drive_q    <= ~probe_discharge;
+                        probe_sample_q   <= probe_sync;
+                    end
+                    default: begin
+                        probe_drive_oe_q <= 1'b1;
+                        probe_drive_q    <= probe_discharge;
+                    end
+                endcase
+            end else begin
+                probe_ctr        <= 8'h00;
+                probe_drive_oe_q <= 1'b0;
+                probe_drive_q    <= 1'b0;
+                probe_sample_q   <= probe_sync;
+            end
+        end
+    end
+
     wire _unused_ok;
     assign _unused_ok = &{
-        clk,
-        rst_n,
-        reg_ctrl,
-        reg_src,
-        reg_div,
-        reg_mode,
-        reg_oscen,
-        reg_status,
-        reg_rawlo,
-        reg_rawhi,
-        trng_bit,
-        ua[5:0]
+        reg_ctrl[7:3],
+        reg_src[7:2],
+        reg_mode[7:6],
+        reg_oscen[7:4],
+        reg_status[7:1],
+        reg_rawlo[7:5],
+        reg_rawhi[7:5]
     };
 
 endmodule

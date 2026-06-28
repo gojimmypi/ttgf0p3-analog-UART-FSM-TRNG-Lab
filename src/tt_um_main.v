@@ -35,7 +35,7 @@
  *
  * - uio_oe[7:0]  : UIO direction control
  *
- * - ua[5:0]      : GF 0p3 analog experiment pins, connected through analog_experiment_stub
+ * - ua[5:0]      : GF 0p3 analog experiment pins
  *
  * This module contains almost no behavior of its own. It is mostly a pin-map
  * and visibility wrapper around uart_trng_ascii_core.
@@ -389,7 +389,7 @@ module tt_um_main
 /*
  *******************************************************************************
  *******************************************************************************
- * Optionally Instantiate the GF 0p3 Analog Experiment Stub
+ * Optionally Instantiate the GF 0p3 Analog Experiment
  *******************************************************************************
  *******************************************************************************
  */
