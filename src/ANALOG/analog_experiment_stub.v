@@ -162,7 +162,6 @@ module analog_experiment_stub
     assign ua[3] = amon_pin_oe ? amon_pin_out : 1'bz;
     assign ua[4] = osc_pin_oe ? osc_pin_out : 1'bz;
     assign ua[5] = (probe_pin_enable & probe_drive_oe_q) ? probe_drive_q : 1'bz;
-    assign ua[7:6] = 2'bzz;
 
     always @(*) begin
         case (probe_rate_sel)
