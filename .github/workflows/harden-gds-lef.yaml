@@ -10,6 +10,7 @@ on:
       - "tools/full_harden_artifact.sh"
       - "tools/patch_full_harden_source.py"
       - "tools/patch_full_harden_config.py"
+      - "tools/strip_unused_analog_pins.py"
       - "tools/check_gds_content.py"
       - "mag/*.def"
       - "mag/*.mag"
@@ -53,6 +54,7 @@ jobs:
           python3 -m pip install --upgrade pip
           python3 -m pip install -r tt/requirements.txt
           python3 -m pip install librelane==2.4.2
+          python3 -m pip install gdstk
 
           docker --version
           test -d tt/.git
@@ -61,10 +63,36 @@ jobs:
       - name: Harden and collect GDS/LEF
         run: |
           set -euo pipefail
+
+          TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' info.yaml)"
+          test -n "${TOP}"
+          echo "TOP=${TOP}"
+
+          # The harden flow must see the full TT ua[7:0] interface.
+          # The submitted artifact is stripped back to analog_pins=6 after hardening.
+          cp -f tt/tech/gf180mcuD/def/analog/tt_analog_1x2.def mag/tt_analog_1x2.def
+
           chmod +x tools/full_harden_artifact.sh
           ./tools/full_harden_artifact.sh 2>&1 | tee harden-gds-lef.log
-          mkdir -p "${ARTIFACT_DIR}"
+
+          python3 tools/strip_unused_analog_pins.py \
+            --gds "gds/${TOP}.gds" \
+            --lef "lef/${TOP}.lef"
+
+          python3 tools/check_gds_content.py "gds/${TOP}.gds"
+
+          if grep -Eq 'PIN ua\[[67]\]' "lef/${TOP}.lef"; then
+            echo "BAD: stripped LEF still contains ua[6] or ua[7]"
+            exit 1
+          fi
+
+          rm -rf "${ARTIFACT_DIR}"
+          mkdir -p "${ARTIFACT_DIR}/gds" "${ARTIFACT_DIR}/lef"
+          cp -f "gds/${TOP}.gds" "${ARTIFACT_DIR}/gds/${TOP}.gds"
+          cp -f "lef/${TOP}.lef" "${ARTIFACT_DIR}/lef/${TOP}.lef"
           cp -f harden-gds-lef.log "${ARTIFACT_DIR}/harden-gds-lef.log"
+
+          ls -lh "${ARTIFACT_DIR}/gds/${TOP}.gds" "${ARTIFACT_DIR}/lef/${TOP}.lef"
 
       - name: Show generated files
         if: always()
@@ -72,7 +100,7 @@ jobs:
           TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' info.yaml)"
           echo "TOP=${TOP}"
           ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef" 2>/dev/null || true
-          find build/hardened-gds-lef -type f -maxdepth 3 -print -exec ls -lh {} \; 2>/dev/null || true
+          find build/hardened-gds-lef -maxdepth 3 -type f -print -exec ls -lh {} \; 2>/dev/null || true
           test -f harden-gds-lef.log && tail -200 harden-gds-lef.log || true
 
       - name: Upload hardened GDS/LEF artifact

@@ -4,8 +4,9 @@
 Analog custom-GDS submissions can expose VDPWR/VGND in their submitted
 Verilog model. The regular Tiny Tapeout hardening path validates the user
 module interface and rejects those power pins as extra ports. This script is
-used only by tools/full_harden_local.sh while generating a real hardened GDS.
-The caller backs up and restores src/project.v after hardening.
+used only by tools/full_harden_local.sh or tools/full_harden_artifact.sh while
+generating a real hardened GDS. The caller backs up and restores src/project.v
+after hardening.
 """
 from __future__ import annotations
 
@@ -44,10 +45,14 @@ def patch_project(path: Path) -> bool:
     if "module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab" not in text:
         raise RuntimeError("Patch removed or hid the GF180 top module declaration")
 
+    if "inout  wire [7:0] ua" not in text:
+        raise RuntimeError("Expected full top-level ua[7:0] interface for TT hardening")
+
     path.write_text(text, encoding="utf-8", newline="\n")
     print(f"Patched {path} for full hardening")
     print("  removed top-level VGND/VDPWR ports")
     print("  removed VGND/VDPWR from unused_ok")
+    print("  kept top-level ua port at [7:0]")
     return True
 
 
