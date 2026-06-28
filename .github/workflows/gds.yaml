@@ -44,6 +44,8 @@ jobs:
 
           cat "build/custom_gds/project.v"
 
+          python3 tools/check_gds_content.py "gds/${TOP}.gds"
+
       - name: Create and publish the custom GDS artifact
         uses: TinyTapeout/tt-gds-action/custom_gds@ttgf26a
         with:
