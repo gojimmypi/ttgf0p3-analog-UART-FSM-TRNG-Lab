@@ -76,6 +76,10 @@ def patch_config() -> None:
             "VDD_PIN": "VDPWR",
             "GND_PIN": "VGND",
             "RT_MAX_LAYER": "Metal4",
+            # Global placement failed at 71.451% actual utilization with the
+            # default 60% density target.  Keep the fixed analog frame, but let
+            # global placement use a density above OpenROAD's suggested 72%.
+            "PL_TARGET_DENSITY_PCT": 75,
         }
     )
 
@@ -94,6 +98,7 @@ def patch_config() -> None:
     print(f"  VDD_PIN: {user_config['VDD_PIN']}")
     print(f"  GND_PIN: {user_config['GND_PIN']}")
     print(f"  RT_MAX_LAYER: {user_config['RT_MAX_LAYER']}")
+    print(f"  PL_TARGET_DENSITY_PCT: {user_config['PL_TARGET_DENSITY_PCT']}")
 
 
 def main() -> int:
