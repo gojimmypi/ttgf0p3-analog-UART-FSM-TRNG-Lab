@@ -25,9 +25,9 @@ Diagnostic:  Scale value is 0.005000
    Generating output for cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
 
 Generated files:
--rw-r--r-- 1 gojimmypi gojimmypi 6.6K Jun 28 10:33 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
--rw-r--r-- 1 gojimmypi gojimmypi 8.3K Jun 28 10:33 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef
--rw-r--r-- 1 gojimmypi gojimmypi 12K Jun 28 10:33 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.gds
+-rw-r--r-- 1 gojimmypi gojimmypi 6.6K Jun 28 11:24 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
+-rw-r--r-- 1 gojimmypi gojimmypi 8.3K Jun 28 11:24 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.lef
+-rw-r--r-- 1 gojimmypi gojimmypi 12K Jun 28 11:24 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.gds
 
 Pin checks:
 LEF PIN count: 53
