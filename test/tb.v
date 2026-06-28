@@ -15,7 +15,7 @@
 module tb ();
 
 `ifdef IS_MY_IVERILOG_SIMULATION
-  // Dump the signals to a vcd (Value Change Dump) file. You can view it with gtkwave after 
+  // Dump the signals to a vcd (Value Change Dump) file. You can view it with gtkwave after
   initial begin
     $dumpfile("tb.vcd");
     $dumpvars(0, tb);
@@ -43,9 +43,14 @@ module tb ();
 `ifdef ANALOG_ENABLED
   wire [7:0] ua;
 `endif
+
 `ifdef GL_TEST
-  wire VPWR = 1'b1;
-  wire VGND = 1'b0;
+    `ifdef ANALOG_ENABLED
+        wire VDPWR = 1'b1;
+    `else
+        wire VPWR = 1'b1;
+    `endif
+        wire VGND = 1'b0;
 `endif
 
 `ifndef TT_TOP_MODULE
@@ -58,8 +63,12 @@ module tb ();
 
       // Include power ports for the Gate Level test:
 `ifdef GL_TEST
-      .VPWR(VPWR),
-      .VGND(VGND),
+    `ifdef ANALOG_ENABLED
+        .VDPWR(VDPWR),
+    `else
+        .VPWR(VPWR),
+    `endif
+        .VGND(VGND),
 `endif
 
       .ui_in  (ui_in),    // Dedicated inputs
