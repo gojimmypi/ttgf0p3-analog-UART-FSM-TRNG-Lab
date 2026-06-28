@@ -163,6 +163,9 @@ module analog_experiment_stub
     assign ua[4] = osc_pin_oe ? osc_pin_out : 1'bz;
     assign ua[5] = (probe_pin_enable & probe_drive_oe_q) ? probe_drive_q : 1'bz;
 
+    wire [1:0] unused_ua;
+    assign unused_ua = ua[7:6];
+
     always @(*) begin
         case (probe_rate_sel)
             2'd0: probe_phase = probe_ctr[3:2];
@@ -249,6 +252,7 @@ module analog_experiment_stub
 
     wire _unused_ok;
     assign _unused_ok = &{
+        unused_ua,
         reg_ctrl[7:3],
         reg_src[7:2],
         reg_mode[7:6],
