@@ -42,6 +42,8 @@ jobs:
           test -f "lef/${TOP}.lef"
           test -f "build/custom_gds/project.v"
 
+          cat "build/custom_gds/project.v"
+
       - name: Create and publish the custom GDS artifact
         uses: TinyTapeout/tt-gds-action/custom_gds@ttgf26a
         with:
