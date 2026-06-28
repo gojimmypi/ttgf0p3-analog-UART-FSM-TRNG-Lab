@@ -10,8 +10,8 @@ project:
   # How many tiles your design occupies? A single tile is about 340x160 uM.
   tiles: "1x2"          # Analog projects must be 1x2 or larger
 
-  # GF 0p3 analog experiment: use all six available analog pins. (set to seven to appease gds job)
-  analog_pins: 7
+  # GF 0p3 analog experiment: use all six available analog pins.
+  analog_pins: 6
   uses_vapwr: false
 
   # Your top module name must start with "tt_um_". Make it unique by including your github username:
@@ -64,7 +64,6 @@ pinout:
   ua[3]: "amon_out"            # Analog monitor mux output
   ua[4]: "osc_out"             # Oscillator monitor output
   ua[5]: "puf_probe"           # PUF/noise probe pad
-  ua[6]: "reserved analog pin, connected in layout" # unused
 
 # Do not change!
 yaml_version: 6
