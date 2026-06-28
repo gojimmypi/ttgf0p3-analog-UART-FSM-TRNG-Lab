@@ -80,10 +80,6 @@ def patch_config() -> None:
             # default 60% density target.  Keep the fixed analog frame, but let
             # global placement use a density above OpenROAD's suggested 72%.
             "PL_TARGET_DENSITY_PCT": 73,
-            # Tiny Tapeout project clock is 25 MHz, so harden for 40 ns.
-            # The earlier 20 ns setting was a 50 MHz experiment and caused
-            # post-PnR setup violations in the GF180 analog frame.
-            "CLOCK_PERIOD": 40,
         }
     )
 
@@ -103,7 +99,6 @@ def patch_config() -> None:
     print(f"  GND_PIN: {user_config['GND_PIN']}")
     print(f"  RT_MAX_LAYER: {user_config['RT_MAX_LAYER']}")
     print(f"  PL_TARGET_DENSITY_PCT: {user_config['PL_TARGET_DENSITY_PCT']}")
-    print(f"  CLOCK_PERIOD: {user_config['CLOCK_PERIOD']}")
 
 
 def main() -> int:

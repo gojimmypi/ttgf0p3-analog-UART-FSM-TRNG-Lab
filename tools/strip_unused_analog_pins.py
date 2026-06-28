@@ -69,36 +69,35 @@ def strip_gds(gds_path: Path, windows: list[Window]) -> None:
     removed_labels = 0
 
     for cell in top_cells:
-        kept_polygons = []
+        to_remove = []
+
         for polygon in cell.polygons:
             bbox = bbox_of(polygon)
             if bbox is not None and any(window.intersects(bbox) for window in windows):
+                to_remove.append(polygon)
                 removed_polygons += 1
-            else:
-                kept_polygons.append(polygon)
-        cell.polygons = kept_polygons
 
-        kept_paths = []
         for path in cell.paths:
             bbox = bbox_of(path)
             if bbox is not None and any(window.intersects(bbox) for window in windows):
+                to_remove.append(path)
                 removed_paths += 1
-            else:
-                kept_paths.append(path)
-        cell.paths = kept_paths
 
-        kept_labels = []
         for label in cell.labels:
             label_text = str(label.text)
             origin = getattr(label, "origin", None)
             in_window = False
             if origin is not None:
-                in_window = any(window.contains_point(float(origin[0]), float(origin[1])) for window in windows)
+                in_window = any(
+                    window.contains_point(float(origin[0]), float(origin[1]))
+                    for window in windows
+                )
             if label_text in {window.name for window in windows} or in_window:
+                to_remove.append(label)
                 removed_labels += 1
-            else:
-                kept_labels.append(label)
-        cell.labels = kept_labels
+
+        if to_remove:
+            cell.remove(*to_remove)
 
     lib.write_gds(str(gds_path))
 
