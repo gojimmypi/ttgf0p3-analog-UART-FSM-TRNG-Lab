@@ -55,10 +55,13 @@ jobs:
 
       - name: Add PDK metadata for gl_test
         run: |
-          jq '. + {
-            PDK_SOURCE: "ciel",
-            PDK_VERSION: "e8daeda73ca8f5814dbc0b11d1d05802251a3750"
-          }' tt_submission/pdk.json > tt_submission/pdk.json.tmp
+          # JSON replacements....
+          jq \
+            --arg pdk_source "ciel" \
+            --arg pdk_version "e8daeda73ca8f5814dbc0b11d1d05802251a3750" \
+            ". + {\"PDK_SOURCE\": \$pdk_source, \"PDK_VERSION\": \$pdk_version}" \
+            tt_submission/pdk.json > tt_submission/pdk.json.tmp
+          echo "tt_submission/pdk.json peek:"
           mv tt_submission/pdk.json.tmp tt_submission/pdk.json
           cat tt_submission/pdk.json
 
