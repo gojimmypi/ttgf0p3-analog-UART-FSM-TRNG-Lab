@@ -194,6 +194,15 @@ module UART_FSM_TRNG_Lab
     parameter [31:0] UART_BAUD = `PROJECT_UART_BAUD    /* default UART is 115200 baud */
 )
 (
+`ifdef ANALOG_ENABLED
+    /* Custom-GDS analog submissions expose the user power pins in the
+     * submitted Verilog model so Tiny Tapeout precheck can match them
+     * against the LEF/GDS pin list.  The digital control shell does not
+     * drive these nets. */
+    inout  wire       VGND,
+    inout  wire       VDPWR,
+`endif
+
     input  wire [7:0] ui_in,    // Dedicated inputs
     output wire [7:0] uo_out,   // Dedicated outputs
     input  wire [7:0] uio_in,   // IOs: Input path
@@ -258,7 +267,11 @@ module UART_FSM_TRNG_Lab
         .rst_n(rst_n)
     );
 
+`ifdef ANALOG_ENABLED
+    assign unused_ok = &{ena, clk, rst_n, uio_in, VGND, VDPWR};
+`else
     assign unused_ok = &{ena, clk, rst_n, uio_in};
+`endif
 
     `ifdef ULX3S
         always @(posedge clk) begin
