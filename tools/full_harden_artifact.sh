@@ -2,9 +2,10 @@
 set -euo pipefail
 
 TOP="${TOP:-}"
-TT_TOOL="${TT_TOOL:-.tt/tt-support-tools/tt_tool.py}"
+TT_TOOL="${TT_TOOL:-tt/tt_tool.py}"
 PROJECT_V="src/project.v"
 PROJECT_V_BAK="build/full_harden/project.v.before_full_harden"
+ARTIFACT_DIR="${ARTIFACT_DIR:-build/hardened-gds-lef}"
 
 if [ -z "${TOP}" ]; then
     TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' info.yaml)"
@@ -62,15 +63,21 @@ copy_hardened_outputs() {
     gds_src="$(find_hardened_file gds "${TOP}.gds")"
     lef_src="$(find_hardened_file lef "${TOP}.lef")"
 
-    mkdir -p gds lef
+    rm -rf "${ARTIFACT_DIR}"
+    mkdir -p gds lef "${ARTIFACT_DIR}/gds" "${ARTIFACT_DIR}/lef"
+
     cp -f "${gds_src}" "gds/${TOP}.gds"
     cp -f "${lef_src}" "lef/${TOP}.lef"
+    cp -f "${gds_src}" "${ARTIFACT_DIR}/gds/${TOP}.gds"
+    cp -f "${lef_src}" "${ARTIFACT_DIR}/lef/${TOP}.lef"
 
     echo
     echo "Copied hardened outputs:"
     ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef"
+    ls -lh "${ARTIFACT_DIR}/gds/${TOP}.gds" "${ARTIFACT_DIR}/lef/${TOP}.lef"
 
     python3 tools/check_gds_content.py "gds/${TOP}.gds"
+    python3 tools/check_gds_content.py "${ARTIFACT_DIR}/gds/${TOP}.gds"
 }
 
 mkdir -p "$(dirname "${PROJECT_V_BAK}")"

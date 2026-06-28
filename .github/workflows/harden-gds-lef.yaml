@@ -5,6 +5,17 @@ on:
   push:
     branches:
       - dev
+    paths:
+      - ".github/workflows/harden-gds-lef.yaml"
+      - "tools/full_harden_artifact.sh"
+      - "tools/patch_full_harden_source.py"
+      - "tools/patch_full_harden_config.py"
+      - "tools/check_gds_content.py"
+      - "src/**"
+      - "info.yaml"
+      - "openlane/**"
+      - "config.tcl"
+      - "macro.cfg"
 
 permissions:
   contents: read
@@ -16,7 +27,8 @@ jobs:
     env:
       PDK: gf180mcuD
       PDK_ROOT: ${{ github.workspace }}/.pdk
-      TT_TOOL: ${{ github.workspace }}/.tt/tt-support-tools/tt_tool.py
+      TT_TOOL: ${{ github.workspace }}/tt/tt_tool.py
+      ARTIFACT_DIR: ${{ github.workspace }}/build/hardened-gds-lef
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -26,27 +38,31 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install Tiny Tapeout tools
         run: |
           sudo apt-get update
           sudo apt-get install -y git python3-pip
 
-          mkdir -p .tt
-          git clone --depth 1 https://github.com/TinyTapeout/tt-support-tools .tt/tt-support-tools
+          rm -rf tt
+          git clone --depth 1 https://github.com/TinyTapeout/tt-support-tools tt
 
           python3 -m pip install --upgrade pip
-          python3 -m pip install -r .tt/tt-support-tools/requirements.txt
+          python3 -m pip install -r tt/requirements.txt
           python3 -m pip install librelane==2.4.2
 
           docker --version
+          test -d tt/.git
           python3 "${TT_TOOL}" --help >/dev/null
 
       - name: Harden and collect GDS/LEF
         run: |
+          set -euo pipefail
           chmod +x tools/full_harden_artifact.sh
           ./tools/full_harden_artifact.sh 2>&1 | tee harden-gds-lef.log
+          mkdir -p "${ARTIFACT_DIR}"
+          cp -f harden-gds-lef.log "${ARTIFACT_DIR}/harden-gds-lef.log"
 
       - name: Show generated files
         if: always()
@@ -54,18 +70,30 @@ jobs:
           TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' info.yaml)"
           echo "TOP=${TOP}"
           ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef" 2>/dev/null || true
+          find build/hardened-gds-lef -type f -maxdepth 3 -print -exec ls -lh {} \; 2>/dev/null || true
           test -f harden-gds-lef.log && tail -200 harden-gds-lef.log || true
 
       - name: Upload hardened GDS/LEF artifact
-        if: always()
+        if: success()
         uses: actions/upload-artifact@v7
         with:
           name: hardened-gds-lef
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            build/hardened-gds-lef/gds/*.gds
+            build/hardened-gds-lef/lef/*.lef
+            build/hardened-gds-lef/harden-gds-lef.log
+
+      - name: Upload harden debug logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: harden-gds-lef-debug
           if-no-files-found: warn
           retention-days: 14
           path: |
-            gds/*.gds
-            lef/*.lef
             harden-gds-lef.log
             runs/**
             build/full_harden/**
+            build/hardened-gds-lef/**
