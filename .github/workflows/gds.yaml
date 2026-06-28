@@ -19,6 +19,10 @@ jobs:
           echo "TOP_MODULE=$(yq '.project.top_module' info.yaml)" | tee "$GITHUB_OUTPUT"
 
 
+      - name: Build custom-GDS Verilog model
+        run: |
+          python3 tools/build_custom_gds_verilog.py --out build/custom_gds/project.v
+
       - name: Check custom analog submission files
         run: |
           TOP="${{ steps.top_module.outputs.TOP_MODULE }}"
@@ -29,11 +33,11 @@ jobs:
           echo "TOP_MODULE=${TOP}"
           echo "Expected custom GDS: gds/${TOP}.gds"
           echo "Expected custom LEF: lef/${TOP}.lef"
-          echo "Expected Verilog model: src/project.v"
+          echo "Expected generated Verilog model: build/custom_gds/project.v"
 
           test -f "gds/${TOP}.gds"
           test -f "lef/${TOP}.lef"
-          test -f "src/project.v"
+          test -f "build/custom_gds/project.v"
 
       - name: Create and publish the custom GDS artifact
         uses: TinyTapeout/tt-gds-action/custom_gds@ttgf26a
@@ -41,7 +45,7 @@ jobs:
           top_module: ${{ steps.top_module.outputs.TOP_MODULE }}
           gds_path: gds/${{ steps.top_module.outputs.TOP_MODULE }}.gds
           lef_path: lef/${{ steps.top_module.outputs.TOP_MODULE }}.lef
-          verilog_path: src/project.v
+          verilog_path: build/custom_gds/project.v
           pdk: gf180mcuD
 
   precheck:

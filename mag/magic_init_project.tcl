@@ -9,7 +9,7 @@
 # Change the settings below to match your design:
 # ------------------------------------------------
 set TOP_LEVEL_CELL     tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
-set TEMPLATE_FILE      tt_analog_1x2.def
+set TEMPLATE_FILE      mag/tt_analog_1x2.def
 set POWER_STRIPE_WIDTH 2um                 ;# The minimum width is 1.2um
 
 # Power stripes: NET name, x position. You can add additional power stripes for each net, as needed.
@@ -47,7 +47,7 @@ foreach {name x} $POWER_STRIPES {
 
 # Save the layout and export GDS/LEF
 # ----------------------------------
-save ${TOP_LEVEL_CELL}.mag
+save mag/${TOP_LEVEL_CELL}.mag
 file mkdir gds
 gds write gds/${TOP_LEVEL_CELL}.gds
 file mkdir lef

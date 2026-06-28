@@ -44,6 +44,11 @@ gds write ${GDS_FILE}
 quit -noprompt
 EOF
 
+ python3 tools/patch_analog_outputs.py \
+    --top "${TOP}" \
+    --lef "${LEF_FILE}" \
+    --gds "${GDS_FILE}"
+
 echo
 echo "Generated files:"
 ls -lh "${MAG_FILE}"
@@ -70,6 +75,22 @@ else
     echo "This looks like a digital TT frame, not the analog custom layout."
     exit 1
 fi
+
+for power_pin in VGND VDPWR; do
+    if grep -q "PIN ${power_pin}" "${LEF_FILE}"; then
+        grep -n "PIN ${power_pin}" "${LEF_FILE}"
+    else
+        echo "ERROR: ${power_pin} not found in LEF."
+        exit 1
+    fi
+
+    if grep -q "${power_pin}" "${MAG_FILE}"; then
+        grep -n "${power_pin}" "${MAG_FILE}"
+    else
+        echo "ERROR: ${power_pin} not found in MAG."
+        exit 1
+    fi
+done
 
 echo
 echo "Size checks:"

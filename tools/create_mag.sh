@@ -11,6 +11,7 @@ if [ -z "${PDK_ROOT:-}" ]; then
 fi
 
 MAG_RC="${PDK_ROOT}/${PDK}/libs.tech/magic/gf180mcuD.magicrc"
+MAG_FILE="mag/${TOP}.mag"
 
 if [ ! -f "${MAG_RC}" ]; then
     echo "ERROR: Magic rc file not found:"
@@ -26,7 +27,7 @@ fi
 
 mkdir -p mag
 
-rm -f "mag/${TOP}.mag"
+rm -f "${MAG_FILE}"
 
 magic \
     -dnull \
@@ -38,11 +39,30 @@ save mag/${TOP}
 quit -noprompt
 EOF
 
-if grep -q 'ua\[' "mag/${TOP}.mag"; then
-    echo "Created analog Magic layout:"
-    ls -lh "mag/${TOP}.mag"
-    grep -n 'ua\[' "mag/${TOP}.mag"
-else
-    echo "ERROR: Created MAG file does not contain ua pins."
+python3 tools/patch_analog_mag.py "${MAG_FILE}"
+
+echo "Created analog Magic layout:"
+ls -lh "${MAG_FILE}"
+
+echo
+echo "Analog pin labels:"
+grep -n 'ua\[' "${MAG_FILE}"
+
+echo
+echo "Power labels:"
+grep -n 'VGND\|VDPWR' "${MAG_FILE}"
+
+if ! grep -q 'ua\[0\]' "${MAG_FILE}"; then
+    echo "ERROR: ua[0] missing from MAG."
+    exit 1
+fi
+
+if ! grep -q 'VGND' "${MAG_FILE}"; then
+    echo "ERROR: VGND missing from MAG."
+    exit 1
+fi
+
+if ! grep -q 'VDPWR' "${MAG_FILE}"; then
+    echo "ERROR: VDPWR missing from MAG."
     exit 1
 fi

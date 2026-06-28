@@ -195,10 +195,12 @@ module UART_FSM_TRNG_Lab
 )
 (
 `ifdef ANALOG_ENABLED
-    // Optional Analog
-    //    input  wire       VGND,
-    //    input  wire       VDPWR,    // 1.8v power supply
-    //    input  wire       VAPWR,    // 3.3v power supply
+    /* Custom-GDS analog submissions expose the user power pins in the
+     * submitted Verilog model so Tiny Tapeout precheck can match them
+     * against the LEF/GDS pin list.  The digital control shell does not
+     * drive these nets. */
+    inout  wire       VGND,
+    inout  wire       VDPWR,
 `endif
 
     input  wire [7:0] ui_in,    // Dedicated inputs
@@ -265,7 +267,11 @@ module UART_FSM_TRNG_Lab
         .rst_n(rst_n)
     );
 
+`ifdef ANALOG_ENABLED
+    assign unused_ok = &{ena, clk, rst_n, uio_in, VGND, VDPWR};
+`else
     assign unused_ok = &{ena, clk, rst_n, uio_in};
+`endif
 
     `ifdef ULX3S
         always @(posedge clk) begin
