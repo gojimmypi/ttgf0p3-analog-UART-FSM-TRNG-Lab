@@ -11,6 +11,8 @@ on:
       - "tools/patch_full_harden_source.py"
       - "tools/patch_full_harden_config.py"
       - "tools/check_gds_content.py"
+      - "mag/*.def"
+      - "mag/*.mag"
       - "src/**"
       - "info.yaml"
       - "openlane/**"
