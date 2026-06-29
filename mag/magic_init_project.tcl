@@ -8,7 +8,7 @@
 
 # Change the settings below to match your design:
 # ------------------------------------------------
-set TOP_LEVEL_CELL     tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+set TOP_LEVEL_CELL     tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog
 set TEMPLATE_FILE      mag/tt_analog_1x2.def
 set POWER_STRIPE_WIDTH 2um                 ;# The minimum width is 1.2um
 

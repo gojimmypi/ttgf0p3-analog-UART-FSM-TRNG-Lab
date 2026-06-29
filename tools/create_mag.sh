@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TOP="tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab"
+TOP="tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog"
 PDK="${PDK:-gf180mcuD}"
 DEF_FILE="mag/tt_analog_1x2.def"
 

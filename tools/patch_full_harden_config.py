@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-TOP = "tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab"
+TOP = "tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog"
 ANALOG_TEMPLATE_CANDIDATES = [
     Path("tt/tech/gf180mcuD/def/analog/tt_analog_1x2.def"),
     Path("mag/tt_analog_1x2.def"),

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TOP="tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab"
+TOP="tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog"
 TT_TOOL="${TT_TOOL:-/mnt/c/workspace/tt-support-tools-gojimmypi/tt_tool.py}"
 PROJECT_V="src/project.v"
 PROJECT_V_BAK="build/full_harden/project.v.before_full_harden"

@@ -1,6 +1,6 @@
 # Tiny Tapeout project information
 project:
-  title:        "GF180 Analog Entropy Explorer: UART/SPI TRNG and PUF"      # Project title
+  title:        "GF180 Analog with ua Entropy Explorer: UART/SPI TRNG and PUF"      # Project title
   author:       "gojimmypi"      # Your name
   discord:      "gojimmypi"      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
   description:  "UART/SPI-controlled GF180 analog lab for DAC, comparator, oscillator, TRNG, and PUF-style entropy experiments."      # One line description of what your project does
@@ -15,7 +15,7 @@ project:
   uses_vapwr: false
 
   # Your top module name must start with "tt_um_". Make it unique by including your github username:
-  top_module:  "tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab"
+  top_module:  "tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog"
 
   # List your project's source files here.
   # Source files must be in ./src and you must list each source file separately, one per line.

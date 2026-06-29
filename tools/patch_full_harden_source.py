@@ -42,7 +42,7 @@ def patch_project(path: Path) -> bool:
             "Did not find exactly one unused_ok assignment that references VGND/VDPWR"
         )
 
-    if "module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab" not in text:
+    if "module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog" not in text:
         raise RuntimeError("Patch removed or hid the GF180 top module declaration")
 
     if "inout  wire [7:0] ua" not in text:

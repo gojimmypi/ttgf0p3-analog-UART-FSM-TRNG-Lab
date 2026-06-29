@@ -162,7 +162,7 @@
 /* See companion project: SKY130 (ChipFoundry) tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab */
 
 /* Assume TT needs this file to be called project.v
- * but the module is called tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab - so disable warning: */
+ * but the module is called tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog - so disable warning: */
 
  /* Define a unique name for the module based on the target PDK.
   * This allows the same project.v file to be used across different PDK targets without modification,
@@ -176,7 +176,7 @@ module tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab
 
 `elsif PDK_TARGET_GF180
 /* verilator lint_off DECLFILENAME */
-module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog
 /* verilator lint_on DECLFILENAME */
 
 `elsif IS_MY_IVERILOG_SIMULATION
