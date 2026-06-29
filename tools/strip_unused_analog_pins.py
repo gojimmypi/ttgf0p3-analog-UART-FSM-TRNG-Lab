@@ -116,6 +116,18 @@ def strip_gds(gds_path: Path, windows: list[Window]) -> None:
     if remaining_labels:
         raise RuntimeError(f"Unused analog pin labels remain in GDS: {remaining_labels}")
 
+    remaining_items = []
+    for cell in verify.top_level():
+        for item in [*cell.polygons, *cell.paths]:
+            bbox = bbox_of(item)
+            if bbox is not None and any(window.intersects(bbox) for window in windows):
+                remaining_items.append(type(item).__name__)
+    if remaining_items:
+        raise RuntimeError(
+            "Unused analog pin geometry remains in GDS windows: "
+            + ", ".join(remaining_items)
+        )
+
 
 def strip_lef(lef_path: Path, pin_names: list[str]) -> None:
     text = lef_path.read_text(encoding="utf-8")

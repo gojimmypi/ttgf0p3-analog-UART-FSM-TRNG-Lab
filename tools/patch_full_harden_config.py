@@ -2,26 +2,27 @@
 """Patch Tiny Tapeout hardening config for the GF180 analog full-project build.
 
 The standard tt_tool.py --create-user-config step currently writes the normal
-1x2 digital DEF template.  That template does not contain the ua[*] analog
-pins, so a full analog RTL hardening run would either fail at the DEF-template
-stage or produce a layout that does not match the analog submission interface.
+1x2 digital DEF template. This script replaces that with the GF180 analog 1x2
+DEF template for hardening.
 
-This script is intentionally small and repo-local.  Run it immediately after
-`tt_tool.py --gf --create-user-config` and before `tt_tool.py --gf --harden`.
-It updates src/user_config.json and src/config_merged.json so LibreLane hardens
-this project against the GF180 analog 1x2 frame.
+Use the full Tiny Tapeout analog template for hardening because tt_tool.py
+requires the top-level ua bus to be 8 bits wide. The final submitted GDS/LEF is
+stripped after hardening so only ua[0] through ua[5] remain as physical analog
+pins, matching info.yaml analog_pins: 6.
 """
 from __future__ import annotations
 
 import argparse
 import json
 import re
-import shutil
 from pathlib import Path
 from typing import Any
 
 TOP = "tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab"
-ANALOG_TEMPLATE = Path("mag/tt_analog_1x2.def")
+ANALOG_TEMPLATE_CANDIDATES = [
+    Path("tt/tech/gf180mcuD/def/analog/tt_analog_1x2.def"),
+    Path("mag/tt_analog_1x2.def"),
+]
 PATCHED_TEMPLATE = Path("build/full_harden/tt_analog_1x2_vdpwr.def")
 USER_CONFIG = Path("src/user_config.json")
 BASE_CONFIG = Path("src/config.json")
@@ -40,19 +41,28 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
         f.write("\n")
 
 
-def create_vdpwr_template() -> None:
-    if not ANALOG_TEMPLATE.is_file():
-        raise FileNotFoundError(ANALOG_TEMPLATE)
+def find_analog_template() -> Path:
+    for path in ANALOG_TEMPLATE_CANDIDATES:
+        if path.is_file():
+            return path
+    raise FileNotFoundError(
+        "Could not find a GF180 analog DEF template. Checked: "
+        + ", ".join(str(path) for path in ANALOG_TEMPLATE_CANDIDATES)
+    )
 
-    text = ANALOG_TEMPLATE.read_text(encoding="utf-8")
 
-    # The analog frame contains the correct analog pins and rows, but the
-    # special power net is named VPWR.  This project's GF180 analog top and TT
-    # precheck use VDPWR, so make a generated DEF copy with that name.
+def create_vdpwr_template() -> Path:
+    analog_template = find_analog_template()
+    text = analog_template.read_text(encoding="utf-8")
+
+    # The analog frame contains the correct harden-time analog pins and rows,
+    # but the special power net is named VPWR. This project's GF180 analog top
+    # and TT precheck use VDPWR, so make a generated DEF copy with that name.
     text = re.sub(r"\bVPWR\b", "VDPWR", text)
 
     PATCHED_TEMPLATE.parent.mkdir(parents=True, exist_ok=True)
     PATCHED_TEMPLATE.write_text(text, encoding="utf-8", newline="\n")
+    return analog_template
 
 
 def patch_config() -> None:
@@ -61,8 +71,7 @@ def patch_config() -> None:
             f"{USER_CONFIG} not found. Run tt_tool.py --gf --create-user-config first."
         )
 
-    create_vdpwr_template()
-
+    analog_template = create_vdpwr_template()
     user_config = read_json(USER_CONFIG)
 
     user_config.update(
@@ -77,12 +86,11 @@ def patch_config() -> None:
             "GND_PIN": "VGND",
             "RT_MAX_LAYER": "Metal4",
             # Global placement failed at 71.451% actual utilization with the
-            # default 60% density target.  Keep the fixed analog frame, but let
+            # default 60% density target. Keep the fixed analog frame, but let
             # global placement use a density above OpenROAD's suggested 72%.
             "PL_TARGET_DENSITY_PCT": 73,
-            # Tiny Tapeout project clock is 25 MHz, so harden for 40 ns.
-            # The earlier 20 ns setting was a 50 MHz experiment and caused
-            # post-PnR setup violations in the GF180 analog frame.
+            # TT target is 25 MHz. Harden for 40 ns; this matches the most
+            # recent successful full harden path and avoids deferred setup fail.
             "CLOCK_PERIOD": 40,
         }
     )
@@ -95,7 +103,8 @@ def patch_config() -> None:
         write_json(MERGED_CONFIG, merged)
 
     print("Patched full-project GF180 analog hardening config")
-    print(f"  template: {PATCHED_TEMPLATE}")
+    print(f"  source template: {analog_template}")
+    print(f"  generated template: {PATCHED_TEMPLATE}")
     print(f"  DESIGN_NAME: {user_config['DESIGN_NAME']}")
     print(f"  FP_DEF_TEMPLATE: {user_config['FP_DEF_TEMPLATE']}")
     print(f"  DIE_AREA: {user_config['DIE_AREA']}")

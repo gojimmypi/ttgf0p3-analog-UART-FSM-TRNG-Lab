@@ -8,7 +8,7 @@ PROJECT_V_BAK="build/full_harden/project.v.before_full_harden"
 ARTIFACT_DIR="${ARTIFACT_DIR:-build/hardened-gds-lef}"
 
 if [ -z "${TOP}" ]; then
-    TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' info.yaml)"
+    TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"?\([^"]*\)"?[[:space:]]*$/\1/p' info.yaml)"
 fi
 
 if [ -z "${TOP}" ]; then
@@ -56,7 +56,7 @@ find_hardened_file() {
     printf '%s\n' "${result}"
 }
 
-copy_hardened_outputs() {
+copy_strip_and_stage_outputs() {
     local gds_src
     local lef_src
 
@@ -68,15 +68,30 @@ copy_hardened_outputs() {
 
     cp -f "${gds_src}" "gds/${TOP}.gds"
     cp -f "${lef_src}" "lef/${TOP}.lef"
-    cp -f "${gds_src}" "${ARTIFACT_DIR}/gds/${TOP}.gds"
-    cp -f "${lef_src}" "${ARTIFACT_DIR}/lef/${TOP}.lef"
 
     echo
-    echo "Copied hardened outputs:"
+    echo "Copied hardened outputs before strip:"
     ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef"
-    ls -lh "${ARTIFACT_DIR}/gds/${TOP}.gds" "${ARTIFACT_DIR}/lef/${TOP}.lef"
+    python3 tools/check_gds_content.py "gds/${TOP}.gds"
+
+    python3 tools/strip_unused_analog_pins.py \
+        --gds "gds/${TOP}.gds" \
+        --lef "lef/${TOP}.lef"
 
     python3 tools/check_gds_content.py "gds/${TOP}.gds"
+
+    if grep -Eq 'PIN ua\[[67]\]' "lef/${TOP}.lef"; then
+        echo "ERROR: stripped LEF still contains ua[6] or ua[7]" >&2
+        exit 1
+    fi
+
+    cp -f "gds/${TOP}.gds" "${ARTIFACT_DIR}/gds/${TOP}.gds"
+    cp -f "lef/${TOP}.lef" "${ARTIFACT_DIR}/lef/${TOP}.lef"
+
+    echo
+    echo "Staged stripped hardened outputs:"
+    ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef"
+    ls -lh "${ARTIFACT_DIR}/gds/${TOP}.gds" "${ARTIFACT_DIR}/lef/${TOP}.lef"
     python3 tools/check_gds_content.py "${ARTIFACT_DIR}/gds/${TOP}.gds"
 }
 
@@ -93,7 +108,7 @@ run_tt_tool --gf --harden
 restore_project_v
 trap - EXIT
 
-copy_hardened_outputs
+copy_strip_and_stage_outputs
 
 echo
-echo "Done. Download the hardened-gds-lef artifact and commit the regenerated gds/ and lef/ files after inspection."
+echo "Done. The hardened-gds-lef artifact contains stripped GDS/LEF ready for custom_gds precheck."
