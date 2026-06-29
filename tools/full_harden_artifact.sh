@@ -80,8 +80,9 @@ copy_strip_and_stage_outputs() {
 
     python3 tools/check_gds_content.py "gds/${TOP}.gds"
 
-    if grep -Eq 'PIN ua\[[67]\]' "lef/${TOP}.lef"; then
-        echo "ERROR: stripped LEF still contains ua[6] or ua[7]" >&2
+    if ! grep -Eq 'PIN ua\[6\]' "lef/${TOP}.lef" || \
+       ! grep -Eq 'PIN ua\[7\]' "lef/${TOP}.lef"; then
+        echo "ERROR: LEF must keep ua[6] and ua[7] for TT pin checks" >&2
         exit 1
     fi
 
@@ -111,4 +112,5 @@ trap - EXIT
 copy_strip_and_stage_outputs
 
 echo
-echo "Done. The hardened-gds-lef artifact contains stripped GDS/LEF ready for custom_gds precheck."
+echo "Done. The hardened-gds-lef artifact contains label-stripped hardened GDS/LEF ready for custom_gds precheck."
+
