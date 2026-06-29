@@ -79,7 +79,7 @@ def patch_config() -> None:
             # Global placement failed at 71.451% actual utilization with the
             # default 60% density target.  Keep the fixed analog frame, but let
             # global placement use a density above OpenROAD's suggested 72%.
-            "PL_TARGET_DENSITY_PCT": 73,
+            "PL_TARGET_DENSITY_PCT": 74,
         }
     )
 
