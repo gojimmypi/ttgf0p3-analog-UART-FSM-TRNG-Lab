@@ -8,7 +8,7 @@ PROJECT_V_BAK="build/full_harden/project.v.before_full_harden"
 ARTIFACT_DIR="${ARTIFACT_DIR:-build/hardened-gds-lef}"
 
 if [ -z "${TOP}" ]; then
-    TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"?\([^"]*\)"?[[:space:]]*$/\1/p' info.yaml)"
+    TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' info.yaml)"
 fi
 
 if [ -z "${TOP}" ]; then
