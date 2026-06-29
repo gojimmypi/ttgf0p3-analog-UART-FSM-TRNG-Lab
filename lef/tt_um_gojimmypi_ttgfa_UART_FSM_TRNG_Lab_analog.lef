@@ -2,9 +2,9 @@ VERSION 5.7 ;
   NOWIREEXTENSIONATPIN ON ;
   DIVIDERCHAR "/" ;
   BUSBITCHARS "[]" ;
-MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog
   CLASS BLOCK ;
-  FOREIGN tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab ;
+  FOREIGN tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog ;
   ORIGIN 0.000 0.000 ;
   SIZE 346.640 BY 325.360 ;
   PIN VDPWR
@@ -631,6 +631,6 @@ MACRO tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
         RECT 285.440 0.650 325.520 1.300 ;
         RECT 329.120 0.650 343.700 1.300 ;
   END
-END tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+END tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog
 END LIBRARY
 

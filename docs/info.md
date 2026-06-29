@@ -11,6 +11,8 @@ Ensure full URL paths are included for files outside this directory, as the full
 
 ## How it works
 
+This is the experimental project version that enables `ua[0..5]`.
+
 A [ring oscillator](https://en.wikipedia.org/wiki/Ring_oscillator) is implemented at the core of this project as an 
 [entropy](https://en.wikipedia.org/wiki/Entropy) source for a TRNG (True [Hardware Random Number Generator](https://en.wikipedia.org/wiki/Hardware_random_number_generator)).
 
