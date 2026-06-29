@@ -11,18 +11,18 @@
  * This is intended for education and experimentation.
  * It is not a certified cryptographic random number generator.
  *
- * WARNING: There's a bit of hackery in this file to allow the real RO-based TRNG code 
+ * WARNING: There's a bit of hackery in this file to allow the real RO-based TRNG code
  * to be included only when explicitly enabled, and only in appropriate build environments.
- * Note the project.v settings for TRNG_USE_RO and TRNG_ALLOW_REAL_RO, and the conditional 
+ * Note the project.v settings for TRNG_USE_RO and TRNG_ALLOW_REAL_RO, and the conditional
  * code below that checks for these defines. (in particular the `ifdef __pnr__`)
  *
- * There's an additional manual identification of PDK in root-level target_pdk.v included by project.v, 
+ * There's an additional manual identification of PDK in root-level target_pdk.v included by project.v,
  * which is used to conditionally instantiate the correct standard cells in the RO code.
  *
  * See GDS_logs.zip\runs\wokwi\06-yosys-synthesis\tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab.nl.v
  *   and confirm this exists: module trng_ro_inverter_cell(a, y);
- *   with many instantiated sky130_fd_sc_hd__inv_2 cells inside. 
- * If you see this, the real RO code is included. If you see instead a module trng_ro_inverter_cell 
+ *   with many instantiated sky130_fd_sc_hd__inv_2 cells inside.
+ * If you see this, the real RO code is included. If you see instead a module trng_ro_inverter_cell
  * with no internal cells, then the real RO code is not included and the trng_ro module is just a passthrough.
  *
  * ABC: Error: The network is combinational.
@@ -51,7 +51,7 @@
     `endif
 `endif
 
-/* 
+/*
  * --------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------
  *  TRNG Lab Core - the heart of all things random
@@ -138,7 +138,7 @@ module trng_lab_core
     wire        sample_tick;
     wire [1:0]  source_select;
 
-    (* keep, dont_touch *) 
+    (* keep, dont_touch *)
     wire [7:0]  ro_raw;
 
     wire        ro_xor;
@@ -439,14 +439,14 @@ module trng_lab_core
     //`endif
 
     `ifdef TRNG_ALLOW_REAL_RO
-        /* TRNG_LAB_USE_REAL_RO is used internally to conditionally include the real RO code. 
+        /* TRNG_LAB_USE_REAL_RO is used internally to conditionally include the real RO code.
          * Do not define externally as there are multiple build paths during testing (e.g. FPGA) */
         `define TRNG_LAB_USE_REAL_RO
     `endif
 `endif
 
 
-/* 
+/*
  * --------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------
  * Hardware specific ring oscillators
@@ -464,7 +464,7 @@ module trng_lab_core
  * --------------------------------------------------------------------------------------------
  */
 `ifdef TRNG_LAB_USE_REAL_RO
-    /* 
+    /*
      * --------------------------------------------------------------------------------------------
      * --------------------------------------------------------------------------------------------
      * Real ring oscillator path. Requires explicit TRNG_ALLOW_REAL_RO.
@@ -478,11 +478,11 @@ module trng_lab_core
      *   loop_delay is approximately: N * inverter_delay + enable_gate_delay + routing_delay
      *
      * 8 separate trng_ro modules, each with a different odd number of inverter stages.
-     * Each has its own enable bit, 
+     * Each has its own enable bit,
      *   e.g. reg_oscen[X] -> u_roN
      *
      * Each one produces one raw oscillator output bit:
-     *   u_roX -> ro_raw[N] 
+     *   u_roX -> ro_raw[N]
      *
      */
 `ifdef BASIC_RO_SET
@@ -511,10 +511,10 @@ module trng_lab_core
     trng_ro #(.STAGES(17)) u_ro7 (.enable(reg_oscen[7]), .ro_out(ro_raw[7]));
 `else
     /* Default RO bank starts at 7 stages to avoid very short 3/5-stage rings.
-     * Size 73.381% in GDS #223: https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27452625395 
+     * Size 73.381% in GDS #223: https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27452625395
      *
      * See trng_ro implementation for keep attributes, do not add them here.
-     */ 
+     */
     trng_ro #(.STAGES(7))  u_ro0 (.enable(reg_oscen[0]), .ro_out(ro_raw[0]));
     trng_ro #(.STAGES(9))  u_ro1 (.enable(reg_oscen[1]), .ro_out(ro_raw[1]));
     trng_ro #(.STAGES(11)) u_ro2 (.enable(reg_oscen[2]), .ro_out(ro_raw[2]));
@@ -526,7 +526,7 @@ module trng_lab_core
 `endif /* ~BASIC_RO_SET */
 
 `else
-    /* 
+    /*
      * --------------------------------------------------------------------------------------------
      * --------------------------------------------------------------------------------------------
      * Typical simulation or FPGA path.
@@ -1015,13 +1015,13 @@ endmodule /* trng_health_core */
  * --------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------
  * Keep:
- * 
- *   > The keep attribute on cells and wires is used to mark objects that should never be removed 
- *     by the optimizer. This is used for example for cells that have hidden connections that are 
- *     not part of the netlist, such as IO pads. Setting the keep attribute on a module has the 
+ *
+ *   > The keep attribute on cells and wires is used to mark objects that should never be removed
+ *     by the optimizer. This is used for example for cells that have hidden connections that are
+ *     not part of the netlist, such as IO pads. Setting the keep attribute on a module has the
  *     same effect as setting it on all instances of the module.
  *
- *   > The keep_hierarchy attribute on cells and modules keeps the flatten command from flattening 
+ *   > The keep_hierarchy attribute on cells and modules keeps the flatten command from flattening
  *     the indicated cells and modules.
  *
  * See: https://yosyshq.readthedocs.io/projects/yosys/en/latest/using_yosys/verilog.html
@@ -1035,11 +1035,11 @@ endmodule /* trng_health_core */
  * dont_touch:
  *   This one is less clean in an open-source flow than in vendor FPGA tools.
  *
- *   Yosys clearly documents keep and keep_hierarchy; it does not give dont_touch the same central 
- *   documented meaning in the Yosys Verilog-support page. In practice, tools may carry the attribute 
- *   along, and some passes may honor it, but for Yosys the load-bearing attribute is keep. 
+ *   Yosys clearly documents keep and keep_hierarchy; it does not give dont_touch the same central
+ *   documented meaning in the Yosys Verilog-support page. In practice, tools may carry the attribute
+ *   along, and some passes may honor it, but for Yosys the load-bearing attribute is keep.
  *
- *   OpenROAD has a separate Tcl command, set_dont_touch, which prevents resizer commands 
+ *   OpenROAD has a separate Tcl command, set_dont_touch, which prevents resizer commands
  *   from modifying instances or nets.
  *
  * See: https://openroad.readthedocs.io/en/latest/main/src/rsz/README.html#set-dont-touch
@@ -1055,12 +1055,12 @@ module trng_ro_inverter_cell
 
     `LINT_OFF_PINMISSING_POWER_PINS
 
-    /* See target_pdk.v included at the top-level project.v for the PDK selection. 
+    /* See target_pdk.v included at the top-level project.v for the PDK selection.
      * The cells instantiated here must match the selected PDK.
      *
      * sky130_fd_sc_hd__inv_1: Minimum / weaker inverter, Slower, lower drive, likely lower dynamic power
      * sky130_fd_sc_hd__inv_2: Stronger inverter, roughly 2x drive class, Faster edges, can drive more capacitance, likely more dynamic power
-     */ 
+     */
     `ifdef PDK_TARGET_SKY130
         /* See https://sky130-unofficial.readthedocs.io/en/latest/contents/libraries/sky130_fd_sc_hd/cells/inv/README.html */
         (* keep_hierarchy, keep, dont_touch *) sky130_fd_sc_hd__inv_2 u_inv
@@ -1069,10 +1069,10 @@ module trng_ro_inverter_cell
             .Y(y)
         );
 
-        /* SKY130 hard stop breadcrumb. 
+        /* SKY130 hard stop breadcrumb.
          * Example: see https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27464130872
          * Uncomment to confirm SKY130 build failure: */
-        // PROJECT_ASIC_SKY130_BREADCRUMB_FAULT u_stop (); 
+        // PROJECT_ASIC_SKY130_BREADCRUMB_FAULT u_stop ();
 
     `elsif PDK_TARGET_GF180
         /* not a valid GF detector: https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/26855846226/job/79198383591 */
@@ -1081,7 +1081,13 @@ module trng_ro_inverter_cell
         //    PROJECT_FOUND_PDK u_stop ();
         //`endif
 
-        /* 
+        `ifdef ANALOG_ENABLED
+            /* This project intentionally enables and requires analog features */
+        `else
+            PROJECT_ASIC_GF180_REQUIRE_ANALOG_ENABLED u_stop (); /* Hard fail if analog not enabled */
+        `endif
+
+        /*
          * There are several possible inverters to use in GF180. See
          *    https://github.com/google/globalfoundries-pdk-libs-gf180mcu_fd_sc_mcu7t5v0/tree/main/cells/inv
          *
@@ -1095,8 +1101,8 @@ module trng_ro_inverter_cell
          * | `inv_4` |    4X | 21.9520 um2 | 0.0185 pF |                      0.0282 ns |                     0.0345 ns |
          * | `inv_8` |    8X | 39.5136 um2 | 0.0373 pF |                      0.0282 ns |                     0.0344 ns |
          *
-         *   "The key observation: _inv_2 gives a meaningful speed/drive improvement over _inv_1, but _inv_3 gives almost no 
-         *    further min-load delay improvement over _inv_2. _inv_4 and _inv_8 are only modestly faster in the min-load table, 
+         *   "The key observation: _inv_2 gives a meaningful speed/drive improvement over _inv_1, but _inv_3 gives almost no
+         *    further min-load delay improvement over _inv_2. _inv_4 and _inv_8 are only modestly faster in the min-load table,
          *     while costing much more input capacitance and area."
          *
          * For reference:
@@ -1116,10 +1122,10 @@ module trng_ro_inverter_cell
             .ZN(y)
         );
 
-        /* GF180 hard stop breadcrumb. 
+        /* GF180 hard stop breadcrumb.
          * Example: see TBD
          * Uncomment to confirm GF180 build failure: */
-        // PROJECT_ASIC_GF180_BREADCRUMB_FAULT u_stop (); 
+        // PROJECT_ASIC_GF180_BREADCRUMB_FAULT u_stop ();
 
     `else
         PROJECT_ASIC_SKY130_OR_GF180_ONLY u_stop (); /* Only SKY130 and GF180 supported at this time */
@@ -1136,7 +1142,7 @@ endmodule /* trng_ro_inverter_cell */
  * Build a gated ring oscillator out of [STAGES] inverter cells.
  * --------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------
- * Do not place any keep hierarchy decorators here. See: 
+ * Do not place any keep hierarchy decorators here. See:
  *   https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/actions/runs/27505094813
  *   https://github.com/gojimmypi/ttgf-UART-FSM-TRNG-Lab/actions/runs/27505061710
  * Revert only that attribute for success:
@@ -1179,7 +1185,7 @@ endmodule /* trng_ro */
 
 `endif /* TRNG_LAB_USE_REAL_RO */
 
-/* 
+/*
  * --------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------
  * Sanity checks
@@ -1205,7 +1211,7 @@ endmodule /* trng_ro */
     `endif
 `endif
 
-/* 
+/*
  * --------------------------------------------------------------------------------------------
  * --------------------------------------------------------------------------------------------
  *  Clean up macros created and used only in this file

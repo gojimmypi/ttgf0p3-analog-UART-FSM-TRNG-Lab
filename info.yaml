@@ -1,17 +1,21 @@
 # Tiny Tapeout project information
 project:
-  title:        "Hardware Entropy Explorer: UART/SPI TRNG and PUF"      # Project title
+  title:        "GF180 Analog with ua Entropy Explorer: UART/SPI TRNG and PUF"      # Project title
   author:       "gojimmypi"      # Your name
   discord:      "gojimmypi"      # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
-  description:  "UART/SPI-controlled ASIC lab for exploring true-random number generation and PUF-style hardware entropy sources."      # One line description of what your project does
-  language:     "Verilog"        # other examples include Verilog, Amaranth, VHDL, etc
+  description:  "UART/SPI-controlled GF180 analog lab for DAC, comparator, oscillator, TRNG, and PUF-style entropy experiments."      # One line description of what your project does
+  language:     "Analog"        # other examples include Verilog, Amaranth, VHDL, etc
   clock_hz:     25000000         # Clock frequency in Hz (or 0 if not applicable); note tests such as ULX3S can specify 50MHz
 
   # How many tiles your design occupies? A single tile is about 340x160 uM.
-  tiles: "1x2"          # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 3x4 or 4x4
+  tiles: "1x2"          # Analog projects must be 1x2 or larger
+
+  # GF 0p3 analog experiment: use all six available analog pins.
+  analog_pins: 6
+  uses_vapwr: false
 
   # Your top module name must start with "tt_um_". Make it unique by including your github username:
-  top_module:  "tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab"
+  top_module:  "tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog"
 
   # List your project's source files here.
   # Source files must be in ./src and you must list each source file separately, one per line.
@@ -53,14 +57,13 @@ pinout:
   uio[6]: "rawhi6"             # reg_rawhi[6] output
   uio[7]: "rawhi7"             # reg_rawhi[7] output
 
-  # Analog pins - make sure to also set "analog_pins" above, else the pins won't be connected
-  # Although ttgf0p3 is an analog shuttle, we don't have any analog features
-  # ua[0]: ""
-  # ua[1]: ""
-  # ua[2]: ""
-  # ua[3]: ""
-  # ua[4]: ""
-  # ua[5]: ""
+  # Analog pins - analog_pins must match the used ua pins.
+  ua[0]: "ain_ext"             # External analog stimulus/noise input
+  ua[1]: "dac_out"             # DAC monitor output
+  ua[2]: "cmp_ref_ext"         # External comparator/reference input
+  ua[3]: "amon_out"            # Analog monitor mux output
+  ua[4]: "osc_out"             # Oscillator monitor output
+  ua[5]: "puf_probe"           # PUF/noise probe pad
 
 # Do not change!
 yaml_version: 6

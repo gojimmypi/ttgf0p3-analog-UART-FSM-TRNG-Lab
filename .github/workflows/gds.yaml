@@ -13,10 +13,70 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build GDS
-        uses: TinyTapeout/tt-gds-action@ttgf26a
+      - name: Read top module name
+        id: top_module
+        run: |
+          echo "TOP_MODULE=$(yq '.project.top_module' info.yaml)" | tee "$GITHUB_OUTPUT"
+
+
+      - name: Build custom-GDS Verilog model
+        run: |
+          python3 tools/build_custom_gds_verilog.py --out build/custom_gds/project.v
+          grep -Eq '^ *`include +' build/custom_gds/project.v && echo "BAD: include remains" && exit 1 || echo "OK: no active includes"
+          wc -l build/custom_gds/project.v
+          grep -n "module ${{ steps.top_module.outputs.TOP_MODULE }}" build/custom_gds/project.v
+
+      - name: Check custom analog submission files
+        run: |
+          TOP="${{ steps.top_module.outputs.TOP_MODULE }}"
+
+          # PROJECT="project.v"
+
+
+          echo "TOP_MODULE=${TOP}"
+          echo "Expected custom GDS: gds/${TOP}.gds"
+          echo "Expected custom LEF: lef/${TOP}.lef"
+          echo "Expected generated Verilog model: build/custom_gds/project.v"
+
+          test -f "gds/${TOP}.gds"
+          test -f "lef/${TOP}.lef"
+          test -f "build/custom_gds/project.v"
+
+          cat "build/custom_gds/project.v"
+
+          python3 tools/check_gds_content.py "gds/${TOP}.gds"
+
+      - name: Create and publish the custom GDS artifact
+        uses: TinyTapeout/tt-gds-action/custom_gds@ttgf26a
         with:
+          top_module: ${{ steps.top_module.outputs.TOP_MODULE }}
+          gds_path: gds/${{ steps.top_module.outputs.TOP_MODULE }}.gds
+          lef_path: lef/${{ steps.top_module.outputs.TOP_MODULE }}.lef
+          verilog_path: build/custom_gds/project.v
           pdk: gf180mcuD
+
+      - name: Add PDK metadata for gl_test
+        run: |
+          # JSON replacements....
+          jq \
+            --arg pdk_source "ciel" \
+            --arg pdk_version "e8daeda73ca8f5814dbc0b11d1d05802251a3750" \
+            ". + {\"PDK_SOURCE\": \$pdk_source, \"PDK_VERSION\": \$pdk_version}" \
+            tt_submission/pdk.json > tt_submission/pdk.json.tmp
+          echo "tt_submission/pdk.json peek:"
+          mv tt_submission/pdk.json.tmp tt_submission/pdk.json
+          cat tt_submission/pdk.json
+
+      - name: Re-publish tt_submission artifact for gl_test
+        uses: actions/upload-artifact@v7
+        with:
+          name: tt_submission
+          overwrite: true
+          path: |
+            info.yaml
+            LICENSE
+            docs/*
+            tt_submission/*
 
   precheck:
     needs: gds

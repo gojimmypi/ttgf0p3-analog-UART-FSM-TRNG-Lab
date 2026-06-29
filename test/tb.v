@@ -15,7 +15,7 @@
 module tb ();
 
 `ifdef IS_MY_IVERILOG_SIMULATION
-  // Dump the signals to a vcd (Value Change Dump) file. You can view it with gtkwave after 
+  // Dump the signals to a vcd (Value Change Dump) file. You can view it with gtkwave after
   initial begin
     $dumpfile("tb.vcd");
     $dumpvars(0, tb);
@@ -40,9 +40,17 @@ module tb ();
   wire [7:0] uo_out;
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
+`ifdef ANALOG_ENABLED
+  wire [7:0] ua;
+`endif
+
 `ifdef GL_TEST
-  wire VPWR = 1'b1;
-  wire VGND = 1'b0;
+    `ifdef ANALOG_ENABLED
+        wire VDPWR = 1'b1;
+    `else
+        wire VPWR = 1'b1;
+    `endif
+        wire VGND = 1'b0;
 `endif
 
 `ifndef TT_TOP_MODULE
@@ -55,8 +63,12 @@ module tb ();
 
       // Include power ports for the Gate Level test:
 `ifdef GL_TEST
-      .VPWR(VPWR),
-      .VGND(VGND),
+    `ifdef ANALOG_ENABLED
+        .VDPWR(VDPWR),
+    `else
+        .VPWR(VPWR),
+    `endif
+        .VGND(VGND),
 `endif
 
       .ui_in  (ui_in),    // Dedicated inputs
@@ -64,6 +76,9 @@ module tb ();
       .uio_in (uio_in),   // IOs: Input path
       .uio_out(uio_out),  // IOs: Output path
       .uio_oe (uio_oe),   // IOs: Enable path (active high: 0=input, 1=output)
+`ifdef ANALOG_ENABLED
+      .ua     (ua),       // Analog pins, locally unconnected in RTL simulation
+`endif
       .ena    (ena),      // enable - goes high when design is selected
       .clk    (clk),      // clock
       .rst_n  (rst_n)     // not reset

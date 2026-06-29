@@ -147,6 +147,9 @@
     `ifdef PIN_DIAG
         `include "PINS/pin_id_core.v"
     `endif
+    `ifdef ANALOG_ENABLED
+        `include "ANALOG/analog_experiment_stub.v"
+    `endif
     `ifdef TRNG_ENABLED
         `include "TRNG/trng_lab_core.v"
     `else
@@ -154,17 +157,12 @@
     `endif /* TRNG_ENABLED */
 `endif /* ULX3S */
 
-/* Some analog sanity checks */
-`ifdef ANALOG_ENABLED
-    `ifdef PDK_TARGET_GF180
-        MODULE_ANALOG_NOT_SUPPORTED_IN_GF180 u_stop (); /* Error as there's no analog features here. See SKY130 */
-    `endif
-`endif
+/* GF 0p3 analog experiment: analog pins are enabled for GF180. */
 
 /* See companion project: SKY130 (ChipFoundry) tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab */
 
 /* Assume TT needs this file to be called project.v
- * but the module is called tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab - so disable warning: */
+ * but the module is called tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog - so disable warning: */
 
  /* Define a unique name for the module based on the target PDK.
   * This allows the same project.v file to be used across different PDK targets without modification,
@@ -178,7 +176,7 @@ module tt_um_gojimmypi_ttsky_UART_FSM_TRNG_Lab
 
 `elsif PDK_TARGET_GF180
 /* verilator lint_off DECLFILENAME */
-module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab
+module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog
 /* verilator lint_on DECLFILENAME */
 
 `elsif IS_MY_IVERILOG_SIMULATION
@@ -197,10 +195,12 @@ module UART_FSM_TRNG_Lab
 )
 (
 `ifdef ANALOG_ENABLED
-    // Optional Analog
-    //    input  wire       VGND,
-    //    input  wire       VDPWR,    // 1.8v power supply
-    //    input  wire       VAPWR,    // 3.3v power supply
+    /* Custom-GDS analog submissions expose the user power pins in the
+     * submitted Verilog model so Tiny Tapeout precheck can match them
+     * against the LEF/GDS pin list.  The digital control shell does not
+     * drive these nets. */
+    inout  wire       VGND,
+    inout  wire       VDPWR,
 `endif
 
     input  wire [7:0] ui_in,    // Dedicated inputs
@@ -208,8 +208,9 @@ module UART_FSM_TRNG_Lab
     input  wire [7:0] uio_in,   // IOs: Input path
     output wire [7:0] uio_out,  // IOs: Output path
     output wire [7:0] uio_oe,   // IOs: Enable path (active high: 0=input, 1=output)
-
-    //    inout  wire [7:0] ua,       // Analog pins, only ua[5:0] can be used
+`ifdef ANALOG_ENABLED
+    inout  wire [7:0] ua,       // Analog pins, only ua[5:0] can be connected to pads
+`endif
 
     input  wire       ena,      // always 1 when the design is powered, so you can ignore it
     input  wire       clk,      // clock
@@ -258,17 +259,19 @@ module UART_FSM_TRNG_Lab
         .uio_in(uio_in),
         .uio_out(uio_out),
         .uio_oe(uio_oe),
+`ifdef ANALOG_ENABLED
+        .ua(ua),
+`endif
         .ena(ena),
         .clk(clk),
         .rst_n(rst_n)
     );
 
 `ifdef ANALOG_ENABLED
-    // Optional Analog
-    // assign unused_ok = &{VGND, VDPWR, ena, clk, rst_n, uio_in, ua};
-`endif
-
+    assign unused_ok = &{ena, clk, rst_n, uio_in, VGND, VDPWR};
+`else
     assign unused_ok = &{ena, clk, rst_n, uio_in};
+`endif
 
     `ifdef ULX3S
         always @(posedge clk) begin

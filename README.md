@@ -2,17 +2,17 @@
 
 # Tiny Tapeout Project: ttgfa-UART-FSM-TRNG-Lab
 
-Version 1.0.5 6/27/2026
+Version 1.1.1 6/27/2026
 
 Details of this project are located in [docs/info.md](./docs/info.md)
 
-This project is part of [EXPERIMENTAL Tiny Tapeout GF ttgf0p3 Analog](https://app.tinytapeout.com/shuttles/ttgf0p3) shuttle in [Project #5271](https://app.tinytapeout.com/projects/5271).
+This project is part of the [EXPERIMENTAL Tiny Tapeout GF ttgf0p3 Analog](https://app.tinytapeout.com/shuttles/ttgf0p3) shuttle in [Project #5271](https://app.tinytapeout.com/projects/5271).
 
-Other than a different version text baked into the silicon `Version 1.0.5 6/27/2026` (27 vs 21), this project is identical to [Project #4337](https://app.tinytapeout.com/projects/4337) in the [Tiny Tapeout GF 26a](https://app.tinytapeout.com/shuttles/ttgf26a) shuttle.
+This branch turns the former GF 0p3 digital duplicate into a small analog experiment shell. It keeps the existing UART/SPI/TRNG control plane, enables `analog_pins: 6` in `info.yaml`, and adds a GF180 analog experiment hook for all six available `ua[5:0]` pins.
 
-The regular `@ttgf26a` GH actions are used in `.github/workflows/gds.yaml` and no analog pins enabled in `info.yaml`.
+The FPGA builds remain useful for testing the UART/SPI register interface, scripts, binary stream framing, and deterministic TRNG surrogate. They cannot test real GF180 analog behavior such as DAC linearity, comparator offset, oscillator jitter, leakage, mismatch, or analog noise.
 
-This project's top module is `tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab`, which adds the GF analog `a` suffix (`ttgfa`) compared with the #4337 name `tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab`.
+This project's top module is `tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab`, which keeps the GF analog `a` suffix (`ttgfa`) compared with the #4337 name `tt_um_gojimmypi_ttgf_UART_FSM_TRNG_Lab`.
 
 See companion projects developed in parallel:
 
@@ -54,9 +54,16 @@ The GitHub action will automatically build the ASIC files using [LibreLane](http
 
 For specifications and instructions, see the [analog specs page](https://tinytapeout.com/specs/analog/).
 
+This repository contains the digital/FPGA-safe UART/SPI/TRNG shell plus a small analog pad exerciser in `src/ANALOG/analog_experiment_stub.v`. The analog block now drives a 1-bit sigma-delta DAC, monitor mux, oscillator/debug output, and charge/release/sample probe sequence on the six GF 0p3 analog pins. It is useful for FPGA/demoboard control-plane testing and post-silicon pad experiments, but it is still not a precision analog macro or a substitute for GF180 schematic/layout/SPICE/PEX work. The analog pin use is:
 
-The project was manually reverted from Analog. It was fairly difficult to do the conversion, not recommended. See [ttsky-analog-template/issues/2](https://github.com/TinyTapeout/ttsky-analog-template/issues/2). 
-and local [7th commit da97ef8](https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/commit/da97ef817f54f08ba1455db252e800bbea61c40a) .. [11th commit ab6b3ea](https://github.com/gojimmypi/ttsky-UART-FSM-TRNG-Lab/commit/ab6b3ea64d99a953928a76d761a291149c9cc03b).
+| Pin | Name | Purpose |
+| --- | --- | --- |
+| `ua[0]` | `ain_ext` | External analog stimulus/noise input |
+| `ua[1]` | `dac_out` | 1-bit sigma-delta DAC output; RC-filter externally |
+| `ua[2]` | `cmp_ref_ext` | External comparator/reference input |
+| `ua[3]` | `amon_out` | Digital monitor mux output for DAC/comparator/probe/TRNG/status |
+| `ua[4]` | `osc_out` | Divider or TRNG-bit monitor output |
+| `ua[5]` | `puf_probe` | Charge/release/sample probe pad |
 
 
 ## Enable GitHub actions to build the results page

@@ -7,7 +7,7 @@
 #
 # This script is used to lint the Verilog project using Verilator.
 #
-# The /.github/workflows/gds.yaml also does this, but this script is intended to be run locally by developers 
+# The /.github/workflows/gds.yaml also does this, but this script is intended to be run locally by developers
 # to check their changes before pushing them to GitHub, where the CI will also check them.
 #
 # Do not move this file. Referenced by TT 4337 Documentation https://app.tinytapeout.com/projects/4337
@@ -27,6 +27,6 @@ fi
 pushd ../src || exit 1
     echo "Calling verilator to lint the Verilog project..."
     verilator --lint-only -Wall                                      \
-              --top-module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab   \
+              --top-module tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog   \
               project.v
 popd || exit 1
