@@ -3,6 +3,7 @@
 # Author: Uri Shaked
 # Description: This script initializes a new Magic project for an analog design on Tiny Tapeout.
 
+# test 8de9ce8550fa3e
 # Important: before running this script, download the the .def file from
 # https://raw.githubusercontent.com/TinyTapeout/tt-support-tools/tt08/def/analog/tt_analog_1x2.def
 
