@@ -61,6 +61,37 @@ jobs:
           test -d tt/.git
           python3 "${TT_TOOL}" --help >/dev/null
 
+      - name: Check analog RTL diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p build/analog-rtl-diagnostics
+          PROJECT_V="build/analog-rtl-diagnostics/project.v"
+
+          python3 tools/build_custom_gds_verilog.py --out "${PROJECT_V}"
+          grep -Eq '^ *`include +' "${PROJECT_V}" && echo "BAD: include remains" && exit 1 || echo "OK: no active includes"
+          wc -l "${PROJECT_V}"
+
+          echo "Checking analog experiment RTL diagnostics in ${PROJECT_V}"
+
+          grep -n '^`define ANALOG_ENABLED' "${PROJECT_V}"
+          grep -n '^`define BIG16_SPI_REG' "${PROJECT_V}"
+
+          grep -Fn 'SPI_REG_ADDR_ANALOG_STATUS: read_reg = analog_status;' "${PROJECT_V}"
+          grep -Fn 'SPI_REG_ADDR_ANALOG_MEAS: read_reg = analog_measure;' "${PROJECT_V}"
+          grep -Fn 'SPI_REG_ADDR_ANALOG_STATUS: spi_reg_rdata = analog_status;' "${PROJECT_V}"
+          grep -Fn 'SPI_REG_ADDR_ANALOG_MEAS: spi_reg_rdata = analog_measure;' "${PROJECT_V}"
+
+          grep -Fn 'analog_experiment_stub u_analog_experiment' "${PROJECT_V}"
+          grep -Fn '.analog_status(analog_status)' "${PROJECT_V}"
+          grep -Fn '.analog_measure(analog_measure)' "${PROJECT_V}"
+          grep -Fn 'assign analog_measure = probe_decay_q;' "${PROJECT_V}"
+
+          echo "Optional non-analog fallback assignments:"
+          grep -Fn "assign analog_status = 8'h00;" "${PROJECT_V}" || true
+          grep -Fn "assign analog_measure = 8'h00;" "${PROJECT_V}" || true
+
       - name: Harden and collect GDS/LEF
         run: |
           set -euo pipefail
@@ -103,3 +134,4 @@ jobs:
             harden-gds-lef.log
             runs/**
             build/full_harden/**
+            build/analog-rtl-diagnostics/**

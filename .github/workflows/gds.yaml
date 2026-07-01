@@ -26,6 +26,31 @@ jobs:
           wc -l build/custom_gds/project.v
           grep -n "module ${{ steps.top_module.outputs.TOP_MODULE }}" build/custom_gds/project.v
 
+      - name: Check analog RTL diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROJECT_V="build/custom_gds/project.v"
+          echo "Checking analog experiment RTL diagnostics in ${PROJECT_V}"
+
+          grep -n '^`define ANALOG_ENABLED' "${PROJECT_V}"
+          grep -n '^`define BIG16_SPI_REG' "${PROJECT_V}"
+
+          grep -Fn 'SPI_REG_ADDR_ANALOG_STATUS: read_reg = analog_status;' "${PROJECT_V}"
+          grep -Fn 'SPI_REG_ADDR_ANALOG_MEAS: read_reg = analog_measure;' "${PROJECT_V}"
+          grep -Fn 'SPI_REG_ADDR_ANALOG_STATUS: spi_reg_rdata = analog_status;' "${PROJECT_V}"
+          grep -Fn 'SPI_REG_ADDR_ANALOG_MEAS: spi_reg_rdata = analog_measure;' "${PROJECT_V}"
+
+          grep -Fn 'analog_experiment_stub u_analog_experiment' "${PROJECT_V}"
+          grep -Fn '.analog_status(analog_status)' "${PROJECT_V}"
+          grep -Fn '.analog_measure(analog_measure)' "${PROJECT_V}"
+          grep -Fn 'assign analog_measure = probe_decay_q;' "${PROJECT_V}"
+
+          echo "Optional non-analog fallback assignments:"
+          grep -Fn "assign analog_status = 8'h00;" "${PROJECT_V}" || true
+          grep -Fn "assign analog_measure = 8'h00;" "${PROJECT_V}" || true
+
       - name: Check custom analog submission files
         run: |
           TOP="${{ steps.top_module.outputs.TOP_MODULE }}"
