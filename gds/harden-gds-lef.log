@@ -2,7 +2,7 @@ Patched src/project.v for full hardening
   removed top-level VGND/VDPWR ports
   removed VGND/VDPWR from unused_ok
   kept top-level ua port at [7:0]
-2026-07-01 18:57:26,642 - project    - INFO     - creating include file
+2026-07-01 19:40:58,940 - project    - INFO     - creating include file
 Patched full-project GF180 analog hardening config
   source template: tt/tech/gf180mcuD/def/analog/tt_analog_1x2.def
   generated template: build/full_harden/tt_analog_1x2_vdpwr.def
@@ -26,9 +26,9 @@ e15004cca0d2: Pull complete
 Digest: sha256:009feda0c9c40236e138edf85acaa79270e500352d21c950203489ed9a8c205d
 Status: Downloaded newer image for ghcr.io/librelane/librelane:2.4.2
 ghcr.io/librelane/librelane:2.4.2
-[18:59:10] WARNING  DISPLAY environment variable not set. GUI    container.py:53
+[19:42:26] WARNING  DISPLAY environment variable not set. GUI    container.py:53
                     features will not be available.                             
-[18:59:11] INFO     Running containerized command:              container.py:282
+[19:42:26] INFO     Running containerized command:              container.py:282
 Version 0fe599b2afb6708d281543108caf8310912f54af not found locally, attempting 
 to download…
 Downloading common.tar.zst… ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
@@ -37,18 +37,18 @@ Downloading gf180mcu_fd_ip_sram.tar.zst… ━━━━━━━━━━━━�
 Downloading gf180mcu_fd_pr.tar.zst… ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
 Downloading gf180mcu_fd_sc_mcu7t5v0.tar.zst… ━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
 Downloading gf180mcu_fd_sc_mcu9t5v0.tar.zst… ━━━━━━━━━━━━━━━━━━━━━━ 100% 0:00:00
-[18:59:49] INFO     Loading the design configuration file has      config.py:724
+[19:42:48] INFO     Loading the design configuration file has      config.py:724
                     generated the following warnings:                           
-[18:59:49] WARNING  An unknown key 'LIB_FASTEST' was provided.     config.py:728
-[18:59:49] WARNING  An unknown key 'LIB_SLOWEST' was provided.     config.py:728
-[18:59:49] WARNING  An unknown key 'LIB_SYNTH' was provided.       config.py:728
-[18:59:49] INFO     Starting a new run of the 'Classic' flow with    flow.py:655
+[19:42:48] WARNING  An unknown key 'LIB_FASTEST' was provided.     config.py:728
+[19:42:48] WARNING  An unknown key 'LIB_SLOWEST' was provided.     config.py:728
+[19:42:48] WARNING  An unknown key 'LIB_SYNTH' was provided.       config.py:728
+[19:42:48] INFO     Starting a new run of the 'Classic' flow with    flow.py:655
                     the tag 'wokwi'.                                            
-[18:59:49] INFO     Starting…                                  sequential.py:294
+[19:42:48] INFO     Starting…                                  sequential.py:294
 ──────────────────────────────── Verilator Lint ────────────────────────────────
-[18:59:49] VERBOSE  Running 'Verilator.Lint' at                     step.py:1146
+[19:42:48] VERBOSE  Running 'Verilator.Lint' at                     step.py:1146
                     'runs/wokwi/01-verilator-lint'…                             
-[18:59:51] VERBOSE  Logging subprocess to                           step.py:1342
+[19:42:51] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/01-verilator-lint/verilator-lint.lo             
                     g'…                                                         
 %Warning-BLKSEQ:                                                                
@@ -64,21 +64,21 @@ Lab/src/project.v:149:1: ... note: In file included from 'project.v'
 ... Use "/* verilator lint_off BLKSEQ */" and lint_on around source to disable  
 this message.                                                                   
 ────────────────────────── Lint Timing Errors Checker ──────────────────────────
-[18:59:51] VERBOSE  Running 'Checker.LintTimingConstructs' at       step.py:1146
+[19:42:51] VERBOSE  Running 'Checker.LintTimingConstructs' at       step.py:1146
                     'runs/wokwi/02-checker-linttimingconstructs'…               
-[18:59:51] INFO     Check for Lint Timing Errors clear.           checker.py:404
+[19:42:51] INFO     Check for Lint Timing Errors clear.           checker.py:404
 ───────────────────────────── Lint Errors Checker ──────────────────────────────
-[18:59:51] VERBOSE  Running 'Checker.LintErrors' at                 step.py:1146
+[19:42:51] VERBOSE  Running 'Checker.LintErrors' at                 step.py:1146
                     'runs/wokwi/03-checker-linterrors'…                         
-[18:59:51] INFO     Check for Lint errors clear.                  checker.py:132
+[19:42:51] INFO     Check for Lint errors clear.                  checker.py:132
 ──────────────────────────── Lint Warnings Checker ─────────────────────────────
-[18:59:51] VERBOSE  Running 'Checker.LintWarnings' at               step.py:1146
+[19:42:51] VERBOSE  Running 'Checker.LintWarnings' at               step.py:1146
                     'runs/wokwi/04-checker-lintwarnings'…                       
-[18:59:51] WARNING  1 Lint warnings found.                        checker.py:123
+[19:42:51] WARNING  1 Lint warnings found.                        checker.py:123
 ───────────────────────────── Generate JSON Header ─────────────────────────────
-[18:59:51] VERBOSE  Running 'Yosys.JsonHeader' at                   step.py:1146
+[19:42:51] VERBOSE  Running 'Yosys.JsonHeader' at                   step.py:1146
                     'runs/wokwi/05-yosys-jsonheader'…                           
-[18:59:51] VERBOSE  Logging subprocess to                           step.py:1342
+[19:42:51] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/05-yosys-jsonheader/yosys-jsonheade             
                     r.log'…                                                     
                                                                                 
@@ -93,10 +93,10 @@ Loaded SDC plugin
                                                                                 
 1. Executing Verilog-2005 frontend:                                             
 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-
-Lab/runs/wokwi/tmp/4378397a07b742a8b51cb30d84499ebc.bb.v                        
+Lab/runs/wokwi/tmp/45f517783fb3402883768e280e62b997.bb.v                        
 Parsing SystemVerilog input from                                                
 `/home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG
--Lab/runs/wokwi/tmp/4378397a07b742a8b51cb30d84499ebc.bb.v' to AST               
+-Lab/runs/wokwi/tmp/45f517783fb3402883768e280e62b997.bb.v' to AST               
 representation.                                                                 
 Generating RTLIL representation for module `\gf180mcu_fd_sc_mcu7t5v0__addf_1'.  
 Generating RTLIL representation for module `\gf180mcu_fd_sc_mcu7t5v0__addf_2'.  
@@ -4054,9 +4054,9 @@ Finding unused cells or wires in module
 Removed 666 unused cells and 2132 unused wires.                                 
 <suppressed ~872 debug messages>                                                
 ────────────────────────────────── Synthesis ───────────────────────────────────
-[18:59:53] VERBOSE  Running 'Yosys.Synthesis' at                    step.py:1146
+[19:42:53] VERBOSE  Running 'Yosys.Synthesis' at                    step.py:1146
                     'runs/wokwi/06-yosys-synthesis'…                            
-[18:59:53] VERBOSE  Logging subprocess to                           step.py:1342
+[19:42:53] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/06-yosys-synthesis/yosys-synthesis.             
                     log'…                                                       
                                                                                 
@@ -10965,7 +10965,7 @@ Removed 17 unused cells and 166 unused wires.
 clang++ 17.0.6 -fPIC -O3)",                                                     
 "invocation": "stat -json -liberty                                              
 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-
-Lab/runs/wokwi/tmp/918f99119b9844d3a8872a86489da315.lib ",                      
+Lab/runs/wokwi/tmp/65ce31024f7e444198469c92a1c45a6a.lib ",                      
 "modules": {                                                                    
 "\\trng_ro_inverter_cell": {                                                    
 "num_wires":         2,                                                         
@@ -11244,7 +11244,7 @@ mapped 302 $_DFF_P_ cells to \gf180mcu_fd_sc_mcu7t5v0__dffq_1 cells.
 clang++ 17.0.6 -fPIC -O3)",                                                     
 "invocation": "stat -json -liberty                                              
 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-
-Lab/runs/wokwi/tmp/918f99119b9844d3a8872a86489da315.lib ",                      
+Lab/runs/wokwi/tmp/65ce31024f7e444198469c92a1c45a6a.lib ",                      
 "modules": {                                                                    
 "\\trng_ro_inverter_cell": {                                                    
 "num_wires":         2,                                                         
@@ -11426,27 +11426,27 @@ of which used for sequential elements: 0.000000 (0.00%)
 145. Executing ABC pass (technology mapping using ABC).                         
                                                                                 
 145.1. Extracting gate netlist of module `\trng_ro_inverter_cell' to            
-`/tmp/yosys-abc-6FJfr1/input.blif'..                                            
+`/tmp/yosys-abc-FPoKza/input.blif'..                                            
 Extracted 0 gates and 0 wires to a netlist network with 0 inputs and 0 outputs. 
 Don't call ABC as there is nothing to map.                                      
 Removing temp directory.                                                        
                                                                                 
 145.2. Extracting gate netlist of module                                        
 `\tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog' to                            
-`/tmp/yosys-abc-BnKgAV/input.blif'..                                            
+`/tmp/yosys-abc-orhwtn/input.blif'..                                            
 Extracted 3418 gates and 3885 wires to a netlist network with 464 inputs and 429
 outputs.                                                                        
                                                                                 
 145.2.1. Executing ABC.                                                         
 Running ABC command:                                                            
 "/nix/store/6l3aj1gi4lja8z5s4lan2k2cfz9mqkrz-yosys-abc/bin/abc" -s -f           
-/tmp/yosys-abc-BnKgAV/abc.script 2>&1                                           
-ABC: ABC command line: "source /tmp/yosys-abc-BnKgAV/abc.script".               
+/tmp/yosys-abc-orhwtn/abc.script 2>&1                                           
+ABC: ABC command line: "source /tmp/yosys-abc-orhwtn/abc.script".               
 ABC:                                                                            
-ABC: + read_blif /tmp/yosys-abc-BnKgAV/input.blif                               
+ABC: + read_blif /tmp/yosys-abc-orhwtn/input.blif                               
 ABC: + read_lib -w                                                              
 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-
-Lab/runs/wokwi/tmp/918f99119b9844d3a8872a86489da315.lib                         
+Lab/runs/wokwi/tmp/65ce31024f7e444198469c92a1c45a6a.lib                         
 ABC: Parsing finished successfully.  Parsing time =     0.11 sec                
 ABC: Scl_LibertyReadGenlib() skipped cell "gf180mcu_fd_sc_mcu7t5v0__antenna"    
 without logic function.                                                         
@@ -11594,9 +11594,9 @@ ABC: Scl_LibertyReadGenlib() skipped sequential cell
 "gf180mcu_fd_sc_mcu7t5v0__latsnq_4".                                            
 ABC: Library "gf180mcu_fd_sc_mcu7t5v0__tt_025C_3v30" from                       
 "/home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG
--Lab/runs/wokwi/tmp/918f99119b9844d3a8872a86489da315.lib" has 143 cells (72     
-skipped: 36 seq; 15 tri-state; 21 no func; 0 dont_use).  Time =     0.18 sec    
-ABC: Memory =   23.81 MB. Time =     0.18 sec                                   
+-Lab/runs/wokwi/tmp/65ce31024f7e444198469c92a1c45a6a.lib" has 143 cells (72     
+skipped: 36 seq; 15 tri-state; 21 no func; 0 dont_use).  Time =     0.19 sec    
+ABC: Memory =   23.81 MB. Time =     0.19 sec                                   
 ABC: Warning: Detected 6 multi-output gates (for example,                       
 "gf180mcu_fd_sc_mcu7t5v0__addf_1").                                             
 ABC: + read_constr -v                                                           
@@ -11633,7 +11633,7 @@ ABC: Start-point = pi253 (\u_core.u_core.u_trng.trng_reset).  End-point = po61
 ($auto$rtlil.cc:2739:MuxGate$21338).                                            
 ABC: netlist                       : i/o =  464/  429  lat =    0  nd =  1988   
 edge =   5396  area =34650.91  delay = 8.00  lev = 8                            
-ABC: + write_blif /tmp/yosys-abc-BnKgAV/output.blif                             
+ABC: + write_blif /tmp/yosys-abc-orhwtn/output.blif                             
                                                                                 
 145.2.2. Re-integrating ABC results.                                            
 ABC RESULTS:   gf180mcu_fd_sc_mcu7t5v0__xnor2_1 cells:       16                 
@@ -12113,7 +12113,7 @@ Found and reported 0 problems.
 clang++ 17.0.6 -fPIC -O3)",                                                     
 "invocation": "stat -json -liberty                                              
 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-
-Lab/runs/wokwi/tmp/918f99119b9844d3a8872a86489da315.lib ",                      
+Lab/runs/wokwi/tmp/65ce31024f7e444198469c92a1c45a6a.lib ",                      
 "modules": {                                                                    
 "\\trng_ro_inverter_cell": {                                                    
 "num_wires":         2,                                                         
@@ -12375,71 +12375,71 @@ Dumping module `\trng_ro_inverter_cell'.
 Dumping module `\tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog'.               
                                                                                 
 154. Executing JSON backend.                                                    
-[19:00:00] VERBOSE  Parsing synthesis checks…                       pyosys.py:56
+[19:43:00] VERBOSE  Parsing synthesis checks…                       pyosys.py:56
 ──────────────────────────── Unmapped Cells Checker ────────────────────────────
-[19:00:00] VERBOSE  Running 'Checker.YosysUnmappedCells' at         step.py:1146
+[19:43:00] VERBOSE  Running 'Checker.YosysUnmappedCells' at         step.py:1146
                     'runs/wokwi/07-checker-yosysunmappedcells'…                 
-[19:00:00] INFO     Check for Unmapped Yosys instances clear.     checker.py:132
+[19:43:00] INFO     Check for Unmapped Yosys instances clear.     checker.py:132
 ────────────────────────────── Yosys Synth Checks ──────────────────────────────
-[19:00:00] VERBOSE  Running 'Checker.YosysSynthChecks' at           step.py:1146
+[19:43:00] VERBOSE  Running 'Checker.YosysSynthChecks' at           step.py:1146
                     'runs/wokwi/08-checker-yosyssynthchecks'…                   
-[19:00:00] INFO     Check for Yosys check errors clear.           checker.py:132
+[19:43:00] INFO     Check for Yosys check errors clear.           checker.py:132
 ─────────────────────── Netlist Assign Statement Checker ───────────────────────
-[19:00:00] VERBOSE  Running 'Checker.NetlistAssignStatements' at    step.py:1146
+[19:43:00] VERBOSE  Running 'Checker.NetlistAssignStatements' at    step.py:1146
                     'runs/wokwi/09-checker-netlistassignstatements'             
                     …                                                           
 ─────────────────────────────── Check SDC Files ────────────────────────────────
-[19:00:00] VERBOSE  Running 'OpenROAD.CheckSDCFiles' at             step.py:1146
+[19:43:00] VERBOSE  Running 'OpenROAD.CheckSDCFiles' at             step.py:1146
                     'runs/wokwi/10-openroad-checksdcfiles'…                     
-[19:00:00] WARNING  'PNR_SDC_FILE' is not defined. Using generic openroad.py:168
+[19:43:00] WARNING  'PNR_SDC_FILE' is not defined. Using generic openroad.py:168
                     fallback SDC for OpenROAD PnR steps.                        
-[19:00:00] WARNING  'SIGNOFF_SDC_FILE' is not defined. Using     openroad.py:172
+[19:43:00] WARNING  'SIGNOFF_SDC_FILE' is not defined. Using     openroad.py:172
                     generic fallback SDC for OpenROAD PnR steps.                
 ──────────────────────────── Check Macro Instances ─────────────────────────────
-[19:00:00] VERBOSE  Running 'OpenROAD.CheckMacroInstances' at       step.py:1146
+[19:43:00] VERBOSE  Running 'OpenROAD.CheckMacroInstances' at       step.py:1146
                     'runs/wokwi/11-openroad-checkmacroinstances'…               
-[19:00:00] INFO     No macros found, skipping instance check…    openroad.py:513
+[19:43:00] INFO     No macros found, skipping instance check…    openroad.py:513
 ─────────────────────── Static Timing Analysis (Pre-PnR) ───────────────────────
-[19:00:00] VERBOSE  Running 'OpenROAD.STAPrePNR' at                 step.py:1146
+[19:43:00] VERBOSE  Running 'OpenROAD.STAPrePNR' at                 step.py:1146
                     'runs/wokwi/12-openroad-staprepnr'…                         
-[19:00:00] INFO     Starting STA for the nom_tt_025C_3v30 timing openroad.py:568
+[19:43:00] INFO     Starting STA for the nom_tt_025C_3v30 timing openroad.py:568
                     corner…                                                     
-[19:00:00] INFO     Starting STA for the nom_ss_125C_3v00 timing openroad.py:568
+[19:43:00] INFO     Starting STA for the nom_ss_125C_3v00 timing openroad.py:568
                     corner…                                                     
-[19:00:00] INFO     Starting STA for the nom_ff_n40C_3v60 timing openroad.py:568
+[19:43:00] INFO     Starting STA for the nom_ff_n40C_3v60 timing openroad.py:568
                     corner…                                                     
-[19:00:00] INFO     Skipping corner min_tt_025C_3v30 for STA     openroad.py:606
+[19:43:00] INFO     Skipping corner min_tt_025C_3v30 for STA     openroad.py:606
                     (identical to nom_tt_025C_3v30 at this                      
                     stage)…                                                     
-[19:00:00] INFO     Skipping corner min_ss_125C_3v00 for STA     openroad.py:606
+[19:43:00] INFO     Skipping corner min_ss_125C_3v00 for STA     openroad.py:606
                     (identical to nom_ss_125C_3v00 at this                      
                     stage)…                                                     
-[19:00:00] INFO     Skipping corner min_ff_n40C_3v60 for STA     openroad.py:606
+[19:43:00] INFO     Skipping corner min_ff_n40C_3v60 for STA     openroad.py:606
                     (identical to nom_ff_n40C_3v60 at this                      
                     stage)…                                                     
-[19:00:00] INFO     Skipping corner max_tt_025C_3v30 for STA     openroad.py:606
+[19:43:00] INFO     Skipping corner max_tt_025C_3v30 for STA     openroad.py:606
                     (identical to nom_tt_025C_3v30 at this                      
                     stage)…                                                     
-[19:00:00] INFO     Skipping corner max_ss_125C_3v00 for STA     openroad.py:606
+[19:43:00] INFO     Skipping corner max_ss_125C_3v00 for STA     openroad.py:606
                     (identical to nom_ss_125C_3v00 at this                      
                     stage)…                                                     
-[19:00:00] INFO     Skipping corner max_ff_n40C_3v60 for STA     openroad.py:606
+[19:43:00] INFO     Skipping corner max_ff_n40C_3v60 for STA     openroad.py:606
                     (identical to nom_ff_n40C_3v60 at this                      
                     stage)…                                                     
-[19:00:00] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:00] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/12-openroad-staprepnr/nom_tt_025C_3             
                     v30/sta.log'…                                               
-[19:00:00] VERBOSE  Logging subprocess to                           step.py:1342
-                    'runs/wokwi/12-openroad-staprepnr/nom_ff_n40C_3             
-                    v60/sta.log'…                                               
-[19:00:00] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:00] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/12-openroad-staprepnr/nom_ss_125C_3             
                     v00/sta.log'…                                               
-[19:00:01] INFO     Finished STA for the nom_tt_025C_3v30 timing openroad.py:583
+[19:43:00] VERBOSE  Logging subprocess to                           step.py:1342
+                    'runs/wokwi/12-openroad-staprepnr/nom_ff_n40C_3             
+                    v60/sta.log'…                                               
+[19:43:02] INFO     Finished STA for the nom_ss_125C_3v00 timing openroad.py:583
                     corner.                                                     
-[19:00:02] INFO     Finished STA for the nom_ff_n40C_3v60 timing openroad.py:583
+[19:43:02] INFO     Finished STA for the nom_ff_n40C_3v60 timing openroad.py:583
                     corner.                                                     
-[19:00:02] INFO     Finished STA for the nom_ss_125C_3v00 timing openroad.py:583
+[19:43:02] INFO     Finished STA for the nom_tt_025C_3v30 timing openroad.py:583
                     corner.                                                     
 ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━┳━━━━┳━━━━┳━━━━┳━━━━┳━━━┳━━━━┳━━━┳━━━━┳━━━┳━━━━┳━━━┓
 ┃                      ┃    ┃    ┃    ┃    ┃ of ┃   ┃    ┃   ┃    ┃ … ┃    ┃   ┃
@@ -12454,9 +12454,9 @@ Dumping module `\tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog'.
 │ nom_ff_n40C_3v60     │ 0… │ 0… │ 0… │ 0  │ 0  │ … │ 1… │ … │ 0  │ 0 │ 4  │ … │
 └──────────────────────┴────┴────┴────┴────┴────┴───┴────┴───┴────┴───┴────┴───┘
 ─────────────────────────── Floorplan Initialization ───────────────────────────
-[19:00:02] VERBOSE  Running 'OpenROAD.Floorplan' at                 step.py:1146
+[19:43:02] VERBOSE  Running 'OpenROAD.Floorplan' at                 step.py:1146
                     'runs/wokwi/13-openroad-floorplan'…                         
-[19:00:02] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:02] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/13-openroad-floorplan/openroad-floo             
                     rplan.log'…                                                 
 Reading library file at                                                         
@@ -12552,585 +12552,585 @@ Writing timing constraints to
 -Lab/runs/wokwi/13-openroad-floorplan/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_an
 alog.sdc'…                                                                      
 ────────── Check Antenna Properties of Macros Pins in Their LEF Views ──────────
-[19:00:03] VERBOSE  Running 'Odb.CheckMacroAntennaProperties' at    step.py:1146
+[19:43:03] VERBOSE  Running 'Odb.CheckMacroAntennaProperties' at    step.py:1146
                     'runs/wokwi/14-odb-checkmacroantennaproperties'             
                     …                                                           
-[19:00:03] INFO     No cells provided, skipping…                      odb.py:209
+[19:43:03] INFO     No cells provided, skipping…                      odb.py:209
 ──────────────────────────── Set Power Connections ─────────────────────────────
-[19:00:03] VERBOSE  Running 'Odb.SetPowerConnections' at            step.py:1146
+[19:43:03] VERBOSE  Running 'Odb.SetPowerConnections' at            step.py:1146
                     'runs/wokwi/15-odb-setpowerconnections'…                    
-[19:00:03] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:03] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/15-odb-setpowerconnections/odb-setp             
                     owerconnections.log'…                                       
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro0.inv_array[0]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro0.inv_array[1]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro0.inv_array[2]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro0.inv_array[3]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro0.inv_array[4]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro0.inv_array[5]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro0.inv_array[6]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[0]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[1]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[2]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[3]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[4]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[5]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[6]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[7]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro1.inv_array[8]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[0]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[10]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[1]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[2]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[3]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[4]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[5]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[6]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[7]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[8]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro2.inv_array[9]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[0]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[10]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[11]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[12]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[1]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[2]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[3]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[4]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[5]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[6]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[7]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[8]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro3.inv_array[9]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[0]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[10]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[11]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[12]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[13]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[14]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[1]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[2]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[3]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[4]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[5]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[6]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[7]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[8]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro4.inv_array[9]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[0]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[10]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[11]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[12]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[13]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[14]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[15]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[16]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[1]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[2]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[3]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[4]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[5]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[6]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[7]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[8]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro5.inv_array[9]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[0]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[10]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[11]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[12]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[13]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[14]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[15]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[16]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[17]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[18]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[1]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[2]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[3]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[4]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[5]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[6]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[7]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[8]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro6.inv_array[9]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[0]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[10]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[11]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[12]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[13]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[14]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[15]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[16]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[17]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[18]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[19]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[1]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[20]' of type          
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[2]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[3]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[4]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[5]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[6]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[7]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[8]' of type           
                     'trng_ro_inverter_cell'.                                    
-[19:00:03] WARNING  Macros inside hierarchical netlists are not        odb.py:63
+[19:43:04] WARNING  Macros inside hierarchical netlists are not        odb.py:63
                     currently supported in LibreLane: skipping                  
                     submodule                                                   
                     'u_core.u_core.u_trng.u_ro7.inv_array[9]' of type           
                     'trng_ro_inverter_cell'.                                    
 ──────────────────────────── Manual Macro Placement ────────────────────────────
-[19:00:03] VERBOSE  Running 'Odb.ManualMacroPlacement' at           step.py:1146
+[19:43:04] VERBOSE  Running 'Odb.ManualMacroPlacement' at           step.py:1146
                     'runs/wokwi/16-odb-manualmacroplacement'…                   
-[19:00:03] INFO     No instances found, skipping                      odb.py:439
+[19:43:04] INFO     No instances found, skipping                      odb.py:439
                     'Odb.ManualMacroPlacement'…                                 
 ─────────────────────────────────── Cut Rows ───────────────────────────────────
-[19:00:03] VERBOSE  Running 'OpenROAD.CutRows' at                   step.py:1146
+[19:43:04] VERBOSE  Running 'OpenROAD.CutRows' at                   step.py:1146
                     'runs/wokwi/17-openroad-cutrows'…                           
-[19:00:03] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:04] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/17-openroad-cutrows/openroad-cutrow             
                     s.log'…                                                     
 Reading OpenROAD database at                                                    
@@ -13172,9 +13172,9 @@ Writing layout to
 -Lab/runs/wokwi/17-openroad-cutrows/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_anal
 og.def'…                                                                        
 ───────────────────────────── Tap/Decap Insertion ──────────────────────────────
-[19:00:04] VERBOSE  Running 'OpenROAD.TapEndcapInsertion' at        step.py:1146
+[19:43:05] VERBOSE  Running 'OpenROAD.TapEndcapInsertion' at        step.py:1146
                     'runs/wokwi/18-openroad-tapendcapinsertion'…                
-[19:00:04] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:05] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/18-openroad-tapendcapinsertion/open             
                     road-tapendcapinsertion.log'…                               
 Reading OpenROAD database at                                                    
@@ -13232,20 +13232,20 @@ Writing timing constraints to
 -Lab/runs/wokwi/18-openroad-tapendcapinsertion/tt_um_gojimmypi_ttgfa_UART_FSM_TR
 NG_Lab_analog.sdc'…                                                             
 ───────────────────────────── Add PDN obstructions ─────────────────────────────
-[19:00:05] VERBOSE  Running 'Odb.AddPDNObstructions' at             step.py:1146
+[19:43:05] VERBOSE  Running 'Odb.AddPDNObstructions' at             step.py:1146
                     'runs/wokwi/19-odb-addpdnobstructions'…                     
-[19:00:05] INFO     'PDN_OBSTRUCTIONS' is not defined. Skipping       odb.py:555
+[19:43:05] INFO     'PDN_OBSTRUCTIONS' is not defined. Skipping       odb.py:555
                     'Odb.AddPDNObstructions'…                                   
 ──────────────────── Power Distribution Network Generation ─────────────────────
-[19:00:05] VERBOSE  Running 'OpenROAD.GeneratePDN' at               step.py:1146
+[19:43:05] VERBOSE  Running 'OpenROAD.GeneratePDN' at               step.py:1146
                     'runs/wokwi/20-openroad-generatepdn'…                       
-[19:00:05] INFO     'FP_PDN_CFG' not explicitly set, setting it openroad.py:1184
+[19:43:05] INFO     'FP_PDN_CFG' not explicitly set, setting it openroad.py:1184
                     to                                                          
                     /nix/store/pqxyc4xmydcs5adig47yyc29r3svp5nx                 
                     -python3-3.11.9-env/lib/python3.11/site-pac                 
                     kages/librelane/scripts/openroad/common/pdn                 
                     _cfg.tcl…                                                   
-[19:00:05] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:05] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/20-openroad-generatepdn/openroad-ge             
                     neratepdn.log'…                                             
 Reading OpenROAD database at                                                    
@@ -13305,45 +13305,45 @@ analog.sdc'…
 [INFO PSM-0040] All shapes on net VDPWR are connected.                          
 [INFO PSM-0040] All shapes on net VGND are connected.                           
 ─────────────────────────── Remove PDN obstructions ────────────────────────────
-[19:00:06] VERBOSE  Running 'Odb.RemovePDNObstructions' at          step.py:1146
+[19:43:06] VERBOSE  Running 'Odb.RemovePDNObstructions' at          step.py:1146
                     'runs/wokwi/21-odb-removepdnobstructions'…                  
-[19:00:06] INFO     'PDN_OBSTRUCTIONS' is not defined. Skipping       odb.py:555
+[19:43:06] INFO     'PDN_OBSTRUCTIONS' is not defined. Skipping       odb.py:555
                     'Odb.RemovePDNObstructions'…                                
 ─────────────────────────────── Add Obstructions ───────────────────────────────
-[19:00:06] VERBOSE  Running 'Odb.AddRoutingObstructions' at         step.py:1146
+[19:43:06] VERBOSE  Running 'Odb.AddRoutingObstructions' at         step.py:1146
                     'runs/wokwi/22-odb-addroutingobstructions'…                 
-[19:00:06] INFO     'ROUTING_OBSTRUCTIONS' is not defined. Skipping   odb.py:555
+[19:43:06] INFO     'ROUTING_OBSTRUCTIONS' is not defined. Skipping   odb.py:555
                     'Odb.AddRoutingObstructions'…                               
 ─────────────────────────── Global Placement Skip IO ───────────────────────────
-[19:00:06] VERBOSE  Running 'OpenROAD.GlobalPlacementSkipIO' at     step.py:1146
+[19:43:06] VERBOSE  Running 'OpenROAD.GlobalPlacementSkipIO' at     step.py:1146
                     'runs/wokwi/23-openroad-globalplacementskipio'…             
-[19:00:06] INFO     I/O pins were loaded from                   openroad.py:1340
+[19:43:06] INFO     I/O pins were loaded from                   openroad.py:1340
                     /home/runner/work/ttgf0p3-analog-UART-FSM-T                 
                     RNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/bu                 
                     ild/full_harden/tt_analog_1x2_vdpwr.def.                    
                     Skipping the first global placement                         
                     iteration…                                                  
 ──────────────────────────────── I/O Placement ─────────────────────────────────
-[19:00:06] VERBOSE  Running 'OpenROAD.IOPlacement' at               step.py:1146
+[19:43:06] VERBOSE  Running 'OpenROAD.IOPlacement' at               step.py:1146
                     'runs/wokwi/24-openroad-ioplacement'…                       
-[19:00:06] INFO     I/O pins were loaded from                   openroad.py:1092
+[19:43:06] INFO     I/O pins were loaded from                   openroad.py:1092
                     /home/runner/work/ttgf0p3-analog-UART-FSM-T                 
                     RNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/bu                 
                     ild/full_harden/tt_analog_1x2_vdpwr.def.                    
                     Skipping OpenROAD.IOPlacement…                              
 ─────────────────────── Custom I/O Pin Placement Script ────────────────────────
-[19:00:06] VERBOSE  Running 'Odb.CustomIOPlacement' at              step.py:1146
+[19:43:06] VERBOSE  Running 'Odb.CustomIOPlacement' at              step.py:1146
                     'runs/wokwi/25-odb-customioplacement'…                      
-[19:00:06] INFO     No custom floorplan file configured, skipping…    odb.py:686
+[19:43:06] INFO     No custom floorplan file configured, skipping…    odb.py:686
 ────────────────────────────── Apply DEF Template ──────────────────────────────
-[19:00:06] VERBOSE  Running 'Odb.ApplyDEFTemplate' at               step.py:1146
+[19:43:06] VERBOSE  Running 'Odb.ApplyDEFTemplate' at               step.py:1146
                     'runs/wokwi/26-odb-applydeftemplate'…                       
-[19:00:06] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:06] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/26-odb-applydeftemplate/odb-applyde             
                     ftemplate.log'…                                             
-[19:00:06] WARNING  Bterm VDPWR is declared as a 'POWER' pin. It will  odb.py:63
+[19:43:07] WARNING  Bterm VDPWR is declared as a 'POWER' pin. It will  odb.py:63
                     be ignored.                                                 
-[19:00:06] WARNING  Bterm VGND is declared as a 'GROUND' pin. It will  odb.py:63
+[19:43:07] WARNING  Bterm VGND is declared as a 'GROUND' pin. It will  odb.py:63
                     be ignored.                                                 
 [INFO ODB-0388] unsupported LEF58_EOLENCLOSURE property for layer Via1 :"       
 EOLENCLOSURE 0.34 0.06 ;"                                                       
@@ -13506,9 +13506,9 @@ Wrote pin uo_out[6] at layer Metal4 at (312740, 648720, 313340, 650720,
 Wrote pin uo_out[7] at layer Metal4 at (298180, 648720, 298780, 650720,         
 'PLACED')...                                                                    
 ─────────────────────────────── Global Placement ───────────────────────────────
-[19:00:06] VERBOSE  Running 'OpenROAD.GlobalPlacement' at           step.py:1146
+[19:43:07] VERBOSE  Running 'OpenROAD.GlobalPlacement' at           step.py:1146
                     'runs/wokwi/27-openroad-globalplacement'…                   
-[19:00:06] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:07] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/27-openroad-globalplacement/openroa             
                     d-globalplacement.log'…                                     
 Reading OpenROAD database at                                                    
@@ -13732,21 +13732,21 @@ Writing timing constraints to
 -Lab/runs/wokwi/27-openroad-globalplacement/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_
 Lab_analog.sdc'…                                                                
 ───────────────────────────── Write Verilog Header ─────────────────────────────
-[19:00:13] VERBOSE  Running 'Odb.WriteVerilogHeader' at             step.py:1146
+[19:43:14] VERBOSE  Running 'Odb.WriteVerilogHeader' at             step.py:1146
                     'runs/wokwi/28-odb-writeverilogheader'…                     
-[19:00:13] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:14] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/28-odb-writeverilogheader/odb-write             
                     verilogheader.log'…                                         
 ───────────────────────── Power Grid Violation Checker ─────────────────────────
-[19:00:14] VERBOSE  Running 'Checker.PowerGridViolations' at        step.py:1146
+[19:43:15] VERBOSE  Running 'Checker.PowerGridViolations' at        step.py:1146
                     'runs/wokwi/29-checker-powergridviolations'…                
-[19:00:14] INFO     Check for power grid violations (as reported  checker.py:132
+[19:43:15] INFO     Check for power grid violations (as reported  checker.py:132
                     by OpenROAD PSM- you may ignore these if LVS                
                     passes) clear.                                              
 ─────────────────────── Static Timing Analysis (Mid-PnR) ───────────────────────
-[19:00:14] VERBOSE  Running 'OpenROAD.STAMidPNR' at                 step.py:1146
+[19:43:15] VERBOSE  Running 'OpenROAD.STAMidPNR' at                 step.py:1146
                     'runs/wokwi/30-openroad-stamidpnr'…                         
-[19:00:14] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:15] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/30-openroad-stamidpnr/openroad-stam             
                     idpnr.log'…                                                 
 Reading OpenROAD database at                                                    
@@ -13770,11 +13770,11 @@ ite-packages/librelane/scripts/base.sdc'…
 0.1499999999999999944488848768742172978818416595458984375                       
 [INFO] Setting timing derate to: 5%                                             
 [INFO] Setting RC values…                                                       
-[19:00:14] WARNING  [GRT-0097] No global routing found for nets. openroad.py:239
+[19:43:16] WARNING  [GRT-0097] No global routing found for nets. openroad.py:239
 ──────────────────── Repair Design (Post-Global Placement) ─────────────────────
-[19:00:16] VERBOSE  Running 'OpenROAD.RepairDesignPostGPL' at       step.py:1146
+[19:43:17] VERBOSE  Running 'OpenROAD.RepairDesignPostGPL' at       step.py:1146
                     'runs/wokwi/31-openroad-repairdesignpostgpl'…               
-[19:00:16] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:17] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/31-openroad-repairdesignpostgpl/ope             
                     nroad-repairdesignpostgpl.log'…                             
 Reading timing models for corner nom_ss_125C_3v00…                              
@@ -13899,13 +13899,13 @@ Writing timing constraints to
 -Lab/runs/wokwi/31-openroad-repairdesignpostgpl/tt_um_gojimmypi_ttgfa_UART_FSM_T
 RNG_Lab_analog.sdc'…                                                            
 ─────────────────────────── Manual Global Placement ────────────────────────────
-[19:00:19] VERBOSE  Running 'Odb.ManualGlobalPlacement' at          step.py:1146
+[19:43:21] VERBOSE  Running 'Odb.ManualGlobalPlacement' at          step.py:1146
                     'runs/wokwi/32-odb-manualglobalplacement'…                  
-[19:00:19] INFO     'MANUAL_GLOBAL_PLACEMENTS' not set, skipping…     odb.py:975
+[19:43:21] INFO     'MANUAL_GLOBAL_PLACEMENTS' not set, skipping…     odb.py:975
 ────────────────────────────── Detailed Placement ──────────────────────────────
-[19:00:19] VERBOSE  Running 'OpenROAD.DetailedPlacement' at         step.py:1146
+[19:43:21] VERBOSE  Running 'OpenROAD.DetailedPlacement' at         step.py:1146
                     'runs/wokwi/33-openroad-detailedplacement'…                 
-[19:00:19] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:21] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/33-openroad-detailedplacement/openr             
                     oad-detailedplacement.log'…                                 
 Reading OpenROAD database at                                                    
@@ -13975,9 +13975,9 @@ Writing timing constraints to
 -Lab/runs/wokwi/33-openroad-detailedplacement/tt_um_gojimmypi_ttgfa_UART_FSM_TRN
 G_Lab_analog.sdc'…                                                              
 ───────────────────────────── Clock Tree Synthesis ─────────────────────────────
-[19:00:20] VERBOSE  Running 'OpenROAD.CTS' at                       step.py:1146
+[19:43:22] VERBOSE  Running 'OpenROAD.CTS' at                       step.py:1146
                     'runs/wokwi/34-openroad-cts'…                               
-[19:00:20] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:22] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/34-openroad-cts/openroad-cts.log'…              
 Reading timing models for corner nom_ss_125C_3v00…                              
 Reading timing library for the 'nom_ss_125C_3v00' corner at                     
@@ -14162,9 +14162,9 @@ Writing timing constraints to
 -Lab/runs/wokwi/34-openroad-cts/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.s
 dc'…                                                                            
 ─────────────────────── Static Timing Analysis (Mid-PnR) ───────────────────────
-[19:00:28] VERBOSE  Running 'OpenROAD.STAMidPNR-1' at               step.py:1146
+[19:43:30] VERBOSE  Running 'OpenROAD.STAMidPNR-1' at               step.py:1146
                     'runs/wokwi/35-openroad-stamidpnr-1'…                       
-[19:00:28] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:30] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/35-openroad-stamidpnr-1/openroad-st             
                     amidpnr-1.log'…                                             
 Reading OpenROAD database at                                                    
@@ -14188,11 +14188,11 @@ ite-packages/librelane/scripts/base.sdc'…
 0.1499999999999999944488848768742172978818416595458984375                       
 [INFO] Setting timing derate to: 5%                                             
 [INFO] Setting RC values…                                                       
-[19:00:28] WARNING  [GRT-0097] No global routing found for nets. openroad.py:239
+[19:43:30] WARNING  [GRT-0097] No global routing found for nets. openroad.py:239
 ─────────── Resizer Timing Optimizations (Post-Clock Tree Synthesis) ───────────
-[19:00:30] VERBOSE  Running 'OpenROAD.ResizerTimingPostCTS' at      step.py:1146
+[19:43:32] VERBOSE  Running 'OpenROAD.ResizerTimingPostCTS' at      step.py:1146
                     'runs/wokwi/36-openroad-resizertimingpostcts'…              
-[19:00:30] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:32] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/36-openroad-resizertimingpostcts/op             
                     enroad-resizertimingpostcts.log'…                           
 Reading timing models for corner nom_ss_125C_3v00…                              
@@ -14281,9 +14281,9 @@ Writing timing constraints to
 -Lab/runs/wokwi/36-openroad-resizertimingpostcts/tt_um_gojimmypi_ttgfa_UART_FSM_
 TRNG_Lab_analog.sdc'…                                                           
 ─────────────────────── Static Timing Analysis (Mid-PnR) ───────────────────────
-[19:00:32] VERBOSE  Running 'OpenROAD.STAMidPNR-2' at               step.py:1146
+[19:43:35] VERBOSE  Running 'OpenROAD.STAMidPNR-2' at               step.py:1146
                     'runs/wokwi/37-openroad-stamidpnr-2'…                       
-[19:00:32] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:35] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/37-openroad-stamidpnr-2/openroad-st             
                     amidpnr-2.log'…                                             
 Reading OpenROAD database at                                                    
@@ -14307,11 +14307,11 @@ ite-packages/librelane/scripts/base.sdc'…
 0.1499999999999999944488848768742172978818416595458984375                       
 [INFO] Setting timing derate to: 5%                                             
 [INFO] Setting RC values…                                                       
-[19:00:33] WARNING  [GRT-0097] No global routing found for nets. openroad.py:239
+[19:43:35] WARNING  [GRT-0097] No global routing found for nets. openroad.py:239
 ──────────────────────────────── Global Routing ────────────────────────────────
-[19:00:34] VERBOSE  Running 'OpenROAD.GlobalRouting' at             step.py:1146
+[19:43:36] VERBOSE  Running 'OpenROAD.GlobalRouting' at             step.py:1146
                     'runs/wokwi/38-openroad-globalrouting'…                     
-[19:00:34] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:36] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/38-openroad-globalrouting/openroad-             
                     globalrouting.log'…                                         
 Reading OpenROAD database at                                                    
@@ -14412,9 +14412,9 @@ Writing layout to
 -Lab/runs/wokwi/38-openroad-globalrouting/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_La
 b_analog.def'…                                                                  
 ──────────────────────────────── Check Antennas ────────────────────────────────
-[19:00:37] VERBOSE  Running 'OpenROAD.CheckAntennas' at             step.py:1146
+[19:43:40] VERBOSE  Running 'OpenROAD.CheckAntennas' at             step.py:1146
                     'runs/wokwi/39-openroad-checkantennas'…                     
-[19:00:37] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:40] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/39-openroad-checkantennas/openroad-             
                     checkantennas.log'…                                         
 Reading OpenROAD database at                                                    
@@ -14438,9 +14438,9 @@ ite-packages/librelane/scripts/base.sdc'…
 0.1499999999999999944488848768742172978818416595458984375                       
 [INFO] Setting timing derate to: 5%                                             
 ───────────────────── Repair Design (Post-Global Routing) ──────────────────────
-[19:00:39] VERBOSE  Running 'OpenROAD.RepairDesignPostGRT' at       step.py:1146
+[19:43:42] VERBOSE  Running 'OpenROAD.RepairDesignPostGRT' at       step.py:1146
                     'runs/wokwi/40-openroad-repairdesignpostgrt'…               
-[19:00:39] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:42] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/40-openroad-repairdesignpostgrt/ope             
                     nroad-repairdesignpostgrt.log'…                             
 Reading timing models for corner nom_ss_125C_3v00…                              
@@ -14667,21 +14667,21 @@ Writing timing constraints to
 -Lab/runs/wokwi/40-openroad-repairdesignpostgrt/tt_um_gojimmypi_ttgfa_UART_FSM_T
 RNG_Lab_analog.sdc'…                                                            
 ────────────────────── Diodes on Ports Protection Routine ──────────────────────
-[19:00:46] VERBOSE  Running 'Odb.DiodesOnPorts' at                  step.py:1146
+[19:43:49] VERBOSE  Running 'Odb.DiodesOnPorts' at                  step.py:1146
                     'runs/wokwi/41-odb-diodesonports'…                          
-[19:00:46] INFO     'DIODE_ON_PORTS' is set to 'none': skipping…      odb.py:784
-[19:00:46] INFO     Gating variable for step                   sequential.py:317
+[19:43:49] INFO     'DIODE_ON_PORTS' is set to 'none': skipping…      odb.py:784
+[19:43:49] INFO     Gating variable for step                   sequential.py:317
                     'Odb.HeuristicDiodeInsertion' set to                        
                     'False'- the step will be skipped.                          
-[19:00:46] INFO     Skipping step 'Heuristic Diode Insertion'… sequential.py:325
+[19:43:49] INFO     Skipping step 'Heuristic Diode Insertion'… sequential.py:325
 ──────────────────────────────── Antenna Repair ────────────────────────────────
-[19:00:46] VERBOSE  Running 'OpenROAD.RepairAntennas' at            step.py:1146
+[19:43:49] VERBOSE  Running 'OpenROAD.RepairAntennas' at            step.py:1146
                     'runs/wokwi/42-openroad-repairantennas'…                    
 ──────────────────────────────── Global Routing ────────────────────────────────
-[19:00:46] VERBOSE  Running 'DiodeInsertion' at                     step.py:1146
+[19:43:49] VERBOSE  Running 'DiodeInsertion' at                     step.py:1146
                     'runs/wokwi/42-openroad-repairantennas/1-diodei             
                     nsertion'…                                                  
-[19:00:46] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:49] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/42-openroad-repairantennas/1-diodei             
                     nsertion/diodeinsertion.log'…                               
 Reading OpenROAD database at                                                    
@@ -14862,10 +14862,10 @@ Writing layout to
 -Lab/runs/wokwi/42-openroad-repairantennas/1-diodeinsertion/tt_um_gojimmypi_ttgf
 a_UART_FSM_TRNG_Lab_analog.def'…                                                
 ──────────────────────────────── Check Antennas ────────────────────────────────
-[19:00:51] VERBOSE  Running 'OpenROAD.CheckAntennas' at             step.py:1146
+[19:43:54] VERBOSE  Running 'OpenROAD.CheckAntennas' at             step.py:1146
                     'runs/wokwi/42-openroad-repairantennas/2-openro             
                     ad-checkantennas'…                                          
-[19:00:51] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:54] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/42-openroad-repairantennas/2-openro             
                     ad-checkantennas/openroad-checkantennas.log'…               
 Reading OpenROAD database at                                                    
@@ -14888,15 +14888,15 @@ ite-packages/librelane/scripts/base.sdc'…
 [INFO] Setting clock transition to:                                             
 0.1499999999999999944488848768742172978818416595458984375                       
 [INFO] Setting timing derate to: 5%                                             
-[19:00:53] INFO     Gating variable for step                   sequential.py:317
+[19:43:56] INFO     Gating variable for step                   sequential.py:317
                     'OpenROAD.ResizerTimingPostGRT' set to                      
                     'False'- the step will be skipped.                          
-[19:00:53] INFO     Skipping step 'Resizer Timing              sequential.py:325
+[19:43:56] INFO     Skipping step 'Resizer Timing              sequential.py:325
                     Optimizations (Post-Global Routing)'…                       
 ─────────────────────── Static Timing Analysis (Mid-PnR) ───────────────────────
-[19:00:53] VERBOSE  Running 'OpenROAD.STAMidPNR-3' at               step.py:1146
+[19:43:56] VERBOSE  Running 'OpenROAD.STAMidPNR-3' at               step.py:1146
                     'runs/wokwi/43-openroad-stamidpnr-3'…                       
-[19:00:53] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:56] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/43-openroad-stamidpnr-3/openroad-st             
                     amidpnr-3.log'…                                             
 Reading OpenROAD database at                                                    
@@ -14921,10 +14921,10 @@ ite-packages/librelane/scripts/base.sdc'…
 [INFO] Setting timing derate to: 5%                                             
 [INFO] Setting RC values…                                                       
 ─────────────────────────────── Detailed Routing ───────────────────────────────
-[19:00:55] VERBOSE  Running 'OpenROAD.DetailedRouting' at           step.py:1146
+[19:43:58] VERBOSE  Running 'OpenROAD.DetailedRouting' at           step.py:1146
                     'runs/wokwi/44-openroad-detailedrouting'…                   
-[19:00:55] INFO     Running TritonRoute with 4 threads…         openroad.py:1634
-[19:00:55] VERBOSE  Logging subprocess to                           step.py:1342
+[19:43:58] INFO     Running TritonRoute with 4 threads…         openroad.py:1634
+[19:43:58] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/44-openroad-detailedrouting/openroa             
                     d-detailedrouting.log'…                                     
 Reading OpenROAD database at                                                    
@@ -14949,21 +14949,21 @@ ite-packages/librelane/scripts/base.sdc'…
 [INFO] Setting timing derate to: 5%                                             
 [INFO ORD-0030] Using 4 thread(s).                                              
 [INFO DRT-0149] Reading tech and libs.                                          
-[19:00:56] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
+[19:43:59] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
                     is not supported. Skipping for layer Via1                   
-[19:00:56] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
+[19:43:59] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
                     is not supported. Skipping for layer Via1                   
-[19:00:56] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
+[19:43:59] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
                     is not supported. Skipping for layer Via2                   
-[19:00:56] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
+[19:43:59] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
                     is not supported. Skipping for layer Via2                   
-[19:00:56] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
+[19:43:59] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
                     is not supported. Skipping for layer Via3                   
-[19:00:56] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
+[19:43:59] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
                     is not supported. Skipping for layer Via3                   
-[19:00:56] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
+[19:43:59] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
                     is not supported. Skipping for layer Via4                   
-[19:00:56] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
+[19:43:59] WARNING  [DRT-0349] LEF58_ENCLOSURE with no CUTCLASS  openroad.py:239
                     is not supported. Skipping for layer Via4                   
                                                                                 
 Units:                2000                                                      
@@ -15037,8 +15037,8 @@ default via: Via4_VH
 #macroValidViaAp       = 0                                                      
 #macroNoAp             = 0                                                      
 [INFO DRT-0166] Complete pin access.                                            
-[INFO DRT-0267] cpu time = 00:00:28, elapsed time = 00:00:07, memory = 165.09   
-(MB), peak = 164.96 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:22, elapsed time = 00:00:05, memory = 165.07   
+(MB), peak = 165.00 (MB)                                                        
                                                                                 
 [INFO DRT-0157] Number of guides:     26608                                     
                                                                                 
@@ -15088,41 +15088,41 @@ wires in 1 frboxes.
 [INFO DRT-0186] Done with 2968 vertical wires in 1 frboxes and 2565 horizontal  
 wires in 1 frboxes.                                                             
 [INFO DRT-0182] Complete track assignment.                                      
-[INFO DRT-0267] cpu time = 00:00:03, elapsed time = 00:00:01, memory = 206.74   
-(MB), peak = 206.59 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:03, elapsed time = 00:00:01, memory = 206.64   
+(MB), peak = 206.40 (MB)                                                        
 [INFO DRT-0187] Start routing data preparation.                                 
-[INFO DRT-0267] cpu time = 00:00:00, elapsed time = 00:00:00, memory = 206.74   
-(MB), peak = 206.59 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:00, elapsed time = 00:00:00, memory = 210.91   
+(MB), peak = 210.65 (MB)                                                        
 [INFO DRT-0194] Start detail routing.                                           
 [INFO DRT-0195] Start 0th optimization iteration.                               
 Completing 10% with 0 violations.                                               
-elapsed time = 00:00:01, memory = 240.39 (MB).                                  
+elapsed time = 00:00:01, memory = 257.12 (MB).                                  
 Completing 20% with 0 violations.                                               
-elapsed time = 00:00:02, memory = 251.64 (MB).                                  
+elapsed time = 00:00:02, memory = 261.69 (MB).                                  
 Completing 30% with 270 violations.                                             
-elapsed time = 00:00:03, memory = 252.86 (MB).                                  
+elapsed time = 00:00:04, memory = 262.98 (MB).                                  
 Completing 40% with 270 violations.                                             
-elapsed time = 00:00:04, memory = 256.61 (MB).                                  
+elapsed time = 00:00:05, memory = 268.53 (MB).                                  
 Completing 50% with 270 violations.                                             
-elapsed time = 00:00:06, memory = 250.16 (MB).                                  
+elapsed time = 00:00:06, memory = 262.07 (MB).                                  
 Completing 60% with 510 violations.                                             
-elapsed time = 00:00:08, memory = 264.89 (MB).                                  
+elapsed time = 00:00:08, memory = 276.04 (MB).                                  
 Completing 70% with 510 violations.                                             
-elapsed time = 00:00:10, memory = 270.46 (MB).                                  
+elapsed time = 00:00:10, memory = 280.44 (MB).                                  
 Completing 80% with 813 violations.                                             
-elapsed time = 00:00:11, memory = 271.80 (MB).                                  
+elapsed time = 00:00:11, memory = 285.52 (MB).                                  
 Completing 90% with 813 violations.                                             
-elapsed time = 00:00:11, memory = 272.31 (MB).                                  
+elapsed time = 00:00:12, memory = 284.86 (MB).                                  
 Completing 100% with 1092 violations.                                           
-elapsed time = 00:00:13, memory = 270.16 (MB).                                  
+elapsed time = 00:00:14, memory = 284.04 (MB).                                  
 [INFO DRT-0199]   Number of violations = 1377.                                  
 Viol/Layer      Metal1 Metal2   Via2 Metal3 Metal4                              
 Cut Spacing          0      0      1      0      0                              
 Metal Spacing       14    138      0     11      3                              
 Recheck              0    185      0     86     14                              
 Short                0    766      0    154      5                              
-[INFO DRT-0267] cpu time = 00:00:44, elapsed time = 00:00:14, memory = 547.36   
-(MB), peak = 558.94 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:46, elapsed time = 00:00:15, memory = 561.39   
+(MB), peak = 572.97 (MB)                                                        
 Total wire length = 163172 um.                                                  
 Total wire length on LAYER Metal1 = 0 um.                                       
 Total wire length on LAYER Metal2 = 68723 um.                                   
@@ -15144,31 +15144,31 @@ Metal4        0
                                                                                 
 [INFO DRT-0195] Start 1st optimization iteration.                               
 Completing 10% with 1377 violations.                                            
-elapsed time = 00:00:00, memory = 547.36 (MB).                                  
+elapsed time = 00:00:00, memory = 561.39 (MB).                                  
 Completing 20% with 1377 violations.                                            
-elapsed time = 00:00:01, memory = 553.99 (MB).                                  
+elapsed time = 00:00:01, memory = 566.30 (MB).                                  
 Completing 30% with 1210 violations.                                            
-elapsed time = 00:00:02, memory = 554.56 (MB).                                  
+elapsed time = 00:00:03, memory = 566.30 (MB).                                  
 Completing 40% with 1210 violations.                                            
-elapsed time = 00:00:03, memory = 554.56 (MB).                                  
+elapsed time = 00:00:03, memory = 566.30 (MB).                                  
 Completing 50% with 1210 violations.                                            
-elapsed time = 00:00:04, memory = 554.79 (MB).                                  
+elapsed time = 00:00:04, memory = 568.29 (MB).                                  
 Completing 60% with 924 violations.                                             
-elapsed time = 00:00:06, memory = 554.82 (MB).                                  
+elapsed time = 00:00:06, memory = 568.32 (MB).                                  
 Completing 70% with 924 violations.                                             
-elapsed time = 00:00:07, memory = 558.82 (MB).                                  
+elapsed time = 00:00:07, memory = 572.32 (MB).                                  
 Completing 80% with 756 violations.                                             
-elapsed time = 00:00:09, memory = 560.92 (MB).                                  
+elapsed time = 00:00:09, memory = 572.66 (MB).                                  
 Completing 90% with 756 violations.                                             
-elapsed time = 00:00:10, memory = 560.92 (MB).                                  
+elapsed time = 00:00:10, memory = 572.66 (MB).                                  
 Completing 100% with 542 violations.                                            
-elapsed time = 00:00:12, memory = 562.15 (MB).                                  
+elapsed time = 00:00:12, memory = 576.11 (MB).                                  
 [INFO DRT-0199]   Number of violations = 542.                                   
 Viol/Layer      Metal1 Metal2 Metal3 Metal4                                     
 Metal Spacing        1     75     11      1                                     
 Short                0    382     71      1                                     
-[INFO DRT-0267] cpu time = 00:00:38, elapsed time = 00:00:12, memory = 565.28   
-(MB), peak = 576.91 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:39, elapsed time = 00:00:12, memory = 579.23   
+(MB), peak = 590.90 (MB)                                                        
 Total wire length = 161306 um.                                                  
 Total wire length on LAYER Metal1 = 0 um.                                       
 Total wire length on LAYER Metal2 = 67082 um.                                   
@@ -15190,31 +15190,31 @@ Metal4        0
                                                                                 
 [INFO DRT-0195] Start 2nd optimization iteration.                               
 Completing 10% with 542 violations.                                             
-elapsed time = 00:00:00, memory = 565.28 (MB).                                  
+elapsed time = 00:00:00, memory = 579.23 (MB).                                  
 Completing 20% with 542 violations.                                             
-elapsed time = 00:00:00, memory = 566.94 (MB).                                  
+elapsed time = 00:00:00, memory = 579.23 (MB).                                  
 Completing 30% with 542 violations.                                             
-elapsed time = 00:00:02, memory = 569.63 (MB).                                  
+elapsed time = 00:00:02, memory = 579.23 (MB).                                  
 Completing 40% with 496 violations.                                             
-elapsed time = 00:00:03, memory = 570.71 (MB).                                  
+elapsed time = 00:00:03, memory = 579.23 (MB).                                  
 Completing 50% with 496 violations.                                             
-elapsed time = 00:00:04, memory = 570.71 (MB).                                  
+elapsed time = 00:00:04, memory = 579.23 (MB).                                  
 Completing 60% with 448 violations.                                             
-elapsed time = 00:00:06, memory = 570.71 (MB).                                  
+elapsed time = 00:00:06, memory = 579.23 (MB).                                  
 Completing 70% with 448 violations.                                             
-elapsed time = 00:00:06, memory = 570.71 (MB).                                  
+elapsed time = 00:00:07, memory = 579.23 (MB).                                  
 Completing 80% with 448 violations.                                             
-elapsed time = 00:00:08, memory = 570.71 (MB).                                  
+elapsed time = 00:00:08, memory = 579.24 (MB).                                  
 Completing 90% with 455 violations.                                             
-elapsed time = 00:00:09, memory = 570.71 (MB).                                  
+elapsed time = 00:00:10, memory = 579.25 (MB).                                  
 Completing 100% with 459 violations.                                            
-elapsed time = 00:00:11, memory = 570.71 (MB).                                  
+elapsed time = 00:00:11, memory = 579.25 (MB).                                  
 [INFO DRT-0199]   Number of violations = 459.                                   
 Viol/Layer      Metal2 Metal3 Metal4                                            
 Metal Spacing       57      7      0                                            
 Short              360     34      1                                            
-[INFO DRT-0267] cpu time = 00:00:34, elapsed time = 00:00:11, memory = 570.71   
-(MB), peak = 582.33 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:35, elapsed time = 00:00:12, memory = 579.25   
+(MB), peak = 590.90 (MB)                                                        
 Total wire length = 160292 um.                                                  
 Total wire length on LAYER Metal1 = 0 um.                                       
 Total wire length on LAYER Metal2 = 66528 um.                                   
@@ -15236,31 +15236,31 @@ Metal4        0
                                                                                 
 [INFO DRT-0195] Start 3rd optimization iteration.                               
 Completing 10% with 459 violations.                                             
-elapsed time = 00:00:00, memory = 570.71 (MB).                                  
+elapsed time = 00:00:00, memory = 579.25 (MB).                                  
 Completing 20% with 459 violations.                                             
-elapsed time = 00:00:00, memory = 570.71 (MB).                                  
+elapsed time = 00:00:00, memory = 579.25 (MB).                                  
 Completing 30% with 367 violations.                                             
-elapsed time = 00:00:01, memory = 570.71 (MB).                                  
+elapsed time = 00:00:01, memory = 579.25 (MB).                                  
 Completing 40% with 367 violations.                                             
-elapsed time = 00:00:01, memory = 570.71 (MB).                                  
+elapsed time = 00:00:01, memory = 579.25 (MB).                                  
 Completing 50% with 367 violations.                                             
-elapsed time = 00:00:03, memory = 571.18 (MB).                                  
+elapsed time = 00:00:04, memory = 579.72 (MB).                                  
 Completing 60% with 297 violations.                                             
-elapsed time = 00:00:04, memory = 571.19 (MB).                                  
+elapsed time = 00:00:04, memory = 579.72 (MB).                                  
 Completing 70% with 297 violations.                                             
-elapsed time = 00:00:04, memory = 571.19 (MB).                                  
+elapsed time = 00:00:05, memory = 579.72 (MB).                                  
 Completing 80% with 164 violations.                                             
-elapsed time = 00:00:04, memory = 571.19 (MB).                                  
+elapsed time = 00:00:05, memory = 579.72 (MB).                                  
 Completing 90% with 164 violations.                                             
-elapsed time = 00:00:05, memory = 571.19 (MB).                                  
+elapsed time = 00:00:05, memory = 579.72 (MB).                                  
 Completing 100% with 35 violations.                                             
-elapsed time = 00:00:05, memory = 572.14 (MB).                                  
+elapsed time = 00:00:06, memory = 580.66 (MB).                                  
 [INFO DRT-0199]   Number of violations = 35.                                    
 Viol/Layer      Metal2 Metal3                                                   
 Metal Spacing        6      2                                                   
 Short               16     11                                                   
-[INFO DRT-0267] cpu time = 00:00:14, elapsed time = 00:00:06, memory = 569.14   
-(MB), peak = 583.71 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:14, elapsed time = 00:00:06, memory = 577.66   
+(MB), peak = 592.29 (MB)                                                        
 Total wire length = 160208 um.                                                  
 Total wire length on LAYER Metal1 = 0 um.                                       
 Total wire length on LAYER Metal2 = 61280 um.                                   
@@ -15282,30 +15282,30 @@ Metal4        0
                                                                                 
 [INFO DRT-0195] Start 4th optimization iteration.                               
 Completing 10% with 35 violations.                                              
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 20% with 35 violations.                                              
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 30% with 2 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 40% with 2 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 50% with 2 violations.                                               
-elapsed time = 00:00:03, memory = 569.14 (MB).                                  
+elapsed time = 00:00:04, memory = 577.66 (MB).                                  
 Completing 60% with 2 violations.                                               
-elapsed time = 00:00:03, memory = 569.14 (MB).                                  
+elapsed time = 00:00:04, memory = 577.66 (MB).                                  
 Completing 70% with 2 violations.                                               
-elapsed time = 00:00:03, memory = 569.14 (MB).                                  
+elapsed time = 00:00:04, memory = 577.66 (MB).                                  
 Completing 80% with 1 violations.                                               
-elapsed time = 00:00:03, memory = 569.14 (MB).                                  
+elapsed time = 00:00:04, memory = 577.66 (MB).                                  
 Completing 90% with 1 violations.                                               
-elapsed time = 00:00:03, memory = 569.14 (MB).                                  
+elapsed time = 00:00:04, memory = 577.66 (MB).                                  
 Completing 100% with 1 violations.                                              
-elapsed time = 00:00:03, memory = 569.14 (MB).                                  
+elapsed time = 00:00:04, memory = 577.66 (MB).                                  
 [INFO DRT-0199]   Number of violations = 1.                                     
 Viol/Layer      Metal2                                                          
 Metal Spacing        1                                                          
-[INFO DRT-0267] cpu time = 00:00:06, elapsed time = 00:00:04, memory = 569.14   
-(MB), peak = 583.77 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:06, elapsed time = 00:00:04, memory = 577.66   
+(MB), peak = 592.37 (MB)                                                        
 Total wire length = 160182 um.                                                  
 Total wire length on LAYER Metal1 = 0 um.                                       
 Total wire length on LAYER Metal2 = 61152 um.                                   
@@ -15327,28 +15327,28 @@ Metal4        0
                                                                                 
 [INFO DRT-0195] Start 5th optimization iteration.                               
 Completing 10% with 1 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 20% with 1 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 30% with 0 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 40% with 0 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 50% with 0 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 60% with 0 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 70% with 0 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 80% with 0 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 90% with 0 violations.                                               
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 Completing 100% with 0 violations.                                              
-elapsed time = 00:00:00, memory = 569.14 (MB).                                  
+elapsed time = 00:00:00, memory = 577.66 (MB).                                  
 [INFO DRT-0199]   Number of violations = 0.                                     
-[INFO DRT-0267] cpu time = 00:00:01, elapsed time = 00:00:00, memory = 569.14   
-(MB), peak = 583.77 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:00:01, elapsed time = 00:00:00, memory = 577.66   
+(MB), peak = 592.37 (MB)                                                        
 Total wire length = 160180 um.                                                  
 Total wire length on LAYER Metal1 = 0 um.                                       
 Total wire length on LAYER Metal2 = 61144 um.                                   
@@ -15388,8 +15388,8 @@ Metal4        0
 21818                                                                           
                                                                                 
                                                                                 
-[INFO DRT-0267] cpu time = 00:02:20, elapsed time = 00:00:48, memory = 569.14   
-(MB), peak = 583.77 (MB)                                                        
+[INFO DRT-0267] cpu time = 00:02:23, elapsed time = 00:00:52, memory = 577.66   
+(MB), peak = 592.37 (MB)                                                        
                                                                                 
 [INFO DRT-0180] Post processing.                                                
 Setting global connections for newly added cells…                               
@@ -15429,14 +15429,14 @@ Writing timing constraints to
 -Lab/runs/wokwi/44-openroad-detailedrouting/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_
 Lab_analog.sdc'…                                                                
 ───────────────────────────── Remove Obstructions ──────────────────────────────
-[19:01:54] VERBOSE  Running 'Odb.RemoveRoutingObstructions' at      step.py:1146
+[19:44:59] VERBOSE  Running 'Odb.RemoveRoutingObstructions' at      step.py:1146
                     'runs/wokwi/45-odb-removeroutingobstructions'…              
-[19:01:54] INFO     'ROUTING_OBSTRUCTIONS' is not defined. Skipping   odb.py:555
+[19:44:59] INFO     'ROUTING_OBSTRUCTIONS' is not defined. Skipping   odb.py:555
                     'Odb.RemoveRoutingObstructions'…                            
 ──────────────────────────────── Check Antennas ────────────────────────────────
-[19:01:54] VERBOSE  Running 'OpenROAD.CheckAntennas-1' at           step.py:1146
+[19:44:59] VERBOSE  Running 'OpenROAD.CheckAntennas-1' at           step.py:1146
                     'runs/wokwi/46-openroad-checkantennas-1'…                   
-[19:01:54] VERBOSE  Logging subprocess to                           step.py:1342
+[19:44:59] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/46-openroad-checkantennas-1/openroa             
                     d-checkantennas-1.log'…                                     
 Reading OpenROAD database at                                                    
@@ -15460,35 +15460,35 @@ ite-packages/librelane/scripts/base.sdc'…
 0.1499999999999999944488848768742172978818416595458984375                       
 [INFO] Setting timing derate to: 5%                                             
 ───────────────────────── Routing Design Rule Checker ──────────────────────────
-[19:01:56] VERBOSE  Running 'Checker.TrDRC' at                      step.py:1146
+[19:45:01] VERBOSE  Running 'Checker.TrDRC' at                      step.py:1146
                     'runs/wokwi/47-checker-trdrc'…                              
-[19:01:56] INFO     Check for Routing DRC errors clear.           checker.py:132
+[19:45:01] INFO     Check for Routing DRC errors clear.           checker.py:132
 ─────────────────────────── Report Disconnected Pins ───────────────────────────
-[19:01:56] VERBOSE  Running 'Odb.ReportDisconnectedPins' at         step.py:1146
+[19:45:01] VERBOSE  Running 'Odb.ReportDisconnectedPins' at         step.py:1146
                     'runs/wokwi/48-odb-reportdisconnectedpins'…                 
-[19:01:56] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:01] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/48-odb-reportdisconnectedpins/odb-r             
                     eportdisconnectedpins.log'…                                 
 Found 3 disconnected pin(s), of which 0 are critical.                           
 ────────────────────────── Disconnected Pins Checker ───────────────────────────
-[19:01:56] VERBOSE  Running 'Checker.DisconnectedPins' at           step.py:1146
+[19:45:02] VERBOSE  Running 'Checker.DisconnectedPins' at           step.py:1146
                     'runs/wokwi/49-checker-disconnectedpins'…                   
-[19:01:56] INFO     Check for critical disconnected pins clear.   checker.py:132
+[19:45:02] INFO     Check for critical disconnected pins clear.   checker.py:132
 ────────────────────────────── Report Wire Length ──────────────────────────────
-[19:01:56] VERBOSE  Running 'Odb.ReportWireLength' at               step.py:1146
+[19:45:02] VERBOSE  Running 'Odb.ReportWireLength' at               step.py:1146
                     'runs/wokwi/50-odb-reportwirelength'…                       
-[19:01:56] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:02] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/50-odb-reportwirelength/odb-reportw             
                     irelength.log'…                                             
 ──────────────────────── Wire Length Threshold Checker ─────────────────────────
-[19:01:57] VERBOSE  Running 'Checker.WireLength' at                 step.py:1146
+[19:45:02] VERBOSE  Running 'Checker.WireLength' at                 step.py:1146
                     'runs/wokwi/51-checker-wirelength'…                         
-[19:01:57] WARNING  Threshold for Threshold-surpassing long wires checker.py:109
+[19:45:02] WARNING  Threshold for Threshold-surpassing long wires checker.py:109
                     is not set. The checker will be skipped.                    
 ──────────────────────────────── Fill Insertion ────────────────────────────────
-[19:01:57] VERBOSE  Running 'OpenROAD.FillInsertion' at             step.py:1146
+[19:45:02] VERBOSE  Running 'OpenROAD.FillInsertion' at             step.py:1146
                     'runs/wokwi/52-openroad-fillinsertion'…                     
-[19:01:57] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:02] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/52-openroad-fillinsertion/openroad-             
                     fillinsertion.log'…                                         
 Reading OpenROAD database at                                                    
@@ -15551,9 +15551,9 @@ Writing timing constraints to
 -Lab/runs/wokwi/52-openroad-fillinsertion/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_La
 b_analog.sdc'…                                                                  
 ──────────────────────── Generate Cell Frequency Tables ────────────────────────
-[19:01:58] VERBOSE  Running 'Odb.CellFrequencyTables' at            step.py:1146
+[19:45:03] VERBOSE  Running 'Odb.CellFrequencyTables' at            step.py:1146
                     'runs/wokwi/53-odb-cellfrequencytables'…                    
-[19:01:58] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:03] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/53-odb-cellfrequencytables/buffer_l             
                     ist.txt'…                                                   
 gf180mcu_fd_sc_mcu7t5v0__buf_1                                                  
@@ -15584,7 +15584,7 @@ gf180mcu_fd_sc_mcu7t5v0__dlyc_4
 gf180mcu_fd_sc_mcu7t5v0__dlyd_1                                                 
 gf180mcu_fd_sc_mcu7t5v0__dlyd_2                                                 
 gf180mcu_fd_sc_mcu7t5v0__dlyd_4                                                 
-[19:01:58] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:04] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/53-odb-cellfrequencytables/odb-cell             
                     frequencytables.log'…                                       
 Cells by Master                                                                 
@@ -15766,120 +15766,120 @@ Buffers by Cell Master
 │ gf180mcu_fd_sc_mcu7t5v0__dlyb_1                                 │ 40         │
 └─────────────────────────────────────────────────────────────────┴────────────┘
 ───────────────── Parasitic Resistance/Capacitance Extraction ──────────────────
-[19:01:59] VERBOSE  Running 'OpenROAD.RCX' at                       step.py:1146
+[19:45:05] VERBOSE  Running 'OpenROAD.RCX' at                       step.py:1146
                     'runs/wokwi/54-openroad-rcx'…                               
-[19:01:59] INFO     Running RCX for corners matching nom_*      openroad.py:1763
+[19:45:05] INFO     Running RCX for corners matching nom_*      openroad.py:1763
                     (/home/runner/work/ttgf0p3-analog-UART-FSM-                 
                     TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/r                 
                     uns/wokwi/54-openroad-rcx/nom/rcx.log)…                     
-[19:01:59] INFO     Running RCX for corners matching min_*      openroad.py:1763
+[19:45:05] INFO     Running RCX for corners matching min_*      openroad.py:1763
                     (/home/runner/work/ttgf0p3-analog-UART-FSM-                 
                     TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/r                 
                     uns/wokwi/54-openroad-rcx/min/rcx.log)…                     
-[19:01:59] INFO     Running RCX for corners matching max_*      openroad.py:1763
+[19:45:05] INFO     Running RCX for corners matching max_*      openroad.py:1763
                     (/home/runner/work/ttgf0p3-analog-UART-FSM-                 
                     TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/r                 
                     uns/wokwi/54-openroad-rcx/max/rcx.log)…                     
-[19:01:59] VERBOSE  Logging subprocess to                           step.py:1342
-                    'runs/wokwi/54-openroad-rcx/nom/rcx.log'…                   
-[19:01:59] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:05] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/54-openroad-rcx/min/rcx.log'…                   
-[19:01:59] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:05] VERBOSE  Logging subprocess to                           step.py:1342
+                    'runs/wokwi/54-openroad-rcx/nom/rcx.log'…                   
+[19:45:05] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/54-openroad-rcx/max/rcx.log'…                   
-[19:02:00] INFO     Finished RCX for corners matching max_*.    openroad.py:1772
-[19:02:00] INFO     Finished RCX for corners matching nom_*.    openroad.py:1772
-[19:02:00] INFO     Finished RCX for corners matching min_*.    openroad.py:1772
+[19:45:06] INFO     Finished RCX for corners matching min_*.    openroad.py:1772
+[19:45:06] INFO     Finished RCX for corners matching max_*.    openroad.py:1772
+[19:45:06] INFO     Finished RCX for corners matching nom_*.    openroad.py:1772
 ────────────────────── Static Timing Analysis (Post-PnR) ───────────────────────
-[19:02:00] VERBOSE  Running 'OpenROAD.STAPostPNR' at                step.py:1146
+[19:45:06] VERBOSE  Running 'OpenROAD.STAPostPNR' at                step.py:1146
                     'runs/wokwi/55-openroad-stapostpnr'…                        
-[19:02:00] INFO     Starting STA for the nom_tt_025C_3v30 timing openroad.py:568
+[19:45:06] INFO     Starting STA for the nom_tt_025C_3v30 timing openroad.py:568
                     corner…                                                     
-[19:02:00] INFO     Starting STA for the nom_ss_125C_3v00 timing openroad.py:568
+[19:45:06] INFO     Starting STA for the nom_ss_125C_3v00 timing openroad.py:568
                     corner…                                                     
-[19:02:00] INFO     Starting STA for the nom_ff_n40C_3v60 timing openroad.py:568
+[19:45:06] INFO     Starting STA for the nom_ff_n40C_3v60 timing openroad.py:568
                     corner…                                                     
-[19:02:00] INFO     Starting STA for the min_tt_025C_3v30 timing openroad.py:568
+[19:45:06] INFO     Starting STA for the min_tt_025C_3v30 timing openroad.py:568
                     corner…                                                     
-[19:02:00] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:06] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/nom_tt_025C_             
                     3v30/sta.log'…                                              
-[19:02:00] VERBOSE  Logging subprocess to                           step.py:1342
-                    'runs/wokwi/55-openroad-stapostpnr/nom_ss_125C_             
-                    3v00/sta.log'…                                              
-[19:02:00] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:06] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/nom_ff_n40C_             
                     3v60/sta.log'…                                              
-[19:02:00] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:06] VERBOSE  Logging subprocess to                           step.py:1342
+                    'runs/wokwi/55-openroad-stapostpnr/nom_ss_125C_             
+                    3v00/sta.log'…                                              
+[19:45:06] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/min_tt_025C_             
                     3v30/sta.log'…                                              
-[19:02:04] INFO     Finished STA for the min_tt_025C_3v30 timing openroad.py:583
+[19:45:09] INFO     Finished STA for the nom_tt_025C_3v30 timing openroad.py:583
                     corner.                                                     
-[19:02:04] INFO     Finished STA for the nom_ss_125C_3v00 timing openroad.py:583
+[19:45:09] INFO     Finished STA for the nom_ss_125C_3v00 timing openroad.py:583
                     corner.                                                     
-[19:02:04] VERBOSE  Logging subprocess to                           step.py:1342
-                    'runs/wokwi/55-openroad-stapostpnr/min_tt_025C_             
-                    3v30/filter_unannotated.log'…                               
-[19:02:04] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:09] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/nom_ss_125C_             
                     3v00/filter_unannotated.log'…                               
-[19:02:04] INFO     Finished STA for the nom_tt_025C_3v30 timing openroad.py:583
-                    corner.                                                     
-[19:02:04] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:09] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/nom_tt_025C_             
                     3v30/filter_unannotated.log'…                               
-[19:02:04] INFO     Finished STA for the nom_ff_n40C_3v60 timing openroad.py:583
+[19:45:10] INFO     Finished STA for the min_tt_025C_3v30 timing openroad.py:583
                     corner.                                                     
-[19:02:04] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:10] INFO     Finished STA for the nom_ff_n40C_3v60 timing openroad.py:583
+                    corner.                                                     
+[19:45:10] VERBOSE  Logging subprocess to                           step.py:1342
+                    'runs/wokwi/55-openroad-stapostpnr/min_tt_025C_             
+                    3v30/filter_unannotated.log'…                               
+[19:45:10] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/nom_ff_n40C_             
                     3v60/filter_unannotated.log'…                               
-[19:02:04] INFO     Starting STA for the min_ss_125C_3v00 timing openroad.py:568
+[19:45:10] INFO     Starting STA for the min_ss_125C_3v00 timing openroad.py:568
                     corner…                                                     
-[19:02:04] INFO     Starting STA for the min_ff_n40C_3v60 timing openroad.py:568
+[19:45:10] INFO     Starting STA for the min_ff_n40C_3v60 timing openroad.py:568
                     corner…                                                     
-[19:02:04] VERBOSE  Logging subprocess to                           step.py:1342
-                    'runs/wokwi/55-openroad-stapostpnr/min_ss_125C_             
-                    3v00/sta.log'…                                              
-[19:02:04] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:10] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/min_ff_n40C_             
                     3v60/sta.log'…                                              
-[19:02:04] INFO     Starting STA for the max_tt_025C_3v30 timing openroad.py:568
+[19:45:10] VERBOSE  Logging subprocess to                           step.py:1342
+                    'runs/wokwi/55-openroad-stapostpnr/min_ss_125C_             
+                    3v00/sta.log'…                                              
+[19:45:10] INFO     Starting STA for the max_tt_025C_3v30 timing openroad.py:568
                     corner…                                                     
-[19:02:04] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:10] INFO     Starting STA for the max_ss_125C_3v00 timing openroad.py:568
+                    corner…                                                     
+[19:45:10] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/max_tt_025C_             
                     3v30/sta.log'…                                              
-[19:02:04] INFO     Starting STA for the max_ss_125C_3v00 timing openroad.py:568
-                    corner…                                                     
-[19:02:04] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:10] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/max_ss_125C_             
                     3v00/sta.log'…                                              
-[19:02:08] INFO     Finished STA for the min_ff_n40C_3v60 timing openroad.py:583
+[19:45:13] INFO     Finished STA for the min_ss_125C_3v00 timing openroad.py:583
                     corner.                                                     
-[19:02:08] VERBOSE  Logging subprocess to                           step.py:1342
-                    'runs/wokwi/55-openroad-stapostpnr/min_ff_n40C_             
-                    3v60/filter_unannotated.log'…                               
-[19:02:08] INFO     Finished STA for the min_ss_125C_3v00 timing openroad.py:583
-                    corner.                                                     
-[19:02:08] INFO     Finished STA for the max_tt_025C_3v30 timing openroad.py:583
-                    corner.                                                     
-[19:02:08] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:13] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/min_ss_125C_             
                     3v00/filter_unannotated.log'…                               
-[19:02:08] INFO     Finished STA for the max_ss_125C_3v00 timing openroad.py:583
+[19:45:14] INFO     Finished STA for the max_ss_125C_3v00 timing openroad.py:583
                     corner.                                                     
-[19:02:08] VERBOSE  Logging subprocess to                           step.py:1342
-                    'runs/wokwi/55-openroad-stapostpnr/max_tt_025C_             
-                    3v30/filter_unannotated.log'…                               
-[19:02:08] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:14] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/max_ss_125C_             
                     3v00/filter_unannotated.log'…                               
-[19:02:08] INFO     Starting STA for the max_ff_n40C_3v60 timing openroad.py:568
+[19:45:14] INFO     Finished STA for the min_ff_n40C_3v60 timing openroad.py:583
+                    corner.                                                     
+[19:45:14] VERBOSE  Logging subprocess to                           step.py:1342
+                    'runs/wokwi/55-openroad-stapostpnr/min_ff_n40C_             
+                    3v60/filter_unannotated.log'…                               
+[19:45:14] INFO     Finished STA for the max_tt_025C_3v30 timing openroad.py:583
+                    corner.                                                     
+[19:45:14] VERBOSE  Logging subprocess to                           step.py:1342
+                    'runs/wokwi/55-openroad-stapostpnr/max_tt_025C_             
+                    3v30/filter_unannotated.log'…                               
+[19:45:14] INFO     Starting STA for the max_ff_n40C_3v60 timing openroad.py:568
                     corner…                                                     
-[19:02:08] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:14] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/max_ff_n40C_             
                     3v60/sta.log'…                                              
-[19:02:10] INFO     Finished STA for the max_ff_n40C_3v60 timing openroad.py:583
+[19:45:16] INFO     Finished STA for the max_ff_n40C_3v60 timing openroad.py:583
                     corner.                                                     
-[19:02:10] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:16] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/55-openroad-stapostpnr/max_ff_n40C_             
                     3v60/filter_unannotated.log'…                               
 ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━┳━━━━┳━━━━┳━━━━┳━━━━┳━━━┳━━━━┳━━━┳━━━━┳━━━┳━━━━┳━━━┓
@@ -15901,16 +15901,16 @@ Buffers by Cell Master
 │ max_ff_n40C_3v60     │ 0… │ 0… │ 0… │ 0  │ 0  │ … │ 2… │ … │ 0  │ 0 │ 4  │ 6 │
 └──────────────────────┴────┴────┴────┴────┴────┴───┴────┴───┴────┴───┴────┴───┘
 ─────────────────────────── Generate IR Drop Report ────────────────────────────
-[19:02:11] VERBOSE  Running 'OpenROAD.IRDropReport' at              step.py:1146
+[19:45:17] VERBOSE  Running 'OpenROAD.IRDropReport' at              step.py:1146
                     'runs/wokwi/56-openroad-irdropreport'…                      
-[19:02:11] WARNING  'VSRC_LOC_FILES' was not given a value,     openroad.py:1863
+[19:45:17] WARNING  'VSRC_LOC_FILES' was not given a value,     openroad.py:1863
                     which may make the results of IR drop                       
                     analysis inaccurate. If you are not                         
                     integrating a top-level chip for                            
                     manufacture, you may ignore this warning,                   
                     otherwise, see the documentation for                        
                     'VSRC_LOC_FILES'.                                           
-[19:02:11] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:17] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/56-openroad-irdropreport/openroad-i             
                     rdropreport.log'…                                           
 Reading OpenROAD database at                                                    
@@ -15936,7 +15936,7 @@ ite-packages/librelane/scripts/base.sdc'…
 [INFO] Setting RC values…                                                       
 [INFO] Using voltage extracted from lib (3.3V) for power nets and 0V for ground 
 nets…                                                                           
-[19:02:14] VERBOSE  [INFO PSM-0040] All shapes on net VDPWR are openroad.py:1875
+[19:45:20] VERBOSE  [INFO PSM-0040] All shapes on net VDPWR are openroad.py:1875
                     connected.                                                  
                     ########## IR report #################                      
                     Net              : VDPWR                                    
@@ -15962,9 +15962,9 @@ nets…
                     ######################################                      
                                                                                 
 ─────────────────────────── GDSII Stream Out (Magic) ───────────────────────────
-[19:02:14] VERBOSE  Running 'Magic.StreamOut' at                    step.py:1146
+[19:45:20] VERBOSE  Running 'Magic.StreamOut' at                    step.py:1146
                     'runs/wokwi/57-magic-streamout'…                            
-[19:02:14] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:20] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/57-magic-streamout/magic-streamout.             
                     log'…                                                       
                                                                                 
@@ -16744,9 +16744,9 @@ $PDKPATH/libs.ref/gf180mcu_fd_sc_mcu7t5v0/gds/gf180mcu_fd_sc_mcu7t5v0.gds
 Generating output for cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog       
 [INFO] GDS Write Complete                                                       
 ────────────────────────── GDSII Stream Out (KLayout) ──────────────────────────
-[19:02:15] VERBOSE  Running 'KLayout.StreamOut' at                  step.py:1146
+[19:45:21] VERBOSE  Running 'KLayout.StreamOut' at                  step.py:1146
                     'runs/wokwi/58-klayout-streamout'…                          
-[19:02:15] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:21] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/58-klayout-streamout/klayout-stream             
                     out.log'…                                                   
 Warning: DEF UNITS does not match reader DBU (DEF UNITS is 2000 and corresponds 
@@ -16763,9 +16763,9 @@ file=tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.def)
 log.klayout.gds'…                                                               
 [INFO] Done.                                                                    
 ────────────────────────────── Write LEF (Magic) ───────────────────────────────
-[19:02:16] VERBOSE  Running 'Magic.WriteLEF' at                     step.py:1146
+[19:45:22] VERBOSE  Running 'Magic.WriteLEF' at                     step.py:1146
                     'runs/wokwi/59-magic-writelef'…                             
-[19:02:16] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:22] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/59-magic-writelef/magic-writelef.lo             
                     g'…                                                         
                                                                                 
@@ -17337,10 +17337,10 @@ tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog
 Diagnostic:  Scale value is 0.005000                                            
 [INFO] LEF Write Complete.                                                      
 ────── Check Antenna Properties of Pins in The Generated Design LEF view ───────
-[19:02:17] VERBOSE  Running 'Odb.CheckDesignAntennaProperties' at   step.py:1146
+[19:45:23] VERBOSE  Running 'Odb.CheckDesignAntennaProperties' at   step.py:1146
                     'runs/wokwi/60-odb-checkdesignantennaproperties             
                     '…                                                          
-[19:02:17] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:23] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/60-odb-checkdesignantennaproperties             
                     /odb-checkdesignantennaproperties.log'…                     
 [INFO ODB-0388] unsupported LEF58_EOLENCLOSURE property for layer Via1 :"       
@@ -17375,29 +17375,29 @@ lef at line 2.
 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-
 Lab/runs/wokwi/59-magic-writelef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.
 lef, created 1 library cells                                                    
-[INFO ODB-0127] Reading DEF file: /tmp/tmpstvk9653                              
+[INFO ODB-0127] Reading DEF file: /tmp/tmphdyvba6v                              
 [INFO ODB-0128] Design: empty                                                   
-[INFO ODB-0134] Finished DEF file: /tmp/tmpstvk9653                             
-[19:02:18] WARNING  Cell                                               odb.py:63
+[INFO ODB-0134] Finished DEF file: /tmp/tmphdyvba6v                             
+[19:45:24] WARNING  Cell                                               odb.py:63
                     'tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog'            
                     has (2) inout pin(s) without anetnna gate                   
                     information not antenna diffusion information.              
                     They might be disconnected.                                 
-[19:02:18] WARNING  Cell                                               odb.py:63
+[19:45:24] WARNING  Cell                                               odb.py:63
                     'tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog'            
                     has (1) input pin(s) without antenna gate                   
                     information. They might not be connected to a               
                     gate.                                                       
-[19:02:18] INFO     Gating variable for step 'KLayout.XOR' set sequential.py:317
+[19:45:24] INFO     Gating variable for step 'KLayout.XOR' set sequential.py:317
                     to 'False'- the step will be skipped.                       
-[19:02:18] INFO     Skipping step 'KLayout vs. Magic XOR'…     sequential.py:325
-[19:02:18] INFO     Gating variable for step 'Checker.XOR' set sequential.py:317
+[19:45:24] INFO     Skipping step 'KLayout vs. Magic XOR'…     sequential.py:325
+[19:45:24] INFO     Gating variable for step 'Checker.XOR' set sequential.py:317
                     to 'False'- the step will be skipped.                       
-[19:02:18] INFO     Skipping step 'XOR Difference Checker'…    sequential.py:325
+[19:45:24] INFO     Skipping step 'XOR Difference Checker'…    sequential.py:325
 ────────────────────────────── Design Rule Checks ──────────────────────────────
-[19:02:18] VERBOSE  Running 'Magic.DRC' at                          step.py:1146
+[19:45:24] VERBOSE  Running 'Magic.DRC' at                          step.py:1146
                     'runs/wokwi/61-magic-drc'…                                  
-[19:02:18] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:24] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/61-magic-drc/magic-drc.log'…                    
                                                                                 
 Magic 8.3 revision 489 - Compiled on Thu Aug 22 13:45:15 UTC 2024.              
@@ -17545,22 +17545,22 @@ No errors found.
 -Lab/runs/wokwi/61-magic-drc/views/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analo
 g.drc.mag)                                                                      
 [INFO] Saved                                                                    
-[19:02:26] INFO     Gating variable for step 'KLayout.DRC' set sequential.py:317
+[19:45:32] INFO     Gating variable for step 'KLayout.DRC' set sequential.py:317
                     to 'False'- the step will be skipped.                       
-[19:02:26] INFO     Skipping step 'Design Rule Check           sequential.py:325
+[19:45:32] INFO     Skipping step 'Design Rule Check           sequential.py:325
                     (KLayout)'…                                                 
 ────────────────────────── Magic Design Rule Checker ───────────────────────────
-[19:02:26] VERBOSE  Running 'Checker.MagicDRC' at                   step.py:1146
+[19:45:32] VERBOSE  Running 'Checker.MagicDRC' at                   step.py:1146
                     'runs/wokwi/62-checker-magicdrc'…                           
-[19:02:26] INFO     Check for Magic DRC errors clear.             checker.py:132
-[19:02:26] INFO     Gating variable for step                   sequential.py:317
+[19:45:32] INFO     Check for Magic DRC errors clear.             checker.py:132
+[19:45:32] INFO     Gating variable for step                   sequential.py:317
                     'Checker.KLayoutDRC' set to 'False'- the                    
                     step will be skipped.                                       
-[19:02:26] INFO     Skipping step 'KLayout DRC Checker'…       sequential.py:325
+[19:45:32] INFO     Skipping step 'KLayout DRC Checker'…       sequential.py:325
 ──────────────────────────── SPICE Model Extraction ────────────────────────────
-[19:02:26] VERBOSE  Running 'Magic.SpiceExtraction' at              step.py:1146
+[19:45:32] VERBOSE  Running 'Magic.SpiceExtraction' at              step.py:1146
                     'runs/wokwi/63-magic-spiceextraction'…                      
-[19:02:26] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:32] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/63-magic-spiceextraction/magic-spic             
                     eextraction.log'…                                           
                                                                                 
@@ -18103,13 +18103,13 @@ Extracting tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog into
 tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.ext:                             
 exttospice finished.                                                            
 ──────────────── Spice Extraction-based Illegal Overlap Checker ────────────────
-[19:02:28] VERBOSE  Running 'Checker.IllegalOverlap' at             step.py:1146
+[19:45:34] VERBOSE  Running 'Checker.IllegalOverlap' at             step.py:1146
                     'runs/wokwi/64-checker-illegaloverlap'…                     
-[19:02:28] INFO     Check for Magic Illegal Overlap errors clear. checker.py:132
+[19:45:34] INFO     Check for Magic Illegal Overlap errors clear. checker.py:132
 ────────────────────────────────── Netgen LVS ──────────────────────────────────
-[19:02:28] VERBOSE  Running 'Netgen.LVS' at                         step.py:1146
+[19:45:34] VERBOSE  Running 'Netgen.LVS' at                         step.py:1146
                     'runs/wokwi/65-netgen-lvs'…                                 
-[19:02:28] VERBOSE  Logging subprocess to                           step.py:1342
+[19:45:34] VERBOSE  Logging subprocess to                           step.py:1342
                     'runs/wokwi/65-netgen-lvs/netgen-lvs.log'…                  
 Netgen 1.5.278 compiled on Sun Sep 29 13:29:03 UTC 2024                         
 Warning: netgen command 'format' use fully-qualified name '::netgen::format'    
@@ -19928,29 +19928,29 @@ Logging to file
 -Lab/runs/wokwi/65-netgen-lvs/reports/lvs.netgen.rpt" disabled                  
 LVS Done.                                                                       
 ────────────────────── Layout vs. Schematic Error Checker ──────────────────────
-[19:02:30] VERBOSE  Running 'Checker.LVS' at                        step.py:1146
+[19:45:35] VERBOSE  Running 'Checker.LVS' at                        step.py:1146
                     'runs/wokwi/66-checker-lvs'…                                
-[19:02:30] INFO     Check for LVS errors clear.                   checker.py:132
-[19:02:30] INFO     Gating variable for step 'Yosys.EQY' set   sequential.py:317
+[19:45:35] INFO     Check for LVS errors clear.                   checker.py:132
+[19:45:35] INFO     Gating variable for step 'Yosys.EQY' set   sequential.py:317
                     to 'False'- the step will be skipped.                       
-[19:02:30] INFO     Skipping step 'Equivalence Check'…         sequential.py:325
+[19:45:35] INFO     Skipping step 'Equivalence Check'…         sequential.py:325
 ─────────────────────── Setup Timing Violations Checker ────────────────────────
-[19:02:30] VERBOSE  Running 'Checker.SetupViolations' at            step.py:1146
+[19:45:35] VERBOSE  Running 'Checker.SetupViolations' at            step.py:1146
                     'runs/wokwi/67-checker-setupviolations'…                    
-[19:02:30] WARNING  Setup violations found in the following       checker.py:581
+[19:45:35] WARNING  Setup violations found in the following       checker.py:581
                     corners:                                                    
                     * max_ss_125C_3v00                                          
                     * min_ss_125C_3v00                                          
                     * nom_ss_125C_3v00                                          
-[19:02:30] VERBOSE  No setup violations found                     checker.py:583
+[19:45:35] VERBOSE  No setup violations found                     checker.py:583
 ──────────────────────── Hold Timing Violations Checker ────────────────────────
-[19:02:30] VERBOSE  Running 'Checker.HoldViolations' at             step.py:1146
+[19:45:35] VERBOSE  Running 'Checker.HoldViolations' at             step.py:1146
                     'runs/wokwi/68-checker-holdviolations'…                     
-[19:02:30] VERBOSE  No hold violations found                      checker.py:583
+[19:45:35] VERBOSE  No hold violations found                      checker.py:583
 ─────────────────────── Maximum Slew Violations Checker ────────────────────────
-[19:02:30] VERBOSE  Running 'Checker.MaxSlewViolations' at          step.py:1146
+[19:45:35] VERBOSE  Running 'Checker.MaxSlewViolations' at          step.py:1146
                     'runs/wokwi/69-checker-maxslewviolations'…                  
-[19:02:30] WARNING  Max Slew violations found in the following    checker.py:581
+[19:45:35] WARNING  Max Slew violations found in the following    checker.py:581
                     corners:                                                    
                     * max_ff_n40C_3v60                                          
                     * max_ss_125C_3v00                                          
@@ -19959,11 +19959,11 @@ LVS Done.
                     * min_tt_025C_3v30                                          
                     * nom_ss_125C_3v00                                          
                     * nom_tt_025C_3v30                                          
-[19:02:30] VERBOSE  No max slew violations found                  checker.py:583
+[19:45:35] VERBOSE  No max slew violations found                  checker.py:583
 ──────────────────── Maximum Capacitance Violations Checker ────────────────────
-[19:02:30] VERBOSE  Running 'Checker.MaxCapViolations' at           step.py:1146
+[19:45:35] VERBOSE  Running 'Checker.MaxCapViolations' at           step.py:1146
                     'runs/wokwi/70-checker-maxcapviolations'…                   
-[19:02:30] WARNING  Max Cap violations found in the following     checker.py:581
+[19:45:35] WARNING  Max Cap violations found in the following     checker.py:581
                     corners:                                                    
                     * max_ff_n40C_3v60                                          
                     * max_ss_125C_3v00                                          
@@ -19974,11 +19974,11 @@ LVS Done.
                     * nom_ff_n40C_3v60                                          
                     * nom_ss_125C_3v00                                          
                     * nom_tt_025C_3v30                                          
-[19:02:30] VERBOSE  No max cap violations found                   checker.py:583
+[19:45:35] VERBOSE  No max cap violations found                   checker.py:583
 ───────────────── Report Manufacturability (DRC, LVS, Antenna) ─────────────────
-[19:02:30] VERBOSE  Running 'Misc.ReportManufacturability' at       step.py:1146
+[19:45:35] VERBOSE  Running 'Misc.ReportManufacturability' at       step.py:1146
                     'runs/wokwi/71-misc-reportmanufacturability'…               
-[19:02:30] WARNING  klayout__drc_error__count not reported.           misc.py:97
+[19:45:35] WARNING  klayout__drc_error__count not reported.           misc.py:97
                     KLayout.DRC may have been skipped.                          
 * Antenna
 Passed ✅
@@ -19989,49 +19989,49 @@ Passed ✅
 * DRC
 Passed ✅
 
-[19:02:30] INFO     Saving views to                                 state.py:214
+[19:45:35] INFO     Saving views to                                 state.py:214
                     '/home/runner/work/ttgf0p3-analog-UART-FSM-TRNG             
                     -Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/runs/wokw             
                     i/final'…                                                   
-[19:02:30] INFO     Flow complete.                             sequential.py:366
+[19:45:35] INFO     Flow complete.                             sequential.py:366
 
 
-[19:02:30] WARNING  The following warnings were generated by the     flow.py:700
+[19:45:35] WARNING  The following warnings were generated by the     flow.py:700
                     flow:                                                       
-[19:02:30] WARNING  [Checker.LintWarnings] 1 Lint warnings found.    flow.py:702
-[19:02:30] WARNING  [OpenROAD.CheckSDCFiles] 'PNR_SDC_FILE' is not   flow.py:702
+[19:45:35] WARNING  [Checker.LintWarnings] 1 Lint warnings found.    flow.py:702
+[19:45:35] WARNING  [OpenROAD.CheckSDCFiles] 'PNR_SDC_FILE' is not   flow.py:702
                     defined. Using generic fallback SDC for OpenROAD            
                     PnR steps.                                                  
-[19:02:30] WARNING  [OpenROAD.CheckSDCFiles] 'SIGNOFF_SDC_FILE' is   flow.py:702
+[19:45:35] WARNING  [OpenROAD.CheckSDCFiles] 'SIGNOFF_SDC_FILE' is   flow.py:702
                     not defined. Using generic fallback SDC for                 
                     OpenROAD PnR steps.                                         
-[19:02:30] WARNING  [Odb.SetPowerConnections] Macros inside          flow.py:702
+[19:45:35] WARNING  [Odb.SetPowerConnections] Macros inside          flow.py:702
                     hierarchical netlists are not currently                     
                     supported in LibreLane: skipping submodule                  
                     'u_core.u_core.u_trng.u_ro0.inv_array[0]' of                
                     type 'trng_ro_inverter_cell'. (and 115 similar              
                     warnings)                                                   
-[19:02:30] WARNING  [OpenROAD.STAMidPNR] [GRT-0097] No global        flow.py:702
+[19:45:35] WARNING  [OpenROAD.STAMidPNR] [GRT-0097] No global        flow.py:702
                     routing found for nets. (and 2 similar warnings)            
-[19:02:30] WARNING  [OpenROAD.DetailedRouting] [DRT-0349]            flow.py:702
+[19:45:35] WARNING  [OpenROAD.DetailedRouting] [DRT-0349]            flow.py:702
                     LEF58_ENCLOSURE with no CUTCLASS is not                     
                     supported. Skipping for layer Via1 (and 7                   
                     similar warnings)                                           
-[19:02:30] WARNING  [Checker.WireLength] Threshold for               flow.py:702
+[19:45:35] WARNING  [Checker.WireLength] Threshold for               flow.py:702
                     Threshold-surpassing long wires is not set. The             
                     checker will be skipped.                                    
-[19:02:30] WARNING  [OpenROAD.IRDropReport] 'VSRC_LOC_FILES' was not flow.py:702
+[19:45:35] WARNING  [OpenROAD.IRDropReport] 'VSRC_LOC_FILES' was not flow.py:702
                     given a value, which may make the results of IR             
                     drop analysis inaccurate. If you are not                    
                     integrating a top-level chip for manufacture,               
                     you may ignore this warning, otherwise, see the             
                     documentation for 'VSRC_LOC_FILES'.                         
-[19:02:30] WARNING  [Checker.SetupViolations] Setup violations found flow.py:702
+[19:45:35] WARNING  [Checker.SetupViolations] Setup violations found flow.py:702
                     in the following corners:                                   
                     * max_ss_125C_3v00                                          
                     * min_ss_125C_3v00                                          
                     * nom_ss_125C_3v00                                          
-[19:02:30] WARNING  [Checker.MaxSlewViolations] Max Slew violations  flow.py:702
+[19:45:35] WARNING  [Checker.MaxSlewViolations] Max Slew violations  flow.py:702
                     found in the following corners:                             
                     * max_ff_n40C_3v60                                          
                     * max_ss_125C_3v00                                          
@@ -20040,7 +20040,7 @@ Passed ✅
                     * min_tt_025C_3v30                                          
                     * nom_ss_125C_3v00                                          
                     * nom_tt_025C_3v30                                          
-[19:02:30] WARNING  [Checker.MaxCapViolations] Max Cap violations    flow.py:702
+[19:45:35] WARNING  [Checker.MaxCapViolations] Max Cap violations    flow.py:702
                     found in the following corners:                             
                     * max_ff_n40C_3v60                                          
                     * max_ss_125C_3v00                                          
@@ -20051,14 +20051,14 @@ Passed ✅
                     * nom_ff_n40C_3v60                                          
                     * nom_ss_125C_3v00                                          
                     * nom_tt_025C_3v30                                          
-[19:02:30] WARNING  [Misc.ReportManufacturability]                   flow.py:702
+[19:45:35] WARNING  [Misc.ReportManufacturability]                   flow.py:702
                     klayout__drc_error__count not reported.                     
                     KLayout.DRC may have been skipped.                          
 Restored src/project.v
 
 Copied hardened outputs before strip:
--rw-r--r-- 1 runner runner 5.1M Jul  1 19:02 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
--rw-r--r-- 1 runner runner  20K Jul  1 19:02 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.lef
+-rw-r--r-- 1 runner runner 5.1M Jul  1 19:45 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
+-rw-r--r-- 1 runner runner  20K Jul  1 19:45 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.lef
 GDS content check: gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
   file size: 5256686 bytes
   elements: {'BOUNDARY': 71444, 'TEXT': 1289, 'SREF': 5801}
@@ -20090,10 +20090,14 @@ Stripped disabled analog pin labels from gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG
 Kept required TT LEF PIN blocks in lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.lef
   kept LEF PIN ua[6]
   kept LEF PIN ua[7]
+Patched analog GDS: gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
+  removed old ua[5] passive rects: 0
+  added new rects: 14
+  verified ua[5] passive rects: 6
 GDS content check: gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
-  file size: 5243936 bytes
-  elements: {'BOUNDARY': 71459, 'TEXT': 1287, 'SREF': 5801}
-  geometry total: 71459
+  file size: 5243872 bytes
+  elements: {'BOUNDARY': 71458, 'TEXT': 1287, 'SREF': 5801}
+  geometry total: 71458
   non-frame geometry: 70251
   top geometry layers:
     layer=36 datatype=0: 18825
@@ -20103,7 +20107,7 @@ GDS content check: gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
     layer=42 datatype=0: 7830
     layer=40 datatype=0: 3932
     layer=33 datatype=0: 2773
-    layer=46 datatype=0: 1031
+    layer=46 datatype=0: 1030
     layer=30 datatype=0: 560
     layer=22 datatype=0: 333
     layer=31 datatype=0: 109
@@ -20118,14 +20122,14 @@ GDS content check: gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
 OK: GDS contains real non-frame layout geometry
 
 Staged stripped hardened outputs:
--rw-r--r-- 1 runner runner 5.1M Jul  1 19:02 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
--rw-r--r-- 1 runner runner  19K Jul  1 19:02 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.lef
--rw-r--r-- 1 runner runner 5.1M Jul  1 19:02 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/build/hardened-gds-lef/gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
--rw-r--r-- 1 runner runner  19K Jul  1 19:02 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/build/hardened-gds-lef/lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.lef
+-rw-r--r-- 1 runner runner 5.1M Jul  1 19:45 gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
+-rw-r--r-- 1 runner runner  19K Jul  1 19:45 lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.lef
+-rw-r--r-- 1 runner runner 5.1M Jul  1 19:45 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/build/hardened-gds-lef/gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
+-rw-r--r-- 1 runner runner  19K Jul  1 19:45 /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/build/hardened-gds-lef/lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.lef
 GDS content check: /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-analog-UART-FSM-TRNG-Lab/build/hardened-gds-lef/gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
-  file size: 5243936 bytes
-  elements: {'BOUNDARY': 71459, 'TEXT': 1287, 'SREF': 5801}
-  geometry total: 71459
+  file size: 5243872 bytes
+  elements: {'BOUNDARY': 71458, 'TEXT': 1287, 'SREF': 5801}
+  geometry total: 71458
   non-frame geometry: 70251
   top geometry layers:
     layer=36 datatype=0: 18825
@@ -20135,7 +20139,7 @@ GDS content check: /home/runner/work/ttgf0p3-analog-UART-FSM-TRNG-Lab/ttgf0p3-an
     layer=42 datatype=0: 7830
     layer=40 datatype=0: 3932
     layer=33 datatype=0: 2773
-    layer=46 datatype=0: 1031
+    layer=46 datatype=0: 1030
     layer=30 datatype=0: 560
     layer=22 datatype=0: 333
     layer=31 datatype=0: 109
