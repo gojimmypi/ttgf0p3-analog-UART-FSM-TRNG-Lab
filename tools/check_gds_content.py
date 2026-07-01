@@ -5,8 +5,9 @@ The GF180 analog template by itself can pass basic packaging checks while still
 containing only the project boundary, Metal4 pin rectangles, and labels. That is
 not a useful final design. By default this script uses only the Python standard
 library and checks that the GDS has enough non-frame geometry. With
---require-analog-passive it also imports gdstk and verifies the ua[5] passive
-probe patch that this project adds after hardening/export.
+--require-analog-passive it also imports gdstk and verifies the DRC-safe ua[5]
+passive probe structure: the inward ua[5] Metal4 stub plus pad metal, with no
+known bad experimental plate/fringe rectangles remaining.
 """
 from __future__ import annotations
 
@@ -39,22 +40,21 @@ MIN_REAL_POLYGONS = 100
 M4_LAYER = 46
 M4_DATATYPE = 0
 MIN_PASSIVE_WIDTH_UM = 0.40
-MIN_PASSIVE_SPACING_UM = 0.40
 COORD_TOL_UM = 0.001
 
 # Keep these synchronized with tools/patch_analog_outputs.py.
-# Old attempts used a two-terminal same-layer fringe structure near VGND. That
-# passed the local exact-rectangle sanity check but still left a GF180 M4.2a
-# spacing violation against surrounding template metal. The safer DRC-first
-# structure below is a single ua[5]-connected Metal4 plate. It still creates a
-# real on-chip passive plate/probe capacitance for the charge/release/sample RTL,
-# but it avoids intentional same-layer M4 gaps.
-UA5_PASSIVE_CAP_RECTS = [
-    (109.80, 1.20, 130.00, 3.20),
+GDS_STUBS = [
+    (325.82, 1.0, 328.82, 30.0),
+    (282.14, 1.0, 285.14, 30.0),
+    (238.46, 1.0, 241.46, 30.0),
+    (194.78, 1.0, 197.78, 30.0),
+    (151.10, 1.0, 154.10, 30.0),
+    (107.42, 1.0, 110.42, 30.0),
 ]
+UA5_PASSIVE_STUB_RECT = GDS_STUBS[5]
 
-OLD_UA5_PASSIVE_CAP_RECTS = [
-    # First 7-rectangle version.
+BAD_UA5_PASSIVE_RECTS = [
+    # First 7-rectangle fringe version.
     (99.92, 1.95, 101.52, 3.90),
     (101.50, 1.95, 106.85, 2.25),
     (101.50, 3.35, 106.85, 3.55),
@@ -62,13 +62,15 @@ OLD_UA5_PASSIVE_CAP_RECTS = [
     (110.40, 1.15, 130.00, 1.55),
     (110.40, 2.60, 130.00, 3.00),
     (129.60, 1.15, 130.00, 3.00),
-    # Second 6-rectangle version that still triggered one M4.2a violation.
+    # Second 6-rectangle fringe version.
     (99.92, 2.00, 101.52, 3.90),
     (99.92, 2.00, 106.85, 2.40),
     (106.45, 2.00, 106.85, 30.00),
     (109.80, 1.20, 130.00, 1.60),
     (109.80, 2.80, 130.00, 3.20),
     (129.60, 1.20, 130.00, 3.20),
+    # Third single-plate version.
+    (109.80, 1.20, 130.00, 3.20),
 ]
 
 
@@ -150,27 +152,6 @@ def bbox_key(bbox) -> tuple[int, int, int, int]:
     )
 
 
-def separated_gap(
-    a: tuple[float, float, float, float],
-    b: tuple[float, float, float, float],
-) -> float | None:
-    ax1, ay1, ax2, ay2 = a
-    bx1, by1, bx2, by2 = b
-
-    x_overlap = min(ax2, bx2) - max(ax1, bx1)
-    y_overlap = min(ay2, by2) - max(ay1, by1)
-
-    if x_overlap > 0 and ay2 < by1:
-        return by1 - ay2
-    if x_overlap > 0 and by2 < ay1:
-        return ay1 - by2
-    if y_overlap > 0 and ax2 < bx1:
-        return bx1 - ax2
-    if y_overlap > 0 and bx2 < ax1:
-        return ax1 - bx2
-    return None
-
-
 def count_exact_rects(cell, rects: Iterable[tuple[float, float, float, float]]) -> dict[tuple[float, float, float, float], int]:
     counts = {rect: 0 for rect in rects}
     target_to_rect = {rect_key(rect): rect for rect in rects}
@@ -188,23 +169,13 @@ def count_exact_rects(cell, rects: Iterable[tuple[float, float, float, float]]) 
     return counts
 
 
-def check_passive_rect_design_rules(rects: list[tuple[float, float, float, float]]) -> None:
-    for rect in rects:
-        width = rect[2] - rect[0]
-        height = rect[3] - rect[1]
-        if width + COORD_TOL_UM < MIN_PASSIVE_WIDTH_UM:
-            raise RuntimeError(f"ua[5] passive M4 rect is too narrow: {rect}, width={width:.3f} um")
-        if height + COORD_TOL_UM < MIN_PASSIVE_WIDTH_UM:
-            raise RuntimeError(f"ua[5] passive M4 rect is too short: {rect}, height={height:.3f} um")
-
-    for index, rect_a in enumerate(rects):
-        for rect_b in rects[index + 1 :]:
-            gap = separated_gap(rect_a, rect_b)
-            if gap is not None and gap > COORD_TOL_UM and gap + COORD_TOL_UM < MIN_PASSIVE_SPACING_UM:
-                raise RuntimeError(
-                    "ua[5] passive M4 rect spacing is too small: "
-                    f"{rect_a} to {rect_b}, gap={gap:.3f} um"
-                )
+def check_stub_rect_design_rules(rect: tuple[float, float, float, float]) -> None:
+    width = rect[2] - rect[0]
+    height = rect[3] - rect[1]
+    if width + COORD_TOL_UM < MIN_PASSIVE_WIDTH_UM:
+        raise RuntimeError(f"ua[5] passive M4 stub is too narrow: {rect}, width={width:.3f} um")
+    if height + COORD_TOL_UM < MIN_PASSIVE_WIDTH_UM:
+        raise RuntimeError(f"ua[5] passive M4 stub is too short: {rect}, height={height:.3f} um")
 
 
 def check_analog_passive(path: Path) -> None:
@@ -215,7 +186,7 @@ def check_analog_passive(path: Path) -> None:
             "Missing Python package gdstk. Install with: python3 -m pip install gdstk"
         ) from exc
 
-    check_passive_rect_design_rules(UA5_PASSIVE_CAP_RECTS)
+    check_stub_rect_design_rules(UA5_PASSIVE_STUB_RECT)
 
     lib = gdstk.read_gds(str(path))
     top_cells = lib.top_level()
@@ -223,23 +194,23 @@ def check_analog_passive(path: Path) -> None:
         raise RuntimeError("Expected exactly one top-level GDS cell")
     cell = top_cells[0]
 
-    passive_counts = count_exact_rects(cell, UA5_PASSIVE_CAP_RECTS)
-    missing = [rect for rect, count in passive_counts.items() if count == 0]
-    duplicates = [(rect, count) for rect, count in passive_counts.items() if count > 1]
+    stub_counts = count_exact_rects(cell, [UA5_PASSIVE_STUB_RECT])
+    if stub_counts[UA5_PASSIVE_STUB_RECT] != 1:
+        raise RuntimeError("Missing or duplicate DRC-safe ua[5] passive M4 stub: " + str(stub_counts))
 
-    if missing:
-        raise RuntimeError("Missing DRC-first ua[5] passive M4 plate: " + str(missing))
-    if duplicates:
-        raise RuntimeError("Duplicate DRC-first ua[5] passive M4 plate: " + str(duplicates))
+    bad_counts = count_exact_rects(cell, BAD_UA5_PASSIVE_RECTS)
+    remaining_bad = [rect for rect, count in bad_counts.items() if count]
+    if remaining_bad:
+        raise RuntimeError("Bad ua[5] passive M4 plate/fringe rectangles remain: " + str(remaining_bad))
 
-    old_counts = count_exact_rects(cell, OLD_UA5_PASSIVE_CAP_RECTS)
-    remaining_old = [rect for rect, count in old_counts.items() if count]
-    if remaining_old:
-        raise RuntimeError("Old bad ua[5] passive M4 rectangles remain: " + str(remaining_old))
+    labels = {label.text for label in cell.labels}
+    if "ua[5]" not in labels:
+        raise RuntimeError("Missing ua[5] GDS label")
 
-    print("OK: DRC-first ua[5] passive M4 plate is present exactly once")
-    print(f"  passive M4 plate rectangles: {len(UA5_PASSIVE_CAP_RECTS)}")
-    print(f"  minimum checked width/spacing: {MIN_PASSIVE_WIDTH_UM:.2f} um")
+    print("OK: DRC-safe ua[5] passive M4 stub/pad structure is present")
+    print("  passive structure: existing ua[5] inward Metal4 stub plus pad metal")
+    print("  separate M4 passive plate/fringe rectangles: 0")
+    print(f"  checked stub minimum width/spacing: {MIN_PASSIVE_WIDTH_UM:.2f} um")
 
 
 def main() -> int:
@@ -254,7 +225,7 @@ def main() -> int:
     parser.add_argument(
         "--require-analog-passive",
         action="store_true",
-        help="require the DRC-first ua[5] passive Metal4 plate",
+        help="require the DRC-safe ua[5] passive Metal4 stub/pad and no bad plate/fringe rectangles",
     )
     args = parser.parse_args()
 

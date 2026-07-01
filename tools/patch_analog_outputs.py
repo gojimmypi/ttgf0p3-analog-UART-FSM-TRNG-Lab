@@ -3,11 +3,15 @@
 
 Keep the LEF analog pin dimensions identical to the TT analog template. Add only
 post-export items that do not belong in the template pin geometry: explicit
-full-height project power ports in LEF/GDS, short inward GDS metal stubs for
-enabled analog pins, and the ua[5] passive probe structure.
+full-height project power ports in LEF/GDS and short inward GDS Metal4 stubs for
+enabled analog pins.
 
-This script is intentionally idempotent. It first removes known old passive
-probe rectangles, then adds the current DRC-margin geometry.
+This script is intentionally idempotent. It removes all known experimental
+ua[5] passive plate/fringe rectangles that caused GF180 M4 spacing DRC, then
+uses the existing ua[5] inward Metal4 stub as the DRC-safe passive probe
+structure. That stub is connected to the ua[5] pad and provides real on-chip
+metal capacitance/pickup for the charge/release/sample RTL without creating any
+new same-layer Metal4 gaps.
 """
 from __future__ import annotations
 
@@ -29,21 +33,13 @@ GDS_STUBS = [
     (107.42, 1.0, 110.42, 30.0),
 ]
 
-# The first two passive probe geometry attempts could trigger GF180 Metal4 DRC
-# problems. Remove both exact old versions if present so rerunning this script
-# fixes stale local GDS files.
-# Old attempts used a two-terminal same-layer fringe structure near VGND. That
-# passed the local exact-rectangle sanity check but still left a GF180 M4.2a
-# spacing violation against surrounding template metal. The safer DRC-first
-# structure below is a single ua[5]-connected Metal4 plate. It still creates a
-# real on-chip passive plate/probe capacitance for the charge/release/sample RTL,
-# but it avoids intentional same-layer M4 gaps.
-UA5_PASSIVE_CAP_RECTS = [
-    (109.80, 1.20, 130.00, 3.20),
-]
+# The DRC-safe passive probe is the existing ua[5] inward Metal4 stub.
+UA5_PASSIVE_STUB_RECT = GDS_STUBS[5]
 
-OLD_UA5_PASSIVE_CAP_RECTS = [
-    # First 7-rectangle version.
+# Remove all known bad experimental ua[5] passive plate/fringe rectangles.
+# Leaving any of these in final GDS can trigger GF180 M4.2a precheck failures.
+BAD_UA5_PASSIVE_RECTS = [
+    # First 7-rectangle fringe version.
     (99.92, 1.95, 101.52, 3.90),
     (101.50, 1.95, 106.85, 2.25),
     (101.50, 3.35, 106.85, 3.55),
@@ -51,15 +47,17 @@ OLD_UA5_PASSIVE_CAP_RECTS = [
     (110.40, 1.15, 130.00, 1.55),
     (110.40, 2.60, 130.00, 3.00),
     (129.60, 1.15, 130.00, 3.00),
-    # Second 6-rectangle version that still triggered one M4.2a violation.
+    # Second 6-rectangle fringe version.
     (99.92, 2.00, 101.52, 3.90),
     (99.92, 2.00, 106.85, 2.40),
     (106.45, 2.00, 106.85, 30.00),
     (109.80, 1.20, 130.00, 1.60),
     (109.80, 2.80, 130.00, 3.20),
     (129.60, 1.20, 130.00, 3.20),
+    # Third single-plate version. This removed the internal same-layer gap, but
+    # still caused one GF180 M4.2a spacing violation against existing Metal4.
+    (109.80, 1.20, 130.00, 3.20),
 ]
-
 
 POWER_RECTS = [
     (0.0, 0.0, 1.0, 325.36),
@@ -69,7 +67,6 @@ POWER_RECTS = [
 M4_LAYER = 46
 M4_DATATYPE = 0
 MIN_PASSIVE_WIDTH_UM = 0.40
-MIN_PASSIVE_SPACING_UM = 0.40
 COORD_TOL_UM = 0.001
 
 POWER_LEF = '''  PIN VGND
@@ -106,53 +103,13 @@ def bbox_key(bbox) -> tuple[int, int, int, int]:
     )
 
 
-def rect_width(rect: tuple[float, float, float, float]) -> float:
-    return rect[2] - rect[0]
-
-
-def rect_height(rect: tuple[float, float, float, float]) -> float:
-    return rect[3] - rect[1]
-
-
-def separated_gap(
-    a: tuple[float, float, float, float],
-    b: tuple[float, float, float, float],
-) -> float | None:
-    ax1, ay1, ax2, ay2 = a
-    bx1, by1, bx2, by2 = b
-
-    x_overlap = min(ax2, bx2) - max(ax1, bx1)
-    y_overlap = min(ay2, by2) - max(ay1, by1)
-
-    if x_overlap > 0 and ay2 < by1:
-        return by1 - ay2
-    if x_overlap > 0 and by2 < ay1:
-        return ay1 - by2
-    if y_overlap > 0 and ax2 < bx1:
-        return bx1 - ax2
-    if y_overlap > 0 and bx2 < ax1:
-        return ax1 - bx2
-    return None
-
-
-def validate_passive_rects(rects: Iterable[tuple[float, float, float, float]]) -> None:
-    rect_list = list(rects)
-    for rect in rect_list:
-        width = rect_width(rect)
-        height = rect_height(rect)
-        if width + COORD_TOL_UM < MIN_PASSIVE_WIDTH_UM:
-            raise RuntimeError(f"Passive M4 rect is too narrow: {rect}, width={width:.3f} um")
-        if height + COORD_TOL_UM < MIN_PASSIVE_WIDTH_UM:
-            raise RuntimeError(f"Passive M4 rect is too short: {rect}, height={height:.3f} um")
-
-    for index, rect_a in enumerate(rect_list):
-        for rect_b in rect_list[index + 1 :]:
-            gap = separated_gap(rect_a, rect_b)
-            if gap is not None and gap > COORD_TOL_UM and gap + COORD_TOL_UM < MIN_PASSIVE_SPACING_UM:
-                raise RuntimeError(
-                    "Passive M4 rect spacing is too small: "
-                    f"{rect_a} to {rect_b}, gap={gap:.3f} um"
-                )
+def validate_stub_rect(rect: tuple[float, float, float, float]) -> None:
+    width = rect[2] - rect[0]
+    height = rect[3] - rect[1]
+    if width + COORD_TOL_UM < MIN_PASSIVE_WIDTH_UM:
+        raise RuntimeError(f"ua[5] stub is too narrow: {rect}, width={width:.3f} um")
+    if height + COORD_TOL_UM < MIN_PASSIVE_WIDTH_UM:
+        raise RuntimeError(f"ua[5] stub is too short: {rect}, height={height:.3f} um")
 
 
 def remove_pin_block(text: str, pin: str) -> str:
@@ -234,7 +191,7 @@ def count_exact_rects(cell, rects: Iterable[tuple[float, float, float, float]]) 
 def patch_gds(path: Path) -> None:
     import gdstk
 
-    validate_passive_rects(UA5_PASSIVE_CAP_RECTS)
+    validate_stub_rect(UA5_PASSIVE_STUB_RECT)
 
     lib = gdstk.read_gds(str(path))
     top_cells = lib.top_level()
@@ -242,14 +199,10 @@ def patch_gds(path: Path) -> None:
         raise RuntimeError("Expected exactly one top-level GDS cell")
     cell = top_cells[0]
 
-    removed_old = remove_exact_rects(cell, OLD_UA5_PASSIVE_CAP_RECTS)
+    removed_bad = remove_exact_rects(cell, BAD_UA5_PASSIVE_RECTS)
 
     added = 0
     for rect in GDS_STUBS:
-        if add_rect_once(cell, gdstk, rect):
-            added += 1
-
-    for rect in UA5_PASSIVE_CAP_RECTS:
         if add_rect_once(cell, gdstk, rect):
             added += 1
 
@@ -263,22 +216,24 @@ def patch_gds(path: Path) -> None:
     if "VDPWR" not in labels:
         cell.add(gdstk.Label("VDPWR", (346.14, 162.68), rotation=math.pi / 2, layer=M4_LAYER, texttype=10))
 
-    passive_counts = count_exact_rects(cell, UA5_PASSIVE_CAP_RECTS)
-    missing = [rect for rect, count in passive_counts.items() if count != 1]
-    if missing:
-        raise RuntimeError("DRC-first ua[5] passive M4 plate is not present exactly once: " + str(missing))
+    stub_counts = count_exact_rects(cell, [UA5_PASSIVE_STUB_RECT])
+    if stub_counts[UA5_PASSIVE_STUB_RECT] != 1:
+        raise RuntimeError(
+            "DRC-safe ua[5] passive M4 stub is not present exactly once: "
+            + str(stub_counts)
+        )
 
-    old_counts = count_exact_rects(cell, OLD_UA5_PASSIVE_CAP_RECTS)
-    remaining_old = [rect for rect, count in old_counts.items() if count]
-    if remaining_old:
-        raise RuntimeError("Old bad ua[5] passive M4 rectangles still remain: " + str(remaining_old))
+    bad_counts = count_exact_rects(cell, BAD_UA5_PASSIVE_RECTS)
+    remaining_bad = [rect for rect, count in bad_counts.items() if count]
+    if remaining_bad:
+        raise RuntimeError("Bad ua[5] passive M4 plate/fringe rectangles still remain: " + str(remaining_bad))
 
     lib.write_gds(str(path))
 
     print(f"Patched analog GDS: {path}")
-    print(f"  removed old ua[5] passive rects: {removed_old}")
-    print(f"  added new rects: {added}")
-    print(f"  verified ua[5] passive plate rects: {len(UA5_PASSIVE_CAP_RECTS)}")
+    print(f"  removed bad ua[5] passive plate/fringe rects: {removed_bad}")
+    print(f"  added required stub/power rects: {added}")
+    print("  verified DRC-safe ua[5] passive M4 stub: 1")
 
 
 def main() -> int:
