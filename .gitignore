@@ -65,3 +65,6 @@ test/gate_level_netlist.v
 
 # Ignore the virtual environment created by test/my_cocotb_test.sh
 /.venv
+
+# Ignore any python cache directories
+**/__pycache__
