@@ -44,7 +44,9 @@ COORD_TOL_UM = 0.001
 
 # Keep these synchronized with tools/patch_analog_outputs.py.
 GDS_STUBS = [
-    (325.82, 1.0, 328.82, 30.0),
+    # Corrected ua[0] stub.  It touches the template pad metal at x=328.86;
+    # the old x2=328.82 value caused a 0.04um GF180 M4.2a gap.
+    (325.82, 1.0, 328.86, 30.0),
     (282.14, 1.0, 285.14, 30.0),
     (238.46, 1.0, 241.46, 30.0),
     (194.78, 1.0, 197.78, 30.0),
@@ -52,6 +54,10 @@ GDS_STUBS = [
     (107.42, 1.0, 110.42, 30.0),
 ]
 UA5_PASSIVE_STUB_RECT = GDS_STUBS[5]
+
+BAD_M4_SPACING_RECTS = [
+    (325.82, 1.0, 328.82, 30.0),
+]
 
 BAD_UA5_PASSIVE_RECTS = [
     # First 7-rectangle fringe version.
@@ -198,6 +204,11 @@ def check_analog_passive(path: Path) -> None:
     if stub_counts[UA5_PASSIVE_STUB_RECT] != 1:
         raise RuntimeError("Missing or duplicate DRC-safe ua[5] passive M4 stub: " + str(stub_counts))
 
+    bad_spacing_counts = count_exact_rects(cell, BAD_M4_SPACING_RECTS)
+    remaining_bad_spacing = [rect for rect, count in bad_spacing_counts.items() if count]
+    if remaining_bad_spacing:
+        raise RuntimeError("Bad ua[0] M4 spacing stub remains: " + str(remaining_bad_spacing))
+
     bad_counts = count_exact_rects(cell, BAD_UA5_PASSIVE_RECTS)
     remaining_bad = [rect for rect, count in bad_counts.items() if count]
     if remaining_bad:
@@ -207,7 +218,8 @@ def check_analog_passive(path: Path) -> None:
     if "ua[5]" not in labels:
         raise RuntimeError("Missing ua[5] GDS label")
 
-    print("OK: DRC-safe ua[5] passive M4 stub/pad structure is present")
+    print("OK: DRC-safe analog M4 stub/pad structures are present")
+    print("  corrected ua[0] stub touches template pad metal at x=328.86")
     print("  passive structure: existing ua[5] inward Metal4 stub plus pad metal")
     print("  separate M4 passive plate/fringe rectangles: 0")
     print(f"  checked stub minimum width/spacing: {MIN_PASSIVE_WIDTH_UM:.2f} um")

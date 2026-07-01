@@ -11,6 +11,7 @@ on:
       - "tools/patch_full_harden_source.py"
       - "tools/patch_full_harden_config.py"
       - "tools/strip_unused_analog_pins.py"
+      - "tools/patch_analog_outputs.py"
       - "tools/check_gds_content.py"
       - "mag/*.def"
       - "mag/*.mag"
@@ -113,6 +114,47 @@ jobs:
 
           mkdir -p "${ARTIFACT_DIR}"
           cp -f harden-gds-lef.log "${ARTIFACT_DIR}/harden-gds-lef.log"
+
+      - name: Patch and verify final analog GDS
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"?\([^"]*\)"?[[:space:]]*$/\1/p' info.yaml)"
+          if [ -z "${TOP}" ]; then
+              echo "::error::Could not find top_module in info.yaml"
+              exit 1
+          fi
+
+          GDS_FILE="gds/${TOP}.gds"
+          LEF_FILE="lef/${TOP}.lef"
+
+          echo "TOP=${TOP}"
+          echo "Patching final analog GDS/LEF before artifact upload:"
+          echo "  ${GDS_FILE}"
+          echo "  ${LEF_FILE}"
+
+          test -f "${GDS_FILE}"
+          test -f "${LEF_FILE}"
+
+          python3 tools/patch_analog_outputs.py \
+              --top "${TOP}" \
+              --lef "${LEF_FILE}" \
+              --gds "${GDS_FILE}"
+
+          python3 tools/check_gds_content.py \
+              "${GDS_FILE}" \
+              --require-analog-passive
+
+          mkdir -p "${ARTIFACT_DIR}/gds" "${ARTIFACT_DIR}/lef"
+          cp -f "${GDS_FILE}" "${ARTIFACT_DIR}/gds/${TOP}.gds"
+          cp -f "${LEF_FILE}" "${ARTIFACT_DIR}/lef/${TOP}.lef"
+
+          echo
+          echo "Checking artifact copy:"
+          python3 tools/check_gds_content.py \
+              "${ARTIFACT_DIR}/gds/${TOP}.gds" \
+              --require-analog-passive
 
       - name: Show generated files
         if: always()

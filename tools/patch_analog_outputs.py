@@ -4,7 +4,9 @@
 Keep the LEF analog pin dimensions identical to the TT analog template. Add only
 post-export items that do not belong in the template pin geometry: explicit
 full-height project power ports in LEF/GDS and short inward GDS Metal4 stubs for
-enabled analog pins.
+enabled analog pins.  The ua[0] stub intentionally touches the existing template
+pad metal; the older x2=328.82 value left a 0.04um M4 gap to x=328.86 and
+failed GF180 M4.2a.
 
 This script is intentionally idempotent. It removes all known experimental
 ua[5] passive plate/fringe rectangles that caused GF180 M4 spacing DRC, then
@@ -25,7 +27,9 @@ from typing import Iterable
 # the template ua pin rectangles so the LEF pin rectangles remain unchanged
 # while the GDS has adjacent inward metal for precheck connectivity.
 GDS_STUBS = [
-    (325.82, 1.0, 328.82, 30.0),
+    # ua[0] must touch the template pad metal at x=328.86.  The older
+    # x2=328.82 value left a 0.04um Metal4 gap and caused GF180 M4.2a.
+    (325.82, 1.0, 328.86, 30.0),
     (282.14, 1.0, 285.14, 30.0),
     (238.46, 1.0, 241.46, 30.0),
     (194.78, 1.0, 197.78, 30.0),
@@ -38,6 +42,13 @@ UA5_PASSIVE_STUB_RECT = GDS_STUBS[5]
 
 # Remove all known bad experimental ua[5] passive plate/fringe rectangles.
 # Leaving any of these in final GDS can trigger GF180 M4.2a precheck failures.
+BAD_M4_SPACING_RECTS = [
+    # Older ua[0] inward stub.  This left a 0.04um gap to the template
+    # ua[0] pad metal at x=328.86 and caused the remaining GF180 M4.2a
+    # violation reported by KLayout at x=328.82/328.86.
+    (325.82, 1.0, 328.82, 30.0),
+]
+
 BAD_UA5_PASSIVE_RECTS = [
     # First 7-rectangle fringe version.
     (99.92, 1.95, 101.52, 3.90),
@@ -199,7 +210,8 @@ def patch_gds(path: Path) -> None:
         raise RuntimeError("Expected exactly one top-level GDS cell")
     cell = top_cells[0]
 
-    removed_bad = remove_exact_rects(cell, BAD_UA5_PASSIVE_RECTS)
+    removed_bad_spacing = remove_exact_rects(cell, BAD_M4_SPACING_RECTS)
+    removed_bad_passive = remove_exact_rects(cell, BAD_UA5_PASSIVE_RECTS)
 
     added = 0
     for rect in GDS_STUBS:
@@ -223,6 +235,11 @@ def patch_gds(path: Path) -> None:
             + str(stub_counts)
         )
 
+    bad_spacing_counts = count_exact_rects(cell, BAD_M4_SPACING_RECTS)
+    remaining_bad_spacing = [rect for rect, count in bad_spacing_counts.items() if count]
+    if remaining_bad_spacing:
+        raise RuntimeError("Bad ua[0] M4 spacing stub still remains: " + str(remaining_bad_spacing))
+
     bad_counts = count_exact_rects(cell, BAD_UA5_PASSIVE_RECTS)
     remaining_bad = [rect for rect, count in bad_counts.items() if count]
     if remaining_bad:
@@ -231,8 +248,10 @@ def patch_gds(path: Path) -> None:
     lib.write_gds(str(path))
 
     print(f"Patched analog GDS: {path}")
-    print(f"  removed bad ua[5] passive plate/fringe rects: {removed_bad}")
+    print(f"  removed bad ua[0] M4 spacing stubs: {removed_bad_spacing}")
+    print(f"  removed bad ua[5] passive plate/fringe rects: {removed_bad_passive}")
     print(f"  added required stub/power rects: {added}")
+    print("  verified corrected ua[0] M4 stub touches template pad metal")
     print("  verified DRC-safe ua[5] passive M4 stub: 1")
 
 
