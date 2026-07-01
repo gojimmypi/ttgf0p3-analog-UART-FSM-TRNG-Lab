@@ -2,7 +2,7 @@
 
 # Tiny Tapeout Project: ttgf0p3-analog-UART-FSM-TRNG-Lab
 
-Version 1.1.3 7/1/2026
+Version 1.1.4 7/1/2026
 
 Details of this project are located in [docs/info.md](./docs/info.md)
 
@@ -56,7 +56,7 @@ The GitHub action will automatically build the ASIC files using [LibreLane](http
 
 For specifications and instructions, see the [analog specs page](https://tinytapeout.com/specs/analog/).
 
-This repository contains the digital/FPGA-safe UART/SPI/TRNG shell plus a small analog pad exerciser in `src/ANALOG/analog_experiment_stub.v`. The analog block now drives a 1-bit sigma-delta DAC, monitor mux, oscillator/debug output, and charge/release/sample probe sequence on the six GF 0p3 analog pins. The sampled analog experiment state is readable at `R14`/`0xE` through the existing UART/SPI register interface. It is useful for FPGA/demoboard control-plane testing and post-silicon pad experiments, but it is still not a precision analog macro or a substitute for GF180 schematic/layout/SPICE/PEX work. The analog pin use is:
+This repository contains the digital/FPGA-safe UART/SPI/TRNG shell plus a small analog pad exerciser in `src/ANALOG/analog_experiment_stub.v`. The analog block now drives a 1-bit sigma-delta DAC, monitor mux, oscillator/debug output, and charge/release/sample probe sequence on the six GF 0p3 analog pins. The sampled analog experiment state is readable at `R14`/`0xE` through the existing UART/SPI register interface. The submitted GDS also adds a small real on-chip Metal4 passive structure on `ua[5]`: a pad-connected pickup plate and nearby grounded fringe finger, intended for charge/release/leakage/noise experiments. It is useful for FPGA/demoboard control-plane testing and post-silicon pad experiments, but it is still not a precision analog macro or a substitute for GF180 schematic/layout/SPICE/PEX work. The analog pin use is:
 
 | Pin | Name | Purpose |
 | --- | --- | --- |
@@ -65,7 +65,7 @@ This repository contains the digital/FPGA-safe UART/SPI/TRNG shell plus a small 
 | `ua[2]` | `cmp_ref_ext` | External comparator/reference input |
 | `ua[3]` | `amon_out` | Digital monitor mux output for DAC/comparator/probe/TRNG/status |
 | `ua[4]` | `osc_out` | Divider or TRNG-bit monitor output |
-| `ua[5]` | `puf_probe` | Charge/release/sample probe pad |
+| `ua[5]` | `puf_probe` | Charge/release/sample probe pad connected to a small on-chip Metal4 fringe/pickup structure |
 
 Analog status readback is available at `R14`/`0xE` when `BIG16_SPI_REG` is enabled: bit 0 sampled `ua[0]`, bit 1 sampled `ua[2]`, bit 2 threshold compare, bit 3 live sampled `ua[5]`, bit 4 latched probe sample, bit 5 DAC bit, bit 6 oscillator/TRNG monitor bit, and bit 7 probe-driver enable.
 

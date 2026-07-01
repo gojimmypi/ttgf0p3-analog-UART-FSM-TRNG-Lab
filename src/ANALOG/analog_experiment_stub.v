@@ -20,6 +20,10 @@
  *   connected to external RC filters, scopes, counters, or Analog Discovery.
  * - The input pins are sampled through ordinary CMOS input thresholds, which
  *   is useful for threshold/noise experiments but not a real comparator model.
+ * - The submitted GDS adds one small real on-chip passive structure on ua[5]:
+ *   a Metal4 pickup/fringe capacitor tied to the puf_probe pad and nearby
+ *   grounded Metal4.  This RTL exercises that physical structure with the
+ *   same charge/release/sample sequence used for external RC experiments.
  *
  * Analog pin roles:
  * - ua[0]: ain_ext       high-Z input, sampled by the CMOS threshold
@@ -27,7 +31,7 @@
  * - ua[2]: cmp_ref_ext   high-Z input, sampled by the CMOS threshold
  * - ua[3]: amon_out      monitor mux output
  * - ua[4]: osc_out       clock-divider/TRNG monitor output
- * - ua[5]: puf_probe     charge/release/sample probe pad
+ * - ua[5]: puf_probe     charge/release/sample probe pad with GDS-level Metal4 passive
  *
  * Control through the existing UART/SPI registers:
  * - R0/reg_ctrl[0]       global analog enable, via E1/E0

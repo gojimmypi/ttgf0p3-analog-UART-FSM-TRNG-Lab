@@ -24,6 +24,26 @@ GDS_STUBS = [
     (107.42, 1.0, 110.42, 30.0),
 ]
 
+# Small real on-chip passive structure tied to ua[5].  The ua[5] side uses
+# the normal inward ua[5] metal stub plus two small top-metal pickup plates.
+# The other side is tied to the nearby template VGND Metal4 rail.  This is not
+# a precision capacitor, but it is real silicon layout: top-metal area and
+# same-layer fringe capacitance that the ua[5] charge/release/sample RTL can
+# exercise after fabrication.  The coordinates stay in the bottom analog-frame
+# region so the LEF pin rectangles remain unchanged.
+UA5_PASSIVE_CAP_RECTS = [
+    # Extend the local VGND rail downward to the passive finger region.
+    (99.92, 1.95, 101.52, 3.90),
+    # Grounded M4 fingers beside the ua[5] probe stub.
+    (101.50, 1.95, 106.85, 2.25),
+    (101.50, 3.35, 106.85, 3.55),
+    (106.55, 1.95, 106.85, 30.00),
+    # ua[5]-connected pickup plates, touching the ua[5] inward stub.
+    (110.40, 1.15, 130.00, 1.55),
+    (110.40, 2.60, 130.00, 3.00),
+    (129.60, 1.15, 130.00, 3.00),
+]
+
 POWER_LEF = '''  PIN VGND
     DIRECTION INOUT ;
     USE GROUND ;
@@ -67,6 +87,28 @@ def patch_lef(path: Path, top: str) -> None:
     path.write_text(text)
 
 
+def add_rect_once(cell, gdstk, rect: tuple[float, float, float, float]) -> None:
+    x1, y1, x2, y2 = rect
+    target = (round(x1, 3), round(y1, 3), round(x2, 3), round(y2, 3))
+
+    for polygon in cell.polygons:
+        if polygon.layer != 46 or polygon.datatype != 0:
+            continue
+        bbox = polygon.bounding_box()
+        if bbox is None:
+            continue
+        found = (
+            round(float(bbox[0][0]), 3),
+            round(float(bbox[0][1]), 3),
+            round(float(bbox[1][0]), 3),
+            round(float(bbox[1][1]), 3),
+        )
+        if found == target:
+            return
+
+    cell.add(gdstk.rectangle((x1, y1), (x2, y2), layer=46, datatype=0))
+
+
 def patch_gds(path: Path) -> None:
     import gdstk
 
@@ -76,11 +118,14 @@ def patch_gds(path: Path) -> None:
         raise RuntimeError("Expected exactly one top-level GDS cell")
     cell = top_cells[0]
 
-    for x1, y1, x2, y2 in GDS_STUBS:
-        cell.add(gdstk.rectangle((x1, y1), (x2, y2), layer=46, datatype=0))
+    for rect in GDS_STUBS:
+        add_rect_once(cell, gdstk, rect)
 
-    cell.add(gdstk.rectangle((0.0, 0.0), (1.0, 325.36), layer=46, datatype=0))
-    cell.add(gdstk.rectangle((345.64, 0.0), (346.64, 325.36), layer=46, datatype=0))
+    for rect in UA5_PASSIVE_CAP_RECTS:
+        add_rect_once(cell, gdstk, rect)
+
+    add_rect_once(cell, gdstk, (0.0, 0.0, 1.0, 325.36))
+    add_rect_once(cell, gdstk, (345.64, 0.0, 346.64, 325.36))
 
     labels = {label.text for label in cell.labels}
     if "VGND" not in labels:

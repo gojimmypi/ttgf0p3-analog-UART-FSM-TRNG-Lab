@@ -78,6 +78,11 @@ copy_strip_and_stage_outputs() {
         --gds "gds/${TOP}.gds" \
         --lef "lef/${TOP}.lef"
 
+    python3 tools/patch_analog_outputs.py \
+        --top "${TOP}" \
+        --lef "lef/${TOP}.lef" \
+        --gds "gds/${TOP}.gds"
+
     python3 tools/check_gds_content.py "gds/${TOP}.gds"
 
     if ! grep -Eq 'PIN ua\[6\]' "lef/${TOP}.lef" || \

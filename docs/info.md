@@ -37,9 +37,9 @@ GF 0p3 analog experiment update:
 - `ua[2]` is an external comparator/reference-style input sampled by a CMOS threshold.
 - `ua[3]` is a digital monitor mux output for DAC/comparator/probe/TRNG/status observation.
 - `ua[4]` is a divider or TRNG-bit monitor output for scope/frequency tests.
-- `ua[5]` is a charge/release/sample probe pad for RC, touch, leakage, and PUF-style experiments.
+- `ua[5]` is a charge/release/sample probe pad for RC, touch, leakage, and PUF-style experiments. The submitted GDS adds a small on-chip Metal4 fringe/pickup structure tied to this pad so the probe has real silicon capacitance/noise/leakage behavior to exercise.
 - `R14`/`0xE` reads the sampled analog experiment status through the same UART/SPI register bank.
-- The current RTL includes a digital/FPGA-safe analog pad exerciser. It is useful for control-plane testing and post-silicon experiments with external RC/test equipment, but real GF180 analog behavior still requires schematic/layout/SPICE/PEX work and cannot be validated by the FPGA bitstream.
+- The current RTL includes a digital/FPGA-safe analog pad exerciser. The GDS adds one small passive on-chip analog structure on `ua[5]`. This is useful for control-plane testing and post-silicon experiments with external RC/test equipment, but it is not a precision analog macro and cannot be validated by the FPGA bitstream.
 
 Why? The National Institute of Standards and Technology ([NIST](https://www.nist.gov/)) notes that random numbers are essential for cryptographic and security applications, and that cryptography 
 makes extensive use of random numbers and random bits, particularly for generating cryptographic keying material.
@@ -763,7 +763,7 @@ cd test-hw
 ## UART FSM TRNG Lab Datasheet
 
 Document revision: 1.1.0
-RTL revision string: `Version 1.1.3 7/1/2026`  
+RTL revision string: `Version 1.1.4 7/1/2026`  
 Project family: Tiny Tapeout UART/SPI configurable TRNG experiment  
 Primary top modules: `tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab` (conditional based on build)
 License: Apache-2.0, as declared in the source files
@@ -986,7 +986,7 @@ Invalid syntax returns `?<CR>`.
 #### UART command examples
 
 ```text
-V<CR>       -> Version 1.1.3 7/1/2026<CR>
+V<CR>       -> Version 1.1.4 7/1/2026<CR>
 R2<CR>      -> R2=10<CR>
 E1<CR>      -> OK<CR>
 D10<CR>     -> OK<CR>
@@ -1163,7 +1163,7 @@ UART alias: `Oxx<CR>` writes the full oscillator enable mask.
 
 ### 19. Analog Status Register: `analog_status`, Address 14 / R14 / 0xE
 
-`analog_status` is read-only and is intended for post-silicon analog bring-up. It does not add a new command parser path; it reuses the existing `RE<CR>`/SPI register read mechanism available when `BIG16_SPI_REG` is enabled.
+`analog_status` is read-only and is intended for post-silicon analog bring-up. It does not add a new command parser path; it reuses the existing `RE<CR>`/SPI register read mechanism available when `BIG16_SPI_REG` is enabled. In the submitted GDS, `ua[5]` also has a small top-metal fringe/pickup passive tied to the pad; bits 3 and 4 are the main readback hooks for that experiment.
 
 | Bit | Description |
 | --- | ----------- |
