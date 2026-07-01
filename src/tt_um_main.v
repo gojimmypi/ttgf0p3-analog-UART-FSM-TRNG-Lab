@@ -36,6 +36,7 @@
  * - uio_oe[7:0]  : UIO direction control
  *
  * - ua[5:0]      : GF 0p3 analog experiment pins
+ * - R14/0xE      : analog_status readback when BIG16_SPI_REG is enabled
  *
  * This module contains almost no behavior of its own. It is mostly a pin-map
  * and visibility wrapper around uart_trng_ascii_core.
@@ -48,13 +49,13 @@
 
 `include "project_config.v"
 
-module tt_um_main 
+module tt_um_main
 #(
     parameter [31:0] CLOCK_HZ  = `PROJECT_CLOCK_HZ,
     parameter [31:0] UART_BAUD = `PROJECT_UART_BAUD
 )
 (
-    /* For Tiny Tapeout, these are the only ports you can use. 
+    /* For Tiny Tapeout, these are the only ports you can use.
      * See:    https://tinytapeout.com/specs/pinouts/         */
     input  wire [7:0] ui_in,
     output wire [7:0] uo_out,
@@ -99,6 +100,7 @@ module tt_um_main
     wire [7:0] uo_out_normal;
     wire [7:0] uio_out_normal;
     wire [7:0] uio_oe_normal;
+    wire [7:0] analog_status;
 
 `ifdef PIN_DIAG
     wire       pin_id_enable;
@@ -219,7 +221,7 @@ module tt_um_main
         reg_oscen,
 `endif
         reg_status[7:3],
-        reg_rawlo[7:3], 
+        reg_rawlo[7:3],
         reg_rawhi[3:0]
     }; /* _unused_debug_regs */
 
@@ -238,7 +240,7 @@ module tt_um_main
         assign unused_ok = &{ena, uio_in};
     `endif
 `endif
-    
+
     /*
      * Synchronize global reset, rst_n wire to rst_sync_n reg.
      */
@@ -253,7 +255,7 @@ module tt_um_main
     end /* reset sync */
 
 
-    /* 
+    /*
      * Synchronize asynchronous UART RX input to the local clock domain.
      *
      * The external UART RX pin (ui_in[3]) is asynchronous to clk and can
@@ -286,7 +288,7 @@ module tt_um_main
     always @(posedge clk) begin
         if (!rst_sync_n) begin
         `ifdef ULX3S
-            /* The default, unconnected gp4 on the ULX3S is high, 
+            /* The default, unconnected gp4 on the ULX3S is high,
              * reset sets debug mode to 1 for SPI */
             debug_sel_meta <= 1'b1;
             debug_sel_sync <= 1'b1;
@@ -382,8 +384,9 @@ module tt_um_main
         .uo_out(uo_out),
         .uio_in(uio_in),
         .uio_out(uio_out),
-        .uio_oe(uio_oe)
-`endif    
+        .uio_oe(uio_oe),
+        .analog_status(analog_status)
+`endif
 );
 
 /*
@@ -407,8 +410,11 @@ module tt_um_main
         .reg_rawlo(reg_rawlo),
         .reg_rawhi(reg_rawhi),
         .trng_bit(trng_bit),
+        .analog_status(analog_status),
         .ua(ua)
     );
+`else
+    assign analog_status = 8'h00;
 `endif /* ANALOG_ENABLED */
 
 /*

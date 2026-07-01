@@ -27,8 +27,8 @@
 
     `ifdef USE_LONG_STRINGS
         /* GF 0p3 analog experiment build. */
-        `define VERSION_STRING_LEN 23 /* 123456789012345678901234 */
-        `define VERSION_STRING          "Version 1.1.1 6/27/2026"
+        `define VERSION_STRING_LEN 22 /* 1234567890123456789012 */
+        `define VERSION_STRING          "Version 1.1.3 7/1/2026"
         /* GF 0p3 deadline: July 3, 1:00PM PDT */
     `else
         /* no long strings */

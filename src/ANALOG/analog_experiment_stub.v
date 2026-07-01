@@ -54,6 +54,15 @@
  * - R4/reg_oscen[1]      enable ua[3] amon_out driver
  * - R4/reg_oscen[2]      enable ua[4] osc_out driver
  * - R4/reg_oscen[3]      enable ua[5] puf_probe charge/release driver
+ * - R14/0xE             read analog status through UART/SPI
+ *                         bit 0: sampled ua[0]
+ *                         bit 1: sampled ua[2]
+ *                         bit 2: ua[0] & ~ua[2] threshold compare
+ *                         bit 3: live sampled ua[5]
+ *                         bit 4: latched ua[5] probe sample
+ *                         bit 5: current sigma-delta bit
+ *                         bit 6: current osc/TRNG monitor bit
+ *                         bit 7: puf_probe driver enabled
  *
  * Example bring-up commands:
  * - E1, D10, O01          enable half-scale sigma-delta DAC on ua[1]
@@ -77,6 +86,7 @@ module analog_experiment_stub
     input  wire [7:0] reg_rawlo,
     input  wire [7:0] reg_rawhi,
     input  wire       trng_bit,
+    output wire [7:0] analog_status,
     inout  wire [7:0] ua
 );
 
@@ -155,6 +165,17 @@ module analog_experiment_stub
     assign dac_pin_out  = dac_out_q ^ analog_invert;
     assign amon_pin_out = amon_mux ^ analog_invert;
     assign osc_pin_out  = (osc_src_trng ? trng_bit : osc_out_q) ^ analog_invert;
+
+    assign analog_status = {
+        probe_drive_oe_q,
+        (osc_src_trng ? trng_bit : osc_out_q),
+        dac_out_q,
+        probe_sample_q,
+        probe_sync,
+        cmp_threshold,
+        ref_sync,
+        ain_sync
+    };
 
     assign ua[0] = 1'bz;
     assign ua[1] = dac_pin_oe ? dac_pin_out : 1'bz;

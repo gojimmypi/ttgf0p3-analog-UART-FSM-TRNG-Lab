@@ -38,6 +38,7 @@ GF 0p3 analog experiment update:
 - `ua[3]` is a digital monitor mux output for DAC/comparator/probe/TRNG/status observation.
 - `ua[4]` is a divider or TRNG-bit monitor output for scope/frequency tests.
 - `ua[5]` is a charge/release/sample probe pad for RC, touch, leakage, and PUF-style experiments.
+- `R14`/`0xE` reads the sampled analog experiment status through the same UART/SPI register bank.
 - The current RTL includes a digital/FPGA-safe analog pad exerciser. It is useful for control-plane testing and post-silicon experiments with external RC/test equipment, but real GF180 analog behavior still requires schematic/layout/SPICE/PEX work and cannot be validated by the FPGA bitstream.
 
 Why? The National Institute of Standards and Technology ([NIST](https://www.nist.gov/)) notes that random numbers are essential for cryptographic and security applications, and that cryptography 
@@ -459,6 +460,13 @@ The optional `Bxx` raw stream command returns binary bytes and does not append `
 | R5 | Read reg_status |
 | R6 | Read reg_rawlo |
 | R7 | Read reg_rawhi |
+| R8 | Read `ui_in` snapshot when `BIG16_SPI_REG` is enabled |
+| R9 | Read `uo_out` snapshot when `BIG16_SPI_REG` is enabled |
+| RA | Read `uio_in` snapshot when `BIG16_SPI_REG` is enabled |
+| RB | Read `uio_out` snapshot when `BIG16_SPI_REG` is enabled |
+| RC | Read `uio_oe` snapshot when `BIG16_SPI_REG` is enabled |
+| RD | Read build target ID when `BIG16_SPI_REG` is enabled |
+| RE | Read analog status when `BIG16_SPI_REG` is enabled |
 
 ---
 
@@ -755,7 +763,7 @@ cd test-hw
 ## UART FSM TRNG Lab Datasheet
 
 Document revision: 1.1.0
-RTL revision string: `Version 1.1.0 6/27/2026`  
+RTL revision string: `Version 1.1.3 7/1/2026`  
 Project family: Tiny Tapeout UART/SPI configurable TRNG experiment  
 Primary top modules: `tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab` (conditional based on build)
 License: Apache-2.0, as declared in the source files
@@ -978,7 +986,7 @@ Invalid syntax returns `?<CR>`.
 #### UART command examples
 
 ```text
-V<CR>       -> Version 1.1.0 6/27/2026<CR>
+V<CR>       -> Version 1.1.3 7/1/2026<CR>
 R2<CR>      -> R2=10<CR>
 E1<CR>      -> OK<CR>
 D10<CR>     -> OK<CR>
@@ -1060,6 +1068,13 @@ TX: 02 10
 | 5 | `R5` | `reg_status` | Read-only | `0x00` | Status mirror |
 | 6 | `R6` | `reg_rawlo` | Read-only | `0x00` | Raw sample low byte |
 | 7 | `R7` | `reg_rawhi` | Read-only | `0x00` | Raw sample high byte |
+| 8 | `R8` | `ui_in` | Read-only | board-dependent | Dedicated input snapshot |
+| 9 | `R9` | `uo_out` | Read-only | board-dependent | Dedicated output snapshot |
+| 10 | `RA` | `uio_in` | Read-only | board-dependent | Bidirectional input snapshot |
+| 11 | `RB` | `uio_out` | Read-only | board-dependent | Bidirectional output snapshot |
+| 12 | `RC` | `uio_oe` | Read-only | board-dependent | Bidirectional output-enable snapshot |
+| 13 | `RD` | `BUILD_TARGET_ID` | Read-only | target-dependent | Build target ID |
+| 14 | `RE` | `analog_status` | Read-only | `0x00` | Sampled analog experiment status |
 
 ### 13. Control Register: `reg_ctrl`, Address 0
 
@@ -1146,7 +1161,22 @@ UART alias: `Oxx<CR>` writes the full oscillator enable mask.
 
 `reg_status` is read-only from the external UART/SPI register interfaces.
 
-### 19. Raw Output Registers: `reg_rawlo` and `reg_rawhi`
+### 19. Analog Status Register: `analog_status`, Address 14 / R14 / 0xE
+
+`analog_status` is read-only and is intended for post-silicon analog bring-up. It does not add a new command parser path; it reuses the existing `RE<CR>`/SPI register read mechanism available when `BIG16_SPI_REG` is enabled.
+
+| Bit | Description |
+| --- | ----------- |
+| 0 | Synchronized sample of `ua[0]` (`ain_ext`) |
+| 1 | Synchronized sample of `ua[2]` (`cmp_ref_ext`) |
+| 2 | Threshold compare helper, `ua[0] & ~ua[2]` after synchronization |
+| 3 | Live synchronized sample of `ua[5]` (`puf_probe`) |
+| 4 | Latched `ua[5]` probe sample from the charge/release/sample sequence |
+| 5 | Current sigma-delta DAC bit driving `ua[1]` when enabled |
+| 6 | Current oscillator/TRNG monitor bit driving `ua[4]` when enabled |
+| 7 | `ua[5]` probe driver output-enable state |
+
+### 20. Raw Output Registers: `reg_rawlo` and `reg_rawhi`
 
 The TRNG lab core maintains a 16-bit sample shift register. On each sample event, the selected source bit is shifted into the sample history and the raw output registers are updated.
 
