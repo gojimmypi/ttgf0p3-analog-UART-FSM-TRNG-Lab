@@ -185,7 +185,7 @@
     `ifdef PDK_TARGET_SKY130
         /* no JTAG at this time */
     `else
-        `define JTAG_ENABLED
+        // `define JTAG_ENABLED
     `endif
 
     /* FPGA-only: ignore reg_oscen and expose raw deterministic LFSR taps.

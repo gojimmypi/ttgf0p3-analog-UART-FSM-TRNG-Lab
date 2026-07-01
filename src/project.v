@@ -138,7 +138,9 @@
      *
      * Note the ice40 TT Demoboard build uses this path with `tt_fpga.py harden` */
     `include "tt_um_main.v"
-    `include "JTAG/jtag_core.v"
+    `ifdef JTAG_ENABLED
+        `include "JTAG/jtag_core.v"
+    `endif
     `include "SPI/spi_slave.v"
     `include "UART/uart_rx_min.v"
     `include "UART/uart_tx_min.v"

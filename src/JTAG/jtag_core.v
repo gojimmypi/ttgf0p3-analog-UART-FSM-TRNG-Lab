@@ -27,6 +27,8 @@
     `timescale 1ns / 1ps
 `endif
 
+`ifdef JTAG_ENABLED
+
 module jtag_core #(
     /* ID code TTJ1 */
     parameter [31:0] IDCODE_VALUE = 32'h54544A31
@@ -256,5 +258,7 @@ always @(posedge clk) begin
 end
 
 endmodule
+
+`endif /* JTAG_ENABLED */
 
 `default_nettype wire
