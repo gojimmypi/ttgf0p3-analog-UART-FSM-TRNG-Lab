@@ -2,7 +2,7 @@
 
 <!-- breadcrumb file for testing workflows -->
 
-Version 1.1.4 7/1/2026
+Version 1.1.5 7/1/2026
 
 ## Status
 
@@ -19,7 +19,7 @@ Version 1.1.4 7/1/2026
 - Untested actual ASIC [TRNG](./src/TRNG/) for SKY130 and GF180, as well as a stub for testing.
 - [JTAG WIP](./src/JTAG/)
 - [PIN Diagnostics WIP](./src/PINS/)
-- GF 0p3 analog pad exerciser in [ANALOG](./src/ANALOG/): sigma-delta DAC output, monitor mux, divider/TRNG monitor, charge/release/sample probe sequence on ua[0]..ua[5], analog status readback at R14/0xE, and a small GDS-level Metal4 fringe/pickup structure tied to ua[5].
+- GF 0p3 analog pad exerciser in [ANALOG](./src/ANALOG/): sigma-delta DAC output, monitor mux, divider/TRNG monitor, charge/release/sample probe sequence on ua[0]..ua[5], analog status readback at R14/0xE, ua[5] passive-structure threshold/decay timing readback at R15/0xF, and a small GDS-level Metal4 fringe/pickup structure tied to ua[5].
 
 ## TODO
 

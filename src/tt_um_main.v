@@ -37,6 +37,7 @@
  *
  * - ua[5:0]      : GF 0p3 analog experiment pins
  * - R14/0xE      : analog_status readback when BIG16_SPI_REG is enabled
+ * - R15/0xF      : ua[5] passive-structure threshold/decay timing readback
  *
  * This module contains almost no behavior of its own. It is mostly a pin-map
  * and visibility wrapper around uart_trng_ascii_core.
@@ -101,6 +102,7 @@ module tt_um_main
     wire [7:0] uio_out_normal;
     wire [7:0] uio_oe_normal;
     wire [7:0] analog_status;
+    wire [7:0] analog_measure;
 
 `ifdef PIN_DIAG
     wire       pin_id_enable;
@@ -385,7 +387,8 @@ module tt_um_main
         .uio_in(uio_in),
         .uio_out(uio_out),
         .uio_oe(uio_oe),
-        .analog_status(analog_status)
+        .analog_status(analog_status),
+        .analog_measure(analog_measure)
 `endif
 );
 
@@ -411,10 +414,12 @@ module tt_um_main
         .reg_rawhi(reg_rawhi),
         .trng_bit(trng_bit),
         .analog_status(analog_status),
+        .analog_measure(analog_measure),
         .ua(ua)
     );
 `else
     assign analog_status = 8'h00;
+    assign analog_measure = 8'h00;
 `endif /* ANALOG_ENABLED */
 
 /*
