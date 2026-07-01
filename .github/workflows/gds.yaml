@@ -34,18 +34,30 @@ jobs:
           PROJECT_V="build/custom_gds/project.v"
           echo "Checking analog experiment RTL diagnostics in ${PROJECT_V}"
 
-          grep -n '^`define ANALOG_ENABLED' "${PROJECT_V}"
-          grep -n '^`define BIG16_SPI_REG' "${PROJECT_V}"
+          require_grep() {
+              local label="$1"
+              local pattern="$2"
 
-          grep -Fn 'SPI_REG_ADDR_ANALOG_STATUS: read_reg = analog_status;' "${PROJECT_V}"
-          grep -Fn 'SPI_REG_ADDR_ANALOG_MEAS: read_reg = analog_measure;' "${PROJECT_V}"
-          grep -Fn 'SPI_REG_ADDR_ANALOG_STATUS: spi_reg_rdata = analog_status;' "${PROJECT_V}"
-          grep -Fn 'SPI_REG_ADDR_ANALOG_MEAS: spi_reg_rdata = analog_measure;' "${PROJECT_V}"
+              echo "Check: ${label}"
+              if ! grep -nE "${pattern}" "${PROJECT_V}"; then
+                  echo "::error::Missing analog RTL diagnostic: ${label}"
+                  echo "Pattern: ${pattern}"
+                  exit 1
+              fi
+          }
 
-          grep -Fn 'analog_experiment_stub u_analog_experiment' "${PROJECT_V}"
-          grep -Fn '.analog_status(analog_status)' "${PROJECT_V}"
-          grep -Fn '.analog_measure(analog_measure)' "${PROJECT_V}"
-          grep -Fn 'assign analog_measure = probe_decay_q;' "${PROJECT_V}"
+          require_grep "ANALOG_ENABLED define" '^[[:space:]]*`define[[:space:]]+ANALOG_ENABLED([[:space:]]|$)'
+          require_grep "BIG16_SPI_REG define" '^[[:space:]]*`define[[:space:]]+BIG16_SPI_REG([[:space:]]|$)'
+
+          require_grep "RE analog_status UART readback" 'SPI_REG_ADDR_ANALOG_(STAT|STATUS)[[:space:]]*:[[:space:]]*read_reg[[:space:]]*=[[:space:]]*analog_status[[:space:]]*;'
+          require_grep "RF analog_measure UART readback" 'SPI_REG_ADDR_ANALOG_MEAS[[:space:]]*:[[:space:]]*read_reg[[:space:]]*=[[:space:]]*analog_measure[[:space:]]*;'
+          require_grep "0xE analog_status SPI readback" 'SPI_REG_ADDR_ANALOG_(STAT|STATUS)[[:space:]]*:[[:space:]]*spi_reg_rdata[[:space:]]*=[[:space:]]*analog_status[[:space:]]*;'
+          require_grep "0xF analog_measure SPI readback" 'SPI_REG_ADDR_ANALOG_MEAS[[:space:]]*:[[:space:]]*spi_reg_rdata[[:space:]]*=[[:space:]]*analog_measure[[:space:]]*;'
+
+          require_grep "analog experiment instance" 'analog_experiment_stub[[:space:]]+u_analog_experiment'
+          require_grep "analog_status port connection" '\.analog_status\(analog_status\)'
+          require_grep "analog_measure port connection" '\.analog_measure\(analog_measure\)'
+          require_grep "analog_measure driven by probe measurement" 'assign[[:space:]]+analog_measure[[:space:]]*=[[:space:]]*probe_[[:alnum:]_]*q[[:space:]]*;'
 
           echo "Optional non-analog fallback assignments:"
           grep -Fn "assign analog_status = 8'h00;" "${PROJECT_V}" || true
