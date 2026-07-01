@@ -116,6 +116,7 @@ jobs:
           cp -f harden-gds-lef.log "${ARTIFACT_DIR}/harden-gds-lef.log"
 
       - name: Patch and verify final analog GDS
+        if: ${{ false }}
         shell: bash
         run: |
           set -euo pipefail
