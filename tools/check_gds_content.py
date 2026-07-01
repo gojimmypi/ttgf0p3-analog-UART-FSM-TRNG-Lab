@@ -43,16 +43,18 @@ MIN_PASSIVE_SPACING_UM = 0.40
 COORD_TOL_UM = 0.001
 
 # Keep these synchronized with tools/patch_analog_outputs.py.
+# Old attempts used a two-terminal same-layer fringe structure near VGND. That
+# passed the local exact-rectangle sanity check but still left a GF180 M4.2a
+# spacing violation against surrounding template metal. The safer DRC-first
+# structure below is a single ua[5]-connected Metal4 plate. It still creates a
+# real on-chip passive plate/probe capacitance for the charge/release/sample RTL,
+# but it avoids intentional same-layer M4 gaps.
 UA5_PASSIVE_CAP_RECTS = [
-    (99.92, 2.00, 101.52, 3.90),
-    (99.92, 2.00, 106.85, 2.40),
-    (106.45, 2.00, 106.85, 30.00),
-    (109.80, 1.20, 130.00, 1.60),
-    (109.80, 2.80, 130.00, 3.20),
-    (129.60, 1.20, 130.00, 3.20),
+    (109.80, 1.20, 130.00, 3.20),
 ]
 
 OLD_UA5_PASSIVE_CAP_RECTS = [
+    # First 7-rectangle version.
     (99.92, 1.95, 101.52, 3.90),
     (101.50, 1.95, 106.85, 2.25),
     (101.50, 3.35, 106.85, 3.55),
@@ -60,6 +62,13 @@ OLD_UA5_PASSIVE_CAP_RECTS = [
     (110.40, 1.15, 130.00, 1.55),
     (110.40, 2.60, 130.00, 3.00),
     (129.60, 1.15, 130.00, 3.00),
+    # Second 6-rectangle version that still triggered one M4.2a violation.
+    (99.92, 2.00, 101.52, 3.90),
+    (99.92, 2.00, 106.85, 2.40),
+    (106.45, 2.00, 106.85, 30.00),
+    (109.80, 1.20, 130.00, 1.60),
+    (109.80, 2.80, 130.00, 3.20),
+    (129.60, 1.20, 130.00, 3.20),
 ]
 
 
@@ -219,17 +228,17 @@ def check_analog_passive(path: Path) -> None:
     duplicates = [(rect, count) for rect, count in passive_counts.items() if count > 1]
 
     if missing:
-        raise RuntimeError("Missing corrected ua[5] passive M4 rectangles: " + str(missing))
+        raise RuntimeError("Missing DRC-first ua[5] passive M4 plate: " + str(missing))
     if duplicates:
-        raise RuntimeError("Duplicate corrected ua[5] passive M4 rectangles: " + str(duplicates))
+        raise RuntimeError("Duplicate DRC-first ua[5] passive M4 plate: " + str(duplicates))
 
     old_counts = count_exact_rects(cell, OLD_UA5_PASSIVE_CAP_RECTS)
     remaining_old = [rect for rect, count in old_counts.items() if count]
     if remaining_old:
         raise RuntimeError("Old bad ua[5] passive M4 rectangles remain: " + str(remaining_old))
 
-    print("OK: corrected ua[5] passive M4 structure is present exactly once")
-    print(f"  passive M4 rectangles: {len(UA5_PASSIVE_CAP_RECTS)}")
+    print("OK: DRC-first ua[5] passive M4 plate is present exactly once")
+    print(f"  passive M4 plate rectangles: {len(UA5_PASSIVE_CAP_RECTS)}")
     print(f"  minimum checked width/spacing: {MIN_PASSIVE_WIDTH_UM:.2f} um")
 
 
@@ -245,7 +254,7 @@ def main() -> int:
     parser.add_argument(
         "--require-analog-passive",
         action="store_true",
-        help="require the corrected ua[5] passive Metal4 structure",
+        help="require the DRC-first ua[5] passive Metal4 plate",
     )
     args = parser.parse_args()
 

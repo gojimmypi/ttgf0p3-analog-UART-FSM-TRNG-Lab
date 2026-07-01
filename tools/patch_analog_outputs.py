@@ -29,10 +29,21 @@ GDS_STUBS = [
     (107.42, 1.0, 110.42, 30.0),
 ]
 
-# The first passive probe geometry had one 0.20 um Metal4 segment and could
-# trigger GF180 M4.1/M4.2a precheck failures. Remove those exact rectangles if
-# they are present so rerunning this script fixes stale local GDS files.
+# The first two passive probe geometry attempts could trigger GF180 Metal4 DRC
+# problems. Remove both exact old versions if present so rerunning this script
+# fixes stale local GDS files.
+# Old attempts used a two-terminal same-layer fringe structure near VGND. That
+# passed the local exact-rectangle sanity check but still left a GF180 M4.2a
+# spacing violation against surrounding template metal. The safer DRC-first
+# structure below is a single ua[5]-connected Metal4 plate. It still creates a
+# real on-chip passive plate/probe capacitance for the charge/release/sample RTL,
+# but it avoids intentional same-layer M4 gaps.
+UA5_PASSIVE_CAP_RECTS = [
+    (109.80, 1.20, 130.00, 3.20),
+]
+
 OLD_UA5_PASSIVE_CAP_RECTS = [
+    # First 7-rectangle version.
     (99.92, 1.95, 101.52, 3.90),
     (101.50, 1.95, 106.85, 2.25),
     (101.50, 3.35, 106.85, 3.55),
@@ -40,29 +51,15 @@ OLD_UA5_PASSIVE_CAP_RECTS = [
     (110.40, 1.15, 130.00, 1.55),
     (110.40, 2.60, 130.00, 3.00),
     (129.60, 1.15, 130.00, 3.00),
-]
-
-# Small real on-chip passive structure tied to ua[5]. The ua[5] side uses the
-# normal inward ua[5] metal stub plus two top-metal pickup plates. The other
-# side is tied to the nearby template VGND Metal4 rail. This is not a precision
-# capacitor, but it is real silicon layout: top-metal area and same-layer fringe
-# capacitance that the ua[5] charge/release/sample RTL can exercise after
-# fabrication.
-#
-# Keep every added Metal4 segment at least 0.40 um wide and spaced by at least
-# 0.40 um where shapes are intentionally separated. This gives margin over the
-# GF180 M4.1/M4.2a 0.28 um rules that caught the first attempt.
-UA5_PASSIVE_CAP_RECTS = [
-    # Extend the local VGND rail downward to the passive finger region.
+    # Second 6-rectangle version that still triggered one M4.2a violation.
     (99.92, 2.00, 101.52, 3.90),
-    # Grounded M4 bridge and vertical finger beside the ua[5] probe stub.
     (99.92, 2.00, 106.85, 2.40),
     (106.45, 2.00, 106.85, 30.00),
-    # ua[5]-connected pickup plates, touching the ua[5] inward stub.
     (109.80, 1.20, 130.00, 1.60),
     (109.80, 2.80, 130.00, 3.20),
     (129.60, 1.20, 130.00, 3.20),
 ]
+
 
 POWER_RECTS = [
     (0.0, 0.0, 1.0, 325.36),
@@ -269,7 +266,7 @@ def patch_gds(path: Path) -> None:
     passive_counts = count_exact_rects(cell, UA5_PASSIVE_CAP_RECTS)
     missing = [rect for rect, count in passive_counts.items() if count != 1]
     if missing:
-        raise RuntimeError("Corrected ua[5] passive M4 rectangles are not present exactly once: " + str(missing))
+        raise RuntimeError("DRC-first ua[5] passive M4 plate is not present exactly once: " + str(missing))
 
     old_counts = count_exact_rects(cell, OLD_UA5_PASSIVE_CAP_RECTS)
     remaining_old = [rect for rect, count in old_counts.items() if count]
@@ -281,7 +278,7 @@ def patch_gds(path: Path) -> None:
     print(f"Patched analog GDS: {path}")
     print(f"  removed old ua[5] passive rects: {removed_old}")
     print(f"  added new rects: {added}")
-    print(f"  verified ua[5] passive rects: {len(UA5_PASSIVE_CAP_RECTS)}")
+    print(f"  verified ua[5] passive plate rects: {len(UA5_PASSIVE_CAP_RECTS)}")
 
 
 def main() -> int:
