@@ -7,7 +7,7 @@
 #
 # file: ulx3s_build.sh
 #
-# This script is used to build the ULX3S FPGA project using the make tool. 
+# This script is used to build the ULX3S FPGA project using the make tool.
 # Optional WSL should be auto-detected
 #
 #
@@ -31,7 +31,7 @@ MY_SHELLCHECK="shellcheck"
 # Check if the executable is available in the PATH
 if command -v "$MY_SHELLCHECK" >/dev/null 2>&1; then
     # Run your command here
-    shellcheck "$0"  
+    shellcheck "$0"
 else
     echo "$MY_SHELLCHECK is not installed. Please install it if changes to this script have been made."
 fi
@@ -154,7 +154,7 @@ if [ -n "${MAKE_ARGS:-}" ]; then
 fi
 
 # Save the prior output for comparison
-if [ -f "$OUTPUT_LOG" ]; then 
+if [ -f "$OUTPUT_LOG" ]; then
     mv "$OUTPUT_LOG" "$OUTPUT_LOG".old || exit 1
 fi
 

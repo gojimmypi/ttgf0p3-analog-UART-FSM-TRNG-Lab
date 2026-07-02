@@ -23,6 +23,40 @@ EXPECTED_VERSION_PREFIX = b"Version "
 
 TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT = False
 
+BIG16_BUILD_TARGET_IDS = {
+    0x00,
+    0x41,
+    0x42,
+    0x43,
+    0x4A,
+    0x44,
+    0x45,
+    0x46,
+    0x47,
+    0x85,
+    0x86,
+    0x87,
+    0x88,
+    0x89,
+    0x8A,
+    0x8B,
+    0x8E,
+    0xF0,
+}
+
+
+def reg_digit(reg_num: int | str) -> str:
+    if isinstance(reg_num, str):
+        reg_text = reg_num.upper()
+    else:
+        reg_text = f"{reg_num:X}"
+
+    if len(reg_text) != 1 or reg_text not in "0123456789ABCDEF":
+        raise ValueError(f"Invalid register number: {reg_num!r}")
+
+    return reg_text
+
+
 def set_bit(value: int, bit_index: int, bit_value: int) -> int:
     mask = 1 << bit_index
     if bit_value:
@@ -194,18 +228,19 @@ async def uart_expect_ok(dut, command: bytes) -> None:
     )
 
 
-async def uart_read_reg(dut, reg_num: int) -> int:
-    command = f"R{reg_num}\r".encode("ascii")
+async def uart_read_reg(dut, reg_num: int | str) -> int:
+    reg_text = reg_digit(reg_num)
+    command = f"R{reg_text}\r".encode("ascii")
     response = await uart_command_response(dut, command, max_bytes=6)
 
-    expected_prefix = f"R{reg_num}=".encode("ascii")
+    expected_prefix = f"R{reg_text}=".encode("ascii")
 
     assert response.startswith(expected_prefix), (
         f"Expected {expected_prefix!r} prefix, got {response!r}"
     )
 
     assert len(response) == 6 and response.endswith(b"\r"), (
-        f"Invalid register response for R{reg_num}: {response!r}"
+        f"Invalid register response for R{reg_text}: {response!r}"
     )
 
     return int(response[3:5], 16)
@@ -270,6 +305,58 @@ async def test_version_command_or_absent(dut):
     assert EXPECTED_VERSION_PREFIX in response, (
         f"Expected version prefix or absent-version response, got {response!r}"
     )
+
+
+@cocotb.test()
+async def test_big16_uart_register_reads(dut):
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
+
+    dut.ena.value = 1
+    dut.ui_in.value = 0xA8
+    dut.uio_in.value = 0x5B
+
+    if hasattr(dut, "ua_drive") and hasattr(dut, "ua_oe"):
+        dut.ua_drive.value = 0x01
+        dut.ua_oe.value = 0x25
+
+    dut.rst_n.value = 0
+
+    await Timer(100, unit="ns")
+    dut.rst_n.value = 1
+
+    await Timer(100_000, unit="ns")
+    await Timer(SETTLE_TIME_NS, unit="ns")
+
+    ui_in = await uart_read_reg(dut, 8)
+    assert ui_in == 0xA8, f"R8 should mirror ui_in, expected 0xA8, got 0x{ui_in:02X}"
+
+    uo_out = await uart_read_reg(dut, 9)
+    assert (uo_out & 0x10) == 0x10, (
+        f"R9 should show UART TX idle high on uo_out[4], got 0x{uo_out:02X}"
+    )
+
+    uio_in = await uart_read_reg(dut, 10)
+    assert uio_in == 0x5B, f"RA should mirror uio_in, expected 0x5B, got 0x{uio_in:02X}"
+
+    await uart_read_reg(dut, 11)
+
+    uio_oe = await uart_read_reg(dut, 12)
+    assert uio_oe == 0xF4, f"RC should expose uio_oe 0xF4, got 0x{uio_oe:02X}"
+
+    build_id = await uart_read_reg(dut, 13)
+    assert build_id in BIG16_BUILD_TARGET_IDS, (
+        f"RD build target ID should be recognized, got 0x{build_id:02X}"
+    )
+
+    analog_status = await uart_read_reg(dut, 14)
+
+    if hasattr(dut, "ua_drive") and hasattr(dut, "ua_oe"):
+        assert (analog_status & 0x07) == 0x05, (
+            "RE analog status should show ua[0]=1, ua[2]=0, compare=1: "
+            f"got 0x{analog_status:02X}"
+        )
+
+    await uart_read_reg(dut, 15)
 
 
 @cocotb.test(skip=not TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT)

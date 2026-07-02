@@ -31,7 +31,8 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 VERSION_SCRIPT = PROJECT_ROOT / "scripts" / "get_expected_version.sh"
 VERSION_CONFIG = PROJECT_ROOT / "src" / "project_config.v"
-BIG16_SPI_REG = True
+BIG16_SPI_REG=True
+
 
 def get_expected_version():
     if not VERSION_SCRIPT.is_file():
@@ -106,19 +107,36 @@ COMMANDS_IMPLEMENTED = {
     "R5": "Read reg_status",
     "R6": "Read reg_rawlo",
     "R7": "Read reg_rawhi",
+    "R8": "Read ui_in snapshot",
+    "R9": "Read uo_out snapshot",
+    "RA": "Read uio_in snapshot",
+    "RB": "Read uio_out snapshot",
+    "RC": "Read uio_oe snapshot",
+    "RD": "Read build target ID",
+    "RE": "Read analog status",
+    "RF": "Read analog measure",
 }
 
-if BIG16_SPI_REG:
-    COMMANDS_IMPLEMENTED.update({
-        "R8": "Read ui_in snapshot",
-        "R9": "Read uo_out snapshot",
-        "RA": "Read uio_in snapshot",
-        "RB": "Read uio_out snapshot",
-        "RC": "Read uio_oe snapshot",
-        "RD": "Read build target ID",
-        "RE": "Read analog status",
-        "RF": "Read analog measure",
-    })
+BIG16_BUILD_TARGET_IDS = {
+    0x00: "unknown",
+    0x41: "ASIC SKY130 wrapper",
+    0x42: "ASIC GF180 wrapper",
+    0x4A: "ASIC GF180 analog wrapper",
+    0x43: "ASIC unknown PDK wrapper",
+    0x44: "SKY130 PDK fallback",
+    0x45: "GF180 PDK fallback",
+    0x46: "manual ASIC SKY130",
+    0x47: "manual ASIC GF180",
+    0x85: "ULX3S GF180-context FPGA",
+    0x86: "ULX3S SKY130-context FPGA",
+    0x87: "ULX3S unknown-PDK FPGA",
+    0x88: "ULX3S 12K FPGA",
+    0x89: "ULX3S 85F FPGA",
+    0x8A: "TT demoboard FPGA",
+    0x8B: "TT demoboard FPGA analog",
+    0x8E: "generic FPGA",
+    0xF0: "simulation/test",
+}
 
 COMMANDS_TESTED = set()
 
@@ -150,6 +168,34 @@ def report_missing_command_tests():
 
     return False
 
+
+
+def reg_digit(reg_num):
+    if isinstance(reg_num, str):
+        reg_text = reg_num.upper()
+    else:
+        reg_text = f"{reg_num:X}"
+
+    if len(reg_text) != 1 or reg_text not in "0123456789ABCDEF":
+        raise ValueError(f"Invalid register number: {reg_num!r}")
+
+    return reg_text
+
+
+def read_reg_expect(ser, args, name, reg_num, expected_value=None):
+    reg_text = reg_digit(reg_num)
+    command = f"R{reg_text}\r".encode("ascii")
+    response = send_command(ser, command, args)
+
+    if not expect_read(name, response, reg_text, expected_value):
+        return None
+
+    match = READ_RE.fullmatch(response)
+
+    if not match:
+        return None
+
+    return int(match.group(2), 16)
 
 
 def print_reset_registers_hint(args):
@@ -213,12 +259,9 @@ def expect_contains(name, actual, expected):
     return True
 
 
-def reg_name(reg_num):
-    return f"{reg_num:X}"
-
-
 def expect_read(name, actual, reg_num, expected_value=None):
-    expected_prefix = f"R{reg_name(reg_num)}=".encode("ascii")
+    reg_text = reg_digit(reg_num)
+    expected_prefix = f"R{reg_text}=".encode("ascii")
 
     if not actual.startswith(expected_prefix):
         print(f"FAIL: {name}")
@@ -246,7 +289,8 @@ def expect_read(name, actual, reg_num, expected_value=None):
 
 
 def parse_read_value(name, actual, reg_num):
-    expected_prefix = f"R{reg_name(reg_num)}=".encode("ascii")
+    reg_text = reg_digit(reg_num)
+    expected_prefix = f"R{reg_text}=".encode("ascii")
 
     if not actual.startswith(expected_prefix):
         print(f"FAIL: {name}")
@@ -265,9 +309,10 @@ def parse_read_value(name, actual, reg_num):
 
 
 def read_reg(ser, args, reg_num):
-    command = f"R{reg_name(reg_num)}\r".encode("ascii")
+    reg_text = reg_digit(reg_num)
+    command = f"R{reg_text}\r".encode("ascii")
     response = send_command(ser, command, args)
-    return parse_read_value(f"R{reg_name(reg_num)} read", response, reg_num)
+    return parse_read_value(f"R{reg_text} read", response, reg_text)
 
 
 def write_ok(ser, args, name, command):
@@ -435,57 +480,68 @@ def test_read_only_registers_format(ser, args):
     return ok
 
 
+
 def test_big16_registers_format(ser, args):
+    if not BIG16_SPI_REG:
+        return None
+
     mark_tested("R8", "R9", "RA", "RB", "RC", "RD", "RE", "RF")
 
     ok = True
-    values = {}
 
-    for reg_num, description in (
-        (8, "R8 ui_in snapshot"),
-        (9, "R9 uo_out snapshot"),
-        (10, "RA uio_in snapshot"),
-        (11, "RB uio_out snapshot"),
-        (12, "RC uio_oe snapshot"),
-        (13, "RD build target ID"),
-        (14, "RE analog status"),
-        (15, "RF analog measure"),
-    ):
-        response = send_command(ser, f"R{reg_name(reg_num)}\r".encode("ascii"), args)
-        ok = expect_read(description, response, reg_num) and ok
-        values[reg_num] = parse_read_value(description, response, reg_num)
+    ui_in = read_reg_expect(ser, args, "R8 ui_in snapshot format", 8)
 
-    if values.get(12) != 0xF4:
-        print("FAIL: RC uio_oe expected SPI map")
-        print("  Expected: 0xF4")
-        actual = values.get(12)
-        if actual is None:
-            print("  Actual:   None")
-        else:
-            print(f"  Actual:   0x{actual:02X}")
+    if ui_in is None:
+        ok = False
+    elif (ui_in & 0x08) == 0:
+        print("FAIL: R8 ui_in UART RX idle-high bit")
+        print(f"  Expected bit 3 set while UART RX is idle, got 0x{ui_in:02X}")
         ok = False
     else:
-        print("PASS: RC uio_oe expected SPI map")
+        print(f"PASS: R8 ui_in UART RX idle-high bit: 0x{ui_in:02X}")
 
-    build_id = values.get(13)
-    known_build_ids = {
-        0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
-        0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8E,
-        0xF0,
-    }
+    uo_out = read_reg_expect(ser, args, "R9 uo_out snapshot format", 9)
 
-    if build_id not in known_build_ids:
-        print("FAIL: RD known build target ID")
-        if build_id is None:
-            print("  Actual:   None")
-        else:
-            print(f"  Actual:   0x{build_id:02X}")
+    if uo_out is None:
+        ok = False
+
+    uio_in = read_reg_expect(ser, args, "RA uio_in snapshot format", 10)
+
+    if uio_in is None:
+        ok = False
+
+    uio_out = read_reg_expect(ser, args, "RB uio_out snapshot format", 11)
+
+    if uio_out is None:
+        ok = False
+
+    uio_oe = read_reg_expect(ser, args, "RC uio_oe snapshot", 12, 0xF4)
+
+    if uio_oe is None:
+        ok = False
+
+    build_id = read_reg_expect(ser, args, "RD build target ID format", 13)
+
+    if build_id is None:
+        ok = False
+    elif build_id not in BIG16_BUILD_TARGET_IDS:
+        print("FAIL: RD build target ID is recognized")
+        print(f"  Unexpected build target ID: 0x{build_id:02X}")
         ok = False
     else:
-        print(f"PASS: RD known build target ID: 0x{build_id:02X}")
+        print(f"PASS: RD build target ID recognized: 0x{build_id:02X} ({BIG16_BUILD_TARGET_IDS[build_id]})")
+
+    analog_status = read_reg_expect(ser, args, "RE analog status format", 14)
+
+    if analog_status is None:
+        ok = False
+
+    analog_measure = read_reg_expect(ser, args, "RF analog measure format", 15)
+
+    if analog_measure is None:
+        ok = False
 
     return ok
-
 
 def test_health_status_register(ser, args):
     mark_tested("E", "S", "D", "O", "W", "R5")
@@ -537,7 +593,7 @@ def test_error_cases(ser, args):
     if not BIG16_SPI_REG:
         ok = expect_exact("Bad read register", send_command(ser, b"R8\r", args), b"?\r") and ok
     else:
-        print("SKIP: Bad read register; BIG16_SPI_REG makes R8..RF valid")
+        print("PASS: R8..RF are valid reads in BIG16_SPI_REG builds")
 
     ok = expect_exact("Missing second digit", send_command(ser, b"D1\r", args), b"?\r") and ok
     ok = expect_exact("Unexpected extra byte", send_command(ser, b"E10\r", args), b"?\r") and ok
@@ -567,9 +623,6 @@ def run_tests(ser, args):
         ("error_cases", test_error_cases),
         ("repeated_reads", test_repeated_reads),
     ]
-
-    if not BIG16_SPI_REG:
-        tests = [test for test in tests if test[0] != "big16_registers_format"]
 
     if args.health_status:
         tests.append(("health_status_register", test_health_status_register))

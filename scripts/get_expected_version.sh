@@ -3,7 +3,7 @@
 # Copyright (c) 2026 gojimmypi
 # SPDX-License-Identifier: Apache-2.0
 #
-# file: scripts/clean_files.sh
+# file: scripts/get_expected_version.sh
 #
 # Extract VERSION_STRING from a Verilog project_config.v file.
 #

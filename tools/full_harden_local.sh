@@ -1,21 +1,36 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TOP="tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog"
-TT_TOOL="${TT_TOOL:-/mnt/c/workspace/tt-support-tools-gojimmypi/tt_tool.py}"
+TOP="${TOP:-tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog}"
 PROJECT_V="src/project.v"
 PROJECT_V_BAK="build/full_harden/project.v.before_full_harden"
+HARDEN_MARKER="build/full_harden/harden_start.marker"
+NO_DOCKER="${NO_DOCKER:-1}"
+
+if [ -z "${TT_TOOL:-}" ]; then
+    if [ -f "tt/tt_tool.py" ]; then
+        TT_TOOL="tt/tt_tool.py"
+    elif [ -f "/mnt/c/workspace/tt-support-tools-gojimmypi/tt_tool.py" ]; then
+        TT_TOOL="/mnt/c/workspace/tt-support-tools-gojimmypi/tt_tool.py"
+    else
+        TT_TOOL="tt/tt_tool.py"
+    fi
+fi
 
 if [ -z "${PDK_ROOT:-}" ]; then
     echo "ERROR: PDK_ROOT is not set"
     exit 1
 fi
 
-if [ ! -x "${TT_TOOL}" ]; then
-    echo "ERROR: TT_TOOL is not executable: ${TT_TOOL}"
+if [ ! -f "${TT_TOOL}" ]; then
+    echo "ERROR: TT_TOOL was not found: ${TT_TOOL}"
     echo "Set TT_TOOL=/path/to/tt_tool.py if needed."
     exit 1
 fi
+
+run_tt_tool() {
+    python3 "${TT_TOOL}" "$@"
+}
 
 restore_project_v() {
     if [ -f "${PROJECT_V_BAK}" ]; then
@@ -29,7 +44,7 @@ find_hardened_file() {
     local name="$2"
     local result
 
-    result="$({ find runs -type f -path "*/final/${kind}/${name}" -printf '%T@ %p\n' 2>/dev/null || true; } |
+    result="$({ find runs -type f -path "*/final/${kind}/${name}" -newer "${HARDEN_MARKER}" -printf '%T@ %p\n' 2>/dev/null || true; } |
         sort -n |
         tail -n 1 |
         sed 's/^[^ ]* //')"
@@ -56,7 +71,13 @@ copy_hardened_outputs() {
 
     echo
     echo "Copied hardened outputs:"
+    echo "  GDS source: ${gds_src}"
+    echo "  LEF source: ${lef_src}"
     ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef"
+
+    echo
+    echo "Checking copied hardened GDS before analog post-processing:"
+    python3 tools/check_gds_content.py "gds/${TOP}.gds"
 
     python3 tools/strip_unused_analog_pins.py \
         --gds "gds/${TOP}.gds" \
@@ -67,7 +88,9 @@ copy_hardened_outputs() {
         --lef "lef/${TOP}.lef" \
         --gds "gds/${TOP}.gds"
 
-    python3 tools/check_gds_content.py "gds/${TOP}.gds"
+    echo
+    echo "Checking final patched analog GDS:"
+    python3 tools/check_gds_content.py "gds/${TOP}.gds" --require-analog-passive
 }
 
 mkdir -p "$(dirname "${PROJECT_V_BAK}")"
@@ -76,9 +99,17 @@ trap restore_project_v EXIT
 
 python3 tools/patch_full_harden_source.py "${PROJECT_V}"
 
-"${TT_TOOL}" --gf --create-user-config
+run_tt_tool --gf --create-user-config
 python3 tools/patch_full_harden_config.py
-"${TT_TOOL}" --gf --harden --no-docker
+
+HARDEN_ARGS=(--gf --harden)
+if [ "${NO_DOCKER}" != "0" ]; then
+    HARDEN_ARGS+=(--no-docker)
+fi
+
+: > "${HARDEN_MARKER}"
+echo "Marked harden start: ${HARDEN_MARKER}"
+run_tt_tool "${HARDEN_ARGS[@]}"
 
 restore_project_v
 trap - EXIT
@@ -86,4 +117,7 @@ trap - EXIT
 copy_hardened_outputs
 
 echo
-echo "Done. Commit the regenerated files under gds/ and lef/ after inspection."
+echo "Done. Regenerated files:"
+echo "  gds/${TOP}.gds"
+echo "  lef/${TOP}.lef"
+echo "Commit those files after inspection and precheck."

@@ -41,7 +41,16 @@ module tb ();
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
 `ifdef ANALOG_ENABLED
-  wire [7:0] ua;
+  tri [7:0] ua;
+  reg [7:0] ua_drive;
+  reg [7:0] ua_oe;
+
+  genvar ua_i;
+  generate
+    for (ua_i = 0; ua_i < 8; ua_i = ua_i + 1) begin : tb_ua_drive
+      assign ua[ua_i] = ua_oe[ua_i] ? ua_drive[ua_i] : 1'bz;
+    end
+  endgenerate
 `endif
 
 `ifdef GL_TEST
@@ -95,6 +104,10 @@ module tb ();
     ena    = 1'b1;
     ui_in  = 8'h00;
     uio_in = 8'h00;
+`ifdef ANALOG_ENABLED
+    ua_drive = 8'h00;
+    ua_oe    = 8'h25;
+`endif
   end
 
   always #20 clk = ~clk;  // 25 MHz clock, 40 ns period

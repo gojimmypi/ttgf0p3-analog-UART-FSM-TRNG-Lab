@@ -2,7 +2,7 @@
 
 # Tiny Tapeout Project: ttgf0p3-analog-UART-FSM-TRNG-Lab
 
-Version 1.1.5 7/1/2026
+Version 1.2.5 7/2/2026
 
 Details of this project are located in [docs/info.md](./docs/info.md)
 

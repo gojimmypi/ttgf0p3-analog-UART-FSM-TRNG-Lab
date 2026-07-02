@@ -5,6 +5,7 @@ TOP="${TOP:-}"
 TT_TOOL="${TT_TOOL:-tt/tt_tool.py}"
 PROJECT_V="src/project.v"
 PROJECT_V_BAK="build/full_harden/project.v.before_full_harden"
+HARDEN_MARKER="build/full_harden/harden_start.marker"
 ARTIFACT_DIR="${ARTIFACT_DIR:-build/hardened-gds-lef}"
 
 if [ -z "${TOP}" ]; then
@@ -42,7 +43,7 @@ find_hardened_file() {
     local name="$2"
     local result
 
-    result="$({ find runs -type f -path "*/final/${kind}/${name}" -printf '%T@ %p\n' 2>/dev/null || true; } |
+    result="$({ find runs -type f -path "*/final/${kind}/${name}" -newer "${HARDEN_MARKER}" -printf '%T@ %p\n' 2>/dev/null || true; } |
         sort -n |
         tail -n 1 |
         sed 's/^[^ ]* //')"
@@ -83,7 +84,7 @@ copy_strip_and_stage_outputs() {
         --lef "lef/${TOP}.lef" \
         --gds "gds/${TOP}.gds"
 
-    python3 tools/check_gds_content.py "gds/${TOP}.gds"
+    python3 tools/check_gds_content.py "gds/${TOP}.gds" --require-analog-passive
 
     if ! grep -Eq 'PIN ua\[6\]' "lef/${TOP}.lef" || \
        ! grep -Eq 'PIN ua\[7\]' "lef/${TOP}.lef"; then
@@ -98,7 +99,7 @@ copy_strip_and_stage_outputs() {
     echo "Staged stripped hardened outputs:"
     ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef"
     ls -lh "${ARTIFACT_DIR}/gds/${TOP}.gds" "${ARTIFACT_DIR}/lef/${TOP}.lef"
-    python3 tools/check_gds_content.py "${ARTIFACT_DIR}/gds/${TOP}.gds"
+    python3 tools/check_gds_content.py "${ARTIFACT_DIR}/gds/${TOP}.gds" --require-analog-passive
 }
 
 mkdir -p "$(dirname "${PROJECT_V_BAK}")"
@@ -109,6 +110,9 @@ python3 tools/patch_full_harden_source.py "${PROJECT_V}"
 
 run_tt_tool --gf --create-user-config
 python3 tools/patch_full_harden_config.py
+
+: > "${HARDEN_MARKER}"
+echo "Marked harden start: ${HARDEN_MARKER}"
 run_tt_tool --gf --harden
 
 restore_project_v

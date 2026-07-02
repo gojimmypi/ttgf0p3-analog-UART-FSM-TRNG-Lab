@@ -205,7 +205,7 @@ def main():
         "R7",
     ]
 
-    analog_register_smoke_test = [
+    big16_analog_register_smoke_test = [
 
         # Return control registers to known defaults before analog readback.
         "E0",
@@ -216,23 +216,27 @@ def main():
         "M00",
         "O01",
 
-        # Read BIG16 pin snapshot registers.
+        # Read extended BIG16 register-map entries.
+        # R8..RC are digital pin snapshots.
+        # RD is the build target ID.
+        # RE/RF are analog experiment status/measure readbacks.
         "R8",
         "R9",
         "RA",
         "RB",
         "RC",
-
-        # Read build target and analog experiment registers.
         "RD",
         "RE",
         "RF",
 
-        # Exercise the analog control register fields used by the pad exerciser.
-        "E1",
+        # Exercise the analog control registers using the existing commands.
+        "E0",
+        "V0",
+        "W0",
         "D10",
-        "M03",
-        "O02",
+        "M00",
+        "O0F",
+        "E1",
         "RE",
         "RF",
         "E0",
@@ -301,8 +305,8 @@ def main():
         run_command_list(
             ser,
             args,
-            "Test 4: Analog and BIG16 register smoke test",
-            analog_register_smoke_test,
+            "Test 4: BIG16 analog register smoke test",
+            big16_analog_register_smoke_test,
         )
 
     finally:

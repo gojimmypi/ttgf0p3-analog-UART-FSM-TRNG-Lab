@@ -87,6 +87,10 @@
 #define TT_BUILD_TARGET_ASIC_GF180              0x42U
 #endif
 
+#ifndef TT_BUILD_TARGET_ASIC_GF180_ANALOG
+#define TT_BUILD_TARGET_ASIC_GF180_ANALOG       0x4AU
+#endif
+
 #ifndef TT_BUILD_TARGET_ASIC_UNKNOWN
 #define TT_BUILD_TARGET_ASIC_UNKNOWN            0x43U
 #endif
@@ -131,6 +135,10 @@
 #define TT_BUILD_TARGET_FPGA_DEMOBOARD          0x8AU
 #endif
 
+#ifndef TT_BUILD_TARGET_FPGA_DEMOBOARD_ANALOG
+#define TT_BUILD_TARGET_FPGA_DEMOBOARD_ANALOG   0x8BU
+#endif
+
 #ifndef TT_BUILD_TARGET_FPGA
 #define TT_BUILD_TARGET_FPGA                    0x8EU
 #endif
@@ -171,6 +179,9 @@ static const char* ulx3s_spi_build_target_name(uint8_t target)
     case TT_BUILD_TARGET_ASIC_GF180:
         return "ASIC GF180";
 
+    case TT_BUILD_TARGET_ASIC_GF180_ANALOG:
+        return "ASIC GF180 ANALOG";
+
     case TT_BUILD_TARGET_ASIC_UNKNOWN:
         return "ASIC UNKNOWN";
 
@@ -204,6 +215,9 @@ static const char* ulx3s_spi_build_target_name(uint8_t target)
     case TT_BUILD_TARGET_FPGA_DEMOBOARD:
         return "FPGA TT DEMOBOARD";
 
+    case TT_BUILD_TARGET_FPGA_DEMOBOARD_ANALOG:
+        return "FPGA TT DEMOBOARD ANALOG";
+
     case TT_BUILD_TARGET_FPGA:
         return "FPGA GENERIC";
 
@@ -219,7 +233,9 @@ static const char* ulx3s_spi_build_target_name(uint8_t target)
 static unsigned int ulx3s_spi_build_target_is_allowed(uint8_t target)
 {
     if ((target == TT_BUILD_TARGET_ASIC_GF180) ||
+        (target == TT_BUILD_TARGET_ASIC_GF180_ANALOG) ||
         (target == TT_BUILD_TARGET_FPGA_DEMOBOARD) ||
+        (target == TT_BUILD_TARGET_FPGA_DEMOBOARD_ANALOG) ||
         (target == TT_BUILD_TARGET_FPGA_ULX3S_GF180) ||
         (target == TT_BUILD_TARGET_FPGA_ULX3S_SKY130) ||
         (target == TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN) ||
@@ -645,14 +661,8 @@ static unsigned int ulx3s_spi_check_reg_value(
         }
 
         ESP_LOGE(TAG,
-            "SPI self-check FAIL %s: expected ASIC GF180 %02X or ULX3S FPGA %02X/%02X/%02X/%02X/%02X, actual %02X (%s)",
+            "SPI self-check FAIL %s: expected GF180/analog or FPGA build target, actual %02X (%s)",
             check->name,
-            (unsigned int)TT_BUILD_TARGET_ASIC_GF180,
-            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_GF180,
-            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_SKY130,
-            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN,
-            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_12K,
-            (unsigned int)TT_BUILD_TARGET_FPGA_ULX3S_85F,
             actual,
             ulx3s_spi_build_target_name(actual));
         return 1U;
@@ -1375,12 +1385,12 @@ esp_err_t ulx3s_spi_self_check_regs_once(void)
         /*
          * Encoded build target 
          */
-        { TT_REG_BUILD,    "RD BUILD_TARGET ASIC_GF180_OR_ULX3S",  0x00U, 0x00U, ULX3S_SPI_CHECK_BUILD_TARGET },
+        { TT_REG_BUILD,    "RD BUILD_TARGET",       0x00U, 0x00U, ULX3S_SPI_CHECK_BUILD_TARGET },
         /*
-         * Unused readable addresses should return 00.
+         * Analog readback values are board/setup dependent, so log their current values.
          */
-        { TT_REG_UNUSED_E, "RE UNUSED",             0x00U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
-        { TT_REG_UNUSED_F, "RF UNUSED",             0x00U, 0xFFU, ULX3S_SPI_CHECK_EQUAL },
+        { TT_REG_UNUSED_E, "RE ANALOG_STATUS",      0x00U, 0x00U, ULX3S_SPI_CHECK_LOG_ONLY },
+        { TT_REG_UNUSED_F, "RF ANALOG_MEASURE",     0x00U, 0x00U, ULX3S_SPI_CHECK_LOG_ONLY },
 #endif
     };
 

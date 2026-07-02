@@ -75,7 +75,7 @@ The `--port` here is the external,stand-alone UART device connected to the ULX3S
 The `--ulx3s-board-version` is optional, only needed to force an earlier board version, shown here for v3.0.7 that uses the v20 lpf:
 
 ```bash
-./run_tests.sh  --with-build  --ulx3s-board-version v307  --ignore-combinational-warning  --no-warning-pause  --port /dev/ttyS12
+./run_tests.sh  --with-build  --ulx3s-board-version v307  --ignore-combinational-warning  --no-warning-pause  --port /dev/ttyS7
 ```
 
 As a reminder: when configured properly, the ULX3S FPGA JTAG programming port does NOT appear as a serial device.

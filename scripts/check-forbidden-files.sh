@@ -6,11 +6,19 @@ echo "Checking for files that should not be checked in..."
 # Exact repo-relative files that are generated or local-only.
 FORBIDDEN_EXACT=(
     "src/_tt_fpga_top.v"
+    "src/user_config.json"
+    "src/config_merged.json"
 )
 
 # Repo-relative shell patterns matched against tracked files only.
 # Keep this list intentionally small to avoid blocking legitimate files.
 FORBIDDEN_GLOBS=(
+    "*.pyc"
+    "__pycache__/*"
+    "*/__pycache__/*"
+    "build/*"
+    "runs/*"
+    "mag/*"
 )
 
 fail=0
@@ -29,6 +37,7 @@ if [ "${#FORBIDDEN_GLOBS[@]}" -gt 0 ]; then
                 echo "ERROR: forbidden checked-in file: $tracked_file"
                 echo "       matched pattern: $blocked_pattern"
                 fail=1
+                break
             fi
         done
     done < <(git ls-files -z)
