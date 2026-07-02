@@ -14,14 +14,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 from pathlib import Path
 from typing import Any
 
 TOP = "tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog"
+ANALOG_TEMPLATE_REL = Path("tech/gf180mcuD/def/analog/tt_analog_1x2.def")
 ANALOG_TEMPLATE_CANDIDATES = [
-    Path("tt/tech/gf180mcuD/def/analog/tt_analog_1x2.def"),
-    Path("mag/tt_analog_1x2.def"),
+    Path("tt") / ANALOG_TEMPLATE_REL,
 ]
 PATCHED_TEMPLATE = Path("build/full_harden/tt_analog_1x2_vdpwr.def")
 USER_CONFIG = Path("src/user_config.json")
@@ -42,12 +43,18 @@ def write_json(path: Path, data: dict[str, Any]) -> None:
 
 
 def find_analog_template() -> Path:
-    for path in ANALOG_TEMPLATE_CANDIDATES:
+    candidates = list(ANALOG_TEMPLATE_CANDIDATES)
+
+    tt_tool = os.environ.get("TT_TOOL")
+    if tt_tool:
+        candidates.append(Path(tt_tool).resolve().parent / ANALOG_TEMPLATE_REL)
+
+    for path in candidates:
         if path.is_file():
             return path
     raise FileNotFoundError(
         "Could not find a GF180 analog DEF template. Checked: "
-        + ", ".join(str(path) for path in ANALOG_TEMPLATE_CANDIDATES)
+        + ", ".join(str(path) for path in candidates)
     )
 
 
