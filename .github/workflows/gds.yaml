@@ -15,8 +15,17 @@ jobs:
 
       - name: Read top module name
         id: top_module
+        shell: bash
         run: |
-          echo "TOP_MODULE=$(yq '.project.top_module' info.yaml)" | tee "$GITHUB_OUTPUT"
+          set -euo pipefail
+
+          TOP_MODULE="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"\?\([^"]*\)"\?[[:space:]]*$/\1/p' info.yaml)"
+          if [ -z "${TOP_MODULE}" ]; then
+              echo "::error::Could not find project.top_module in info.yaml"
+              exit 1
+          fi
+
+          echo "TOP_MODULE=${TOP_MODULE}" | tee "${GITHUB_OUTPUT}"
 
 
       - name: Build custom-GDS Verilog model
@@ -66,9 +75,6 @@ jobs:
       - name: Check custom analog submission files
         run: |
           TOP="${{ steps.top_module.outputs.TOP_MODULE }}"
-
-          # PROJECT="project.v"
-
 
           echo "TOP_MODULE=${TOP}"
           echo "Expected custom GDS: gds/${TOP}.gds"
