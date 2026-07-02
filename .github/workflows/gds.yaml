@@ -26,6 +26,43 @@ jobs:
           wc -l build/custom_gds/project.v
           grep -n "module ${{ steps.top_module.outputs.TOP_MODULE }}" build/custom_gds/project.v
 
+      - name: Check analog RTL diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PROJECT_V="build/custom_gds/project.v"
+          echo "Checking analog experiment RTL diagnostics in ${PROJECT_V}"
+
+          require_grep() {
+              local label="$1"
+              local pattern="$2"
+
+              echo "Check: ${label}"
+              if ! grep -nE "${pattern}" "${PROJECT_V}"; then
+                  echo "::error::Missing analog RTL diagnostic: ${label}"
+                  echo "Pattern: ${pattern}"
+                  exit 1
+              fi
+          }
+
+          require_grep "ANALOG_ENABLED define" '^[[:space:]]*`define[[:space:]]+ANALOG_ENABLED([[:space:]]|$)'
+          require_grep "BIG16_SPI_REG define" '^[[:space:]]*`define[[:space:]]+BIG16_SPI_REG([[:space:]]|$)'
+
+          require_grep "RE analog_status UART readback" 'SPI_REG_ADDR_ANALOG_(STAT|STATUS)[[:space:]]*:[[:space:]]*read_reg[[:space:]]*=[[:space:]]*analog_status[[:space:]]*;'
+          require_grep "RF analog_measure UART readback" 'SPI_REG_ADDR_ANALOG_MEAS[[:space:]]*:[[:space:]]*read_reg[[:space:]]*=[[:space:]]*analog_measure[[:space:]]*;'
+          require_grep "0xE analog_status SPI readback" 'SPI_REG_ADDR_ANALOG_(STAT|STATUS)[[:space:]]*:[[:space:]]*spi_reg_rdata[[:space:]]*=[[:space:]]*analog_status[[:space:]]*;'
+          require_grep "0xF analog_measure SPI readback" 'SPI_REG_ADDR_ANALOG_MEAS[[:space:]]*:[[:space:]]*spi_reg_rdata[[:space:]]*=[[:space:]]*analog_measure[[:space:]]*;'
+
+          require_grep "analog experiment instance" 'analog_experiment_stub[[:space:]]+u_analog_experiment'
+          require_grep "analog_status port connection" '\.analog_status\(analog_status\)'
+          require_grep "analog_measure port connection" '\.analog_measure\(analog_measure\)'
+          require_grep "analog_measure driven by probe measurement" 'assign[[:space:]]+analog_measure[[:space:]]*=[[:space:]]*probe_[[:alnum:]_]*q[[:space:]]*;'
+
+          echo "Optional non-analog fallback assignments:"
+          grep -Fn "assign analog_status = 8'h00;" "${PROJECT_V}" || true
+          grep -Fn "assign analog_measure = 8'h00;" "${PROJECT_V}" || true
+
       - name: Check custom analog submission files
         run: |
           TOP="${{ steps.top_module.outputs.TOP_MODULE }}"

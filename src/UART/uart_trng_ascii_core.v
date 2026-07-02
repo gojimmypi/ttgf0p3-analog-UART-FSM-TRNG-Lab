@@ -77,7 +77,9 @@ module uart_trng_ascii_core
     input  wire [7:0] uo_out,
     input  wire [7:0] uio_in,
     input  wire [7:0] uio_out,
-    input  wire [7:0] uio_oe
+    input  wire [7:0] uio_oe,
+    input  wire [7:0] analog_status,
+    input  wire [7:0] analog_measure
 `endif
 );
     /* Boilerplate parameter checking */
@@ -481,6 +483,8 @@ module uart_trng_ascii_core
         .uio_in(uio_in),
         .uio_out(uio_out),
         .uio_oe(uio_oe),
+        .analog_status(analog_status),
+        .analog_measure(analog_measure),
 `endif
 
 `ifdef TRNG_BINARY_STREAM

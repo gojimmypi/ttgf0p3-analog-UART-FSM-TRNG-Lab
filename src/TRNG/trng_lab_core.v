@@ -1082,7 +1082,7 @@ module trng_ro_inverter_cell
         //`endif
 
         `ifdef ANALOG_ENABLED
-            /* This project intentionally enables and requires analog features */
+            /* This build intentionally keeps the GF180 analog wrapper enabled */
         `else
             PROJECT_ASIC_GF180_REQUIRE_ANALOG_ENABLED u_stop (); /* Hard fail if analog not enabled */
         `endif

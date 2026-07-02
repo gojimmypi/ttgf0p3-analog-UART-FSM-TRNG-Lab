@@ -31,7 +31,7 @@ SCRIPT_DIR = Path(__file__).resolve().parent
 PROJECT_ROOT = SCRIPT_DIR.parent
 VERSION_SCRIPT = PROJECT_ROOT / "scripts" / "get_expected_version.sh"
 VERSION_CONFIG = PROJECT_ROOT / "src" / "project_config.v"
-BIG16_SPI_REG=True
+BIG16_SPI_REG = True
 
 def get_expected_version():
     if not VERSION_SCRIPT.is_file():
@@ -67,7 +67,7 @@ def get_expected_version():
 EXPECTED_VERSION = get_expected_version()
 print(f"Expected version: {EXPECTED_VERSION}")
 EXPECTED_VERSION_PREFIX = b"Version "
-READ_RE = re.compile(rb"R([0-7])=([0-9A-F]{2})\r")
+READ_RE = re.compile(rb"R([0-9A-F])=([0-9A-F]{2})\r")
 
 R5_TRNG_ENABLE = 0x01
 R5_SAMPLE_TICK = 0x02
@@ -107,6 +107,18 @@ COMMANDS_IMPLEMENTED = {
     "R6": "Read reg_rawlo",
     "R7": "Read reg_rawhi",
 }
+
+if BIG16_SPI_REG:
+    COMMANDS_IMPLEMENTED.update({
+        "R8": "Read ui_in snapshot",
+        "R9": "Read uo_out snapshot",
+        "RA": "Read uio_in snapshot",
+        "RB": "Read uio_out snapshot",
+        "RC": "Read uio_oe snapshot",
+        "RD": "Read build target ID",
+        "RE": "Read analog status",
+        "RF": "Read analog measure",
+    })
 
 COMMANDS_TESTED = set()
 
@@ -201,8 +213,12 @@ def expect_contains(name, actual, expected):
     return True
 
 
+def reg_name(reg_num):
+    return f"{reg_num:X}"
+
+
 def expect_read(name, actual, reg_num, expected_value=None):
-    expected_prefix = f"R{reg_num}=".encode("ascii")
+    expected_prefix = f"R{reg_name(reg_num)}=".encode("ascii")
 
     if not actual.startswith(expected_prefix):
         print(f"FAIL: {name}")
@@ -230,7 +246,7 @@ def expect_read(name, actual, reg_num, expected_value=None):
 
 
 def parse_read_value(name, actual, reg_num):
-    expected_prefix = f"R{reg_num}=".encode("ascii")
+    expected_prefix = f"R{reg_name(reg_num)}=".encode("ascii")
 
     if not actual.startswith(expected_prefix):
         print(f"FAIL: {name}")
@@ -249,9 +265,9 @@ def parse_read_value(name, actual, reg_num):
 
 
 def read_reg(ser, args, reg_num):
-    command = f"R{reg_num}\r".encode("ascii")
+    command = f"R{reg_name(reg_num)}\r".encode("ascii")
     response = send_command(ser, command, args)
-    return parse_read_value(f"R{reg_num} read", response, reg_num)
+    return parse_read_value(f"R{reg_name(reg_num)} read", response, reg_num)
 
 
 def write_ok(ser, args, name, command):
@@ -419,6 +435,58 @@ def test_read_only_registers_format(ser, args):
     return ok
 
 
+def test_big16_registers_format(ser, args):
+    mark_tested("R8", "R9", "RA", "RB", "RC", "RD", "RE", "RF")
+
+    ok = True
+    values = {}
+
+    for reg_num, description in (
+        (8, "R8 ui_in snapshot"),
+        (9, "R9 uo_out snapshot"),
+        (10, "RA uio_in snapshot"),
+        (11, "RB uio_out snapshot"),
+        (12, "RC uio_oe snapshot"),
+        (13, "RD build target ID"),
+        (14, "RE analog status"),
+        (15, "RF analog measure"),
+    ):
+        response = send_command(ser, f"R{reg_name(reg_num)}\r".encode("ascii"), args)
+        ok = expect_read(description, response, reg_num) and ok
+        values[reg_num] = parse_read_value(description, response, reg_num)
+
+    if values.get(12) != 0xF4:
+        print("FAIL: RC uio_oe expected SPI map")
+        print("  Expected: 0xF4")
+        actual = values.get(12)
+        if actual is None:
+            print("  Actual:   None")
+        else:
+            print(f"  Actual:   0x{actual:02X}")
+        ok = False
+    else:
+        print("PASS: RC uio_oe expected SPI map")
+
+    build_id = values.get(13)
+    known_build_ids = {
+        0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+        0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8E,
+        0xF0,
+    }
+
+    if build_id not in known_build_ids:
+        print("FAIL: RD known build target ID")
+        if build_id is None:
+            print("  Actual:   None")
+        else:
+            print(f"  Actual:   0x{build_id:02X}")
+        ok = False
+    else:
+        print(f"PASS: RD known build target ID: 0x{build_id:02X}")
+
+    return ok
+
+
 def test_health_status_register(ser, args):
     mark_tested("E", "S", "D", "O", "W", "R5")
 
@@ -494,10 +562,14 @@ def run_tests(ser, args):
         ("single_nibble_writes", test_single_nibble_writes),
         ("two_nibble_writes", test_two_nibble_writes),
         ("read_only_registers_format", test_read_only_registers_format),
+        ("big16_registers_format", test_big16_registers_format),
         ("crlf_handling", test_crlf_handling),
         ("error_cases", test_error_cases),
         ("repeated_reads", test_repeated_reads),
     ]
+
+    if not BIG16_SPI_REG:
+        tests = [test for test in tests if test[0] != "big16_registers_format"]
 
     if args.health_status:
         tests.append(("health_status_register", test_health_status_register))

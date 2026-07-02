@@ -205,6 +205,39 @@ def main():
         "R7",
     ]
 
+    analog_register_smoke_test = [
+
+        # Return control registers to known defaults before analog readback.
+        "E0",
+        "V0",
+        "W0",
+        "S0",
+        "D10",
+        "M00",
+        "O01",
+
+        # Read BIG16 pin snapshot registers.
+        "R8",
+        "R9",
+        "RA",
+        "RB",
+        "RC",
+
+        # Read build target and analog experiment registers.
+        "RD",
+        "RE",
+        "RF",
+
+        # Exercise the analog control register fields used by the pad exerciser.
+        "E1",
+        "D10",
+        "M03",
+        "O02",
+        "RE",
+        "RF",
+        "E0",
+    ]
+
     health_status_smoke_test = [
 
         # Stop sampling before clearing health state.
@@ -263,6 +296,13 @@ def main():
             args,
             "Test 3: Health status smoke test",
             health_status_smoke_test,
+        )
+
+        run_command_list(
+            ser,
+            args,
+            "Test 4: Analog and BIG16 register smoke test",
+            analog_register_smoke_test,
         )
 
     finally:

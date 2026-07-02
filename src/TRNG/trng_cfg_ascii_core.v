@@ -33,13 +33,15 @@
  * - Bxy<CR>    : stream xy raw bytes, waiting for a fresh TRNG sample before each byte.
  * - Cxy<CR>    : Cxy: stream xy conditioned bytes, waiting for a fresh TRNG sample before each byte.
  * - U3<CR>     : select 921600 UART baud after OK<CR> completes.
- * - V<CR>      : replies Version 1.1.1 6/27/2026<CR>
+ * - V<CR>      : replies Version 1.1.5 7/1/2026<CR>
  * - RD<CR>     : Replies with Build Target ID. 85 == ULX3S, 42 == target GF180
+ * - RE<CR>     : read analog pad status
+ * - RF<CR>     : read ua[5] passive-structure threshold/decay timing sample
  *
  * Reply format:
  * - Successful write: OK<CR>
  * - Successful read : Rn=HH<CR>
- * - Version query   : Version 1.1.1 6/27/2026<CR>
+ * - Version query   : Version 1.1.5 7/1/2026<CR>
  * - Parse/error     : ?<CR>
  */
 `default_nettype none
@@ -80,6 +82,8 @@ module trng_cfg_ascii_core
     input  wire [7:0] uio_in,
     input  wire [7:0] uio_out,
     input  wire [7:0] uio_oe,
+    input  wire [7:0] analog_status,
+    input  wire [7:0] analog_measure,
 `endif
 
 `ifdef TRNG_BINARY_STREAM
@@ -144,12 +148,14 @@ module trng_cfg_ascii_core
 
 
 `ifdef BIG16_SPI_REG
-    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UI_IN   = 8;
-    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UO_OUT  = 9;
-    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_IN  = 10;
-    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_OUT = 11;
-    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_OE  = 12;
-    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_BUILD   = 13;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UI_IN       = 8;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UO_OUT      = 9;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_IN      = 10;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_OUT     = 11;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_UIO_OE      = 12;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_BUILD       = 13;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_ANALOG_STAT = 14;
+    localparam [`SPI_ADDR_MSB:0] SPI_REG_ADDR_ANALOG_MEAS = 15;
 
     /*
      * Build Target ID:
@@ -365,6 +371,8 @@ module trng_cfg_ascii_core
      * 0..4 are writable configuration registers.
      * 5..7 are read-only status/data registers coming back from the TRNG side.
      * With TRNG_HEALTH_STATUS enabled, R5 bits 7..3 are health flags.
+     * In BIG16_SPI_REG builds, R14 exposes sampled analog experiment status
+     * and R15 exposes the ua[5] passive-structure threshold/decay timing sample.
      */
     function [7:0] read_reg;
         input [`SPI_ADDR_MSB:0] addr;
@@ -383,14 +391,14 @@ module trng_cfg_ascii_core
 
 `ifdef BIG16_SPI_REG
                 /* REGS 8..15 */
-                SPI_REG_ADDR_UI_IN:   read_reg = ui_in;
-                SPI_REG_ADDR_UO_OUT:  read_reg = uo_out;
-                SPI_REG_ADDR_UIO_IN:  read_reg = uio_in;
-                SPI_REG_ADDR_UIO_OUT: read_reg = uio_out;
-                SPI_REG_ADDR_UIO_OE:  read_reg = uio_oe;
-                SPI_REG_ADDR_BUILD:   read_reg = BUILD_TARGET_ID;
-                /* 14 unused */
-                /* 15 unused */
+                SPI_REG_ADDR_UI_IN:       read_reg = ui_in;
+                SPI_REG_ADDR_UO_OUT:      read_reg = uo_out;
+                SPI_REG_ADDR_UIO_IN:      read_reg = uio_in;
+                SPI_REG_ADDR_UIO_OUT:     read_reg = uio_out;
+                SPI_REG_ADDR_UIO_OE:      read_reg = uio_oe;
+                SPI_REG_ADDR_BUILD:       read_reg = BUILD_TARGET_ID;
+                SPI_REG_ADDR_ANALOG_STAT: read_reg = analog_status;
+                SPI_REG_ADDR_ANALOG_MEAS: read_reg = analog_measure;
 `endif
 
                 default:              read_reg = 8'h00;
@@ -432,12 +440,14 @@ module trng_cfg_ascii_core
             SPI_REG_ADDR_RAWHI:  spi_reg_rdata = reg_rawhi;
 
         `ifdef BIG16_SPI_REG
-            SPI_REG_ADDR_UI_IN:   spi_reg_rdata = ui_in;
-            SPI_REG_ADDR_UO_OUT:  spi_reg_rdata = uo_out;
-            SPI_REG_ADDR_UIO_IN:  spi_reg_rdata = uio_in;
-            SPI_REG_ADDR_UIO_OUT: spi_reg_rdata = uio_out;
-            SPI_REG_ADDR_UIO_OE:  spi_reg_rdata = uio_oe;
-            SPI_REG_ADDR_BUILD:   spi_reg_rdata = BUILD_TARGET_ID;
+            SPI_REG_ADDR_UI_IN:       spi_reg_rdata = ui_in;
+            SPI_REG_ADDR_UO_OUT:      spi_reg_rdata = uo_out;
+            SPI_REG_ADDR_UIO_IN:      spi_reg_rdata = uio_in;
+            SPI_REG_ADDR_UIO_OUT:     spi_reg_rdata = uio_out;
+            SPI_REG_ADDR_UIO_OE:      spi_reg_rdata = uio_oe;
+            SPI_REG_ADDR_BUILD:       spi_reg_rdata = BUILD_TARGET_ID;
+            SPI_REG_ADDR_ANALOG_STAT: spi_reg_rdata = analog_status;
+            SPI_REG_ADDR_ANALOG_MEAS: spi_reg_rdata = analog_measure;
         `endif
 
             default:             spi_reg_rdata = 8'h00;

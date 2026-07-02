@@ -11,6 +11,7 @@ on:
       - "tools/patch_full_harden_source.py"
       - "tools/patch_full_harden_config.py"
       - "tools/strip_unused_analog_pins.py"
+      - "tools/patch_analog_outputs.py"
       - "tools/check_gds_content.py"
       - "mag/*.def"
       - "mag/*.mag"
@@ -61,6 +62,49 @@ jobs:
           test -d tt/.git
           python3 "${TT_TOOL}" --help >/dev/null
 
+      - name: Check analog RTL diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p build/analog-rtl-diagnostics
+          PROJECT_V="build/analog-rtl-diagnostics/project.v"
+
+          python3 tools/build_custom_gds_verilog.py --out "${PROJECT_V}"
+          grep -Eq '^ *`include +' "${PROJECT_V}" && echo "BAD: include remains" && exit 1 || echo "OK: no active includes"
+          wc -l "${PROJECT_V}"
+
+          echo "Checking analog experiment RTL diagnostics in ${PROJECT_V}"
+
+          require_grep() {
+              local label="$1"
+              local pattern="$2"
+
+              echo "Check: ${label}"
+              if ! grep -nE "${pattern}" "${PROJECT_V}"; then
+                  echo "::error::Missing analog RTL diagnostic: ${label}"
+                  echo "Pattern: ${pattern}"
+                  exit 1
+              fi
+          }
+
+          require_grep "ANALOG_ENABLED define" '^[[:space:]]*`define[[:space:]]+ANALOG_ENABLED([[:space:]]|$)'
+          require_grep "BIG16_SPI_REG define" '^[[:space:]]*`define[[:space:]]+BIG16_SPI_REG([[:space:]]|$)'
+
+          require_grep "RE analog_status UART readback" 'SPI_REG_ADDR_ANALOG_(STAT|STATUS)[[:space:]]*:[[:space:]]*read_reg[[:space:]]*=[[:space:]]*analog_status[[:space:]]*;'
+          require_grep "RF analog_measure UART readback" 'SPI_REG_ADDR_ANALOG_MEAS[[:space:]]*:[[:space:]]*read_reg[[:space:]]*=[[:space:]]*analog_measure[[:space:]]*;'
+          require_grep "0xE analog_status SPI readback" 'SPI_REG_ADDR_ANALOG_(STAT|STATUS)[[:space:]]*:[[:space:]]*spi_reg_rdata[[:space:]]*=[[:space:]]*analog_status[[:space:]]*;'
+          require_grep "0xF analog_measure SPI readback" 'SPI_REG_ADDR_ANALOG_MEAS[[:space:]]*:[[:space:]]*spi_reg_rdata[[:space:]]*=[[:space:]]*analog_measure[[:space:]]*;'
+
+          require_grep "analog experiment instance" 'analog_experiment_stub[[:space:]]+u_analog_experiment'
+          require_grep "analog_status port connection" '\.analog_status\(analog_status\)'
+          require_grep "analog_measure port connection" '\.analog_measure\(analog_measure\)'
+          require_grep "analog_measure driven by probe measurement" 'assign[[:space:]]+analog_measure[[:space:]]*=[[:space:]]*probe_[[:alnum:]_]*q[[:space:]]*;'
+
+          echo "Optional non-analog fallback assignments:"
+          grep -Fn "assign analog_status = 8'h00;" "${PROJECT_V}" || true
+          grep -Fn "assign analog_measure = 8'h00;" "${PROJECT_V}" || true
+
       - name: Harden and collect GDS/LEF
         run: |
           set -euo pipefail
@@ -70,6 +114,48 @@ jobs:
 
           mkdir -p "${ARTIFACT_DIR}"
           cp -f harden-gds-lef.log "${ARTIFACT_DIR}/harden-gds-lef.log"
+
+      - name: Patch and verify final analog GDS
+        if: ${{ false }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          TOP="$(sed -n 's/^[[:space:]]*top_module:[[:space:]]*"?\([^"]*\)"?[[:space:]]*$/\1/p' info.yaml)"
+          if [ -z "${TOP}" ]; then
+              echo "::error::Could not find top_module in info.yaml"
+              exit 1
+          fi
+
+          GDS_FILE="gds/${TOP}.gds"
+          LEF_FILE="lef/${TOP}.lef"
+
+          echo "TOP=${TOP}"
+          echo "Patching final analog GDS/LEF before artifact upload:"
+          echo "  ${GDS_FILE}"
+          echo "  ${LEF_FILE}"
+
+          test -f "${GDS_FILE}"
+          test -f "${LEF_FILE}"
+
+          python3 tools/patch_analog_outputs.py \
+              --top "${TOP}" \
+              --lef "${LEF_FILE}" \
+              --gds "${GDS_FILE}"
+
+          python3 tools/check_gds_content.py \
+              "${GDS_FILE}" \
+              --require-analog-passive
+
+          mkdir -p "${ARTIFACT_DIR}/gds" "${ARTIFACT_DIR}/lef"
+          cp -f "${GDS_FILE}" "${ARTIFACT_DIR}/gds/${TOP}.gds"
+          cp -f "${LEF_FILE}" "${ARTIFACT_DIR}/lef/${TOP}.lef"
+
+          echo
+          echo "Checking artifact copy:"
+          python3 tools/check_gds_content.py \
+              "${ARTIFACT_DIR}/gds/${TOP}.gds" \
+              --require-analog-passive
 
       - name: Show generated files
         if: always()
@@ -103,3 +189,4 @@ jobs:
             harden-gds-lef.log
             runs/**
             build/full_harden/**
+            build/analog-rtl-diagnostics/**

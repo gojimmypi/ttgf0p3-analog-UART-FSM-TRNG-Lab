@@ -58,6 +58,15 @@ copy_hardened_outputs() {
     echo "Copied hardened outputs:"
     ls -lh "gds/${TOP}.gds" "lef/${TOP}.lef"
 
+    python3 tools/strip_unused_analog_pins.py \
+        --gds "gds/${TOP}.gds" \
+        --lef "lef/${TOP}.lef"
+
+    python3 tools/patch_analog_outputs.py \
+        --top "${TOP}" \
+        --lef "lef/${TOP}.lef" \
+        --gds "gds/${TOP}.gds"
+
     python3 tools/check_gds_content.py "gds/${TOP}.gds"
 }
 

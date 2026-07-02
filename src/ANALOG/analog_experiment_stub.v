@@ -20,6 +20,10 @@
  *   connected to external RC filters, scopes, counters, or Analog Discovery.
  * - The input pins are sampled through ordinary CMOS input thresholds, which
  *   is useful for threshold/noise experiments but not a real comparator model.
+ * - The analog GDS patch flow adds one small real on-chip passive structure on ua[5]:
+ *   a Metal4 pickup/fringe capacitor tied to the puf_probe pad and nearby
+ *   grounded Metal4.  This RTL exercises that physical structure with the
+ *   same charge/release/sample sequence used for external RC experiments.
  *
  * Analog pin roles:
  * - ua[0]: ain_ext       high-Z input, sampled by the CMOS threshold
@@ -27,7 +31,7 @@
  * - ua[2]: cmp_ref_ext   high-Z input, sampled by the CMOS threshold
  * - ua[3]: amon_out      monitor mux output
  * - ua[4]: osc_out       clock-divider/TRNG monitor output
- * - ua[5]: puf_probe     charge/release/sample probe pad
+ * - ua[5]: puf_probe     charge/release/sample probe pad with GDS-level Metal4 passive
  *
  * Control through the existing UART/SPI registers:
  * - R0/reg_ctrl[0]       global analog enable, via E1/E0
@@ -54,6 +58,20 @@
  * - R4/reg_oscen[1]      enable ua[3] amon_out driver
  * - R4/reg_oscen[2]      enable ua[4] osc_out driver
  * - R4/reg_oscen[3]      enable ua[5] puf_probe charge/release driver
+ * - R14/0xE             read analog status through UART/SPI
+ * - R15/0xF             read latest puf_probe threshold/decay timing sample
+ *                         bit 0: sampled ua[0]
+ *                         bit 1: sampled ua[2]
+ *                         bit 2: ua[0] & ~ua[2] threshold compare
+ *                         bit 3: live sampled ua[5]
+ *                         bit 4: latched ua[5] probe sample
+ *                         bit 5: current sigma-delta bit
+ *                         bit 6: current osc/TRNG monitor bit
+ *                         bit 7: puf_probe driver enabled
+ * - R15/0xF             puf_probe threshold/decay timing
+ *                         00: no threshold crossing observed yet
+ *                         01..FE: cycles from release to CMOS threshold crossing
+ *                         FF: saturated/no crossing before timeout
  *
  * Example bring-up commands:
  * - E1, D10, O01          enable half-scale sigma-delta DAC on ua[1]
@@ -61,6 +79,7 @@
  * - E1, M03, O02          monitor sampled ain_ext & ~cmp_ref_ext on ua[3]
  * - E1, D20, M00, O05     enable DAC plus divided-clock output on ua[4]
  * - E1, M18, O08          run puf_probe charge/release/sample sequence
+ * - RF                     read latest ua[5] passive-structure decay timing sample
  */
 `default_nettype none
 
@@ -77,6 +96,8 @@ module analog_experiment_stub
     input  wire [7:0] reg_rawlo,
     input  wire [7:0] reg_rawhi,
     input  wire       trng_bit,
+    output wire [7:0] analog_status,
+    output wire [7:0] analog_measure,
     inout  wire [7:0] ua
 );
 
@@ -114,10 +135,14 @@ module analog_experiment_stub
     reg        osc_out_q;
 
     reg  [7:0] probe_ctr;
+    reg  [7:0] probe_decay_ctr_q;
+    reg  [7:0] probe_decay_q;
+    reg        probe_decay_active_q;
     reg        probe_drive_oe_q;
     reg        probe_drive_q;
     reg        probe_sample_q;
     reg  [1:0] probe_phase;
+    reg  [1:0] probe_phase_q;
 
     assign analog_enable    = reg_ctrl[0];
     assign analog_invert    = reg_ctrl[1];
@@ -156,6 +181,19 @@ module analog_experiment_stub
     assign amon_pin_out = amon_mux ^ analog_invert;
     assign osc_pin_out  = (osc_src_trng ? trng_bit : osc_out_q) ^ analog_invert;
 
+    assign analog_status = {
+        probe_drive_oe_q,
+        (osc_src_trng ? trng_bit : osc_out_q),
+        dac_out_q,
+        probe_sample_q,
+        probe_sync,
+        cmp_threshold,
+        ref_sync,
+        ain_sync
+    };
+
+    assign analog_measure = probe_decay_q;
+
     assign ua[0] = 1'bz;
     assign ua[1] = dac_pin_oe ? dac_pin_out : 1'bz;
     assign ua[2] = 1'bz;
@@ -187,10 +225,14 @@ module analog_experiment_stub
             dac_out_q        <= 1'b0;
             osc_ctr          <= 8'h00;
             osc_out_q        <= 1'b0;
-            probe_ctr        <= 8'h00;
-            probe_drive_oe_q <= 1'b0;
-            probe_drive_q    <= 1'b0;
-            probe_sample_q   <= 1'b0;
+            probe_ctr            <= 8'h00;
+            probe_decay_ctr_q    <= 8'h00;
+            probe_decay_q        <= 8'h00;
+            probe_decay_active_q <= 1'b0;
+            probe_drive_oe_q     <= 1'b0;
+            probe_drive_q        <= 1'b0;
+            probe_sample_q       <= 1'b0;
+            probe_phase_q        <= 2'd0;
         end else begin
             ain_meta   <= ua[0];
             ain_sync   <= ain_meta;
@@ -220,32 +262,59 @@ module analog_experiment_stub
             end
 
             if (probe_pin_enable) begin
-                probe_ctr <= probe_ctr + 8'h01;
+                probe_ctr     <= probe_ctr + 8'h01;
+                probe_phase_q <= probe_phase;
 
                 case (probe_phase)
                     2'd0: begin
-                        probe_drive_oe_q <= 1'b1;
-                        probe_drive_q    <= ~probe_discharge;
+                        probe_drive_oe_q     <= 1'b1;
+                        probe_drive_q        <= ~probe_discharge;
+                        probe_decay_ctr_q    <= 8'h00;
+                        probe_decay_active_q <= 1'b0;
                     end
                     2'd1: begin
                         probe_drive_oe_q <= 1'b0;
                         probe_drive_q    <= ~probe_discharge;
+
+                        if (probe_phase_q != 2'd1) begin
+                            probe_decay_ctr_q    <= 8'h00;
+                            probe_decay_active_q <= 1'b1;
+                        end else if (probe_decay_active_q) begin
+                            if (probe_sync != ~probe_discharge) begin
+                                probe_decay_q        <= probe_decay_ctr_q;
+                                probe_decay_active_q <= 1'b0;
+                            end else if (probe_decay_ctr_q != 8'hff) begin
+                                probe_decay_ctr_q <= probe_decay_ctr_q + 8'h01;
+                            end else begin
+                                probe_decay_q        <= 8'hff;
+                                probe_decay_active_q <= 1'b0;
+                            end
+                        end
                     end
                     2'd2: begin
                         probe_drive_oe_q <= 1'b0;
                         probe_drive_q    <= ~probe_discharge;
                         probe_sample_q   <= probe_sync;
+
+                        if (probe_decay_active_q) begin
+                            probe_decay_q        <= probe_decay_ctr_q;
+                            probe_decay_active_q <= 1'b0;
+                        end
                     end
                     default: begin
-                        probe_drive_oe_q <= 1'b1;
-                        probe_drive_q    <= probe_discharge;
+                        probe_drive_oe_q     <= 1'b1;
+                        probe_drive_q        <= probe_discharge;
+                        probe_decay_active_q <= 1'b0;
                     end
                 endcase
             end else begin
-                probe_ctr        <= 8'h00;
-                probe_drive_oe_q <= 1'b0;
-                probe_drive_q    <= 1'b0;
-                probe_sample_q   <= probe_sync;
+                probe_ctr            <= 8'h00;
+                probe_decay_ctr_q    <= 8'h00;
+                probe_decay_active_q <= 1'b0;
+                probe_drive_oe_q     <= 1'b0;
+                probe_drive_q        <= 1'b0;
+                probe_sample_q       <= probe_sync;
+                probe_phase_q        <= 2'd0;
             end
         end
     end

@@ -16,7 +16,7 @@ The following types are not handled by extraction and will be treated as non-ele
 Scaled tech values by 10 / 1 to match internal grid scaling
 Loading gf180mcuD Device Generator Menu ...
 Using technology "gf180mcuD", version 1.0.572-0-g5443591
-Cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab couldn't be read
+Cell tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog couldn't be read
 No such file or directory
 Creating new cell
 Reading DEF data from file mag/tt_analog_1x2.def.
@@ -27,7 +27,7 @@ This action cannot be undone.
   Processed 49 nets total.
 DEF read: Processed 353 lines.
 Created analog Magic layout:
--rw-r--r-- 1 gojimmypi gojimmypi 6.4K Jun 28 15:46 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab.mag
+-rw-r--r-- 1 gojimmypi gojimmypi 6.4K Jul  1 09:24 mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.mag
 
 Analog pin labels:
 64:flabel metal4 s 32582 0 32882 100 0 FreeSans 736 0 0 0 ua[0]
