@@ -8,6 +8,15 @@ MAG_FILE="mag/${TOP}.mag"
 GDS_FILE="gds/${TOP}.gds"
 LEF_FILE="lef/${TOP}.lef"
 
+
+if [ "${ALLOW_FRAME_ONLY_GDS:-0}" != "1" ]; then
+    echo "ERROR: export_magic_gds_lef.sh only exports the analog frame/helper layout."
+    echo "It does not generate the final hardened project GDS from RTL."
+    echo "Use ./tools/refresh.sh or ./tools/generate_analog_gds.sh instead."
+    echo "Set ALLOW_FRAME_ONLY_GDS=1 only if you intentionally want the frame helper output."
+    exit 1
+fi
+
 if [ -z "${PDK_ROOT:-}" ]; then
     echo "ERROR: PDK_ROOT is not set"
     exit 1
@@ -49,7 +58,7 @@ python3 tools/patch_analog_outputs.py \
     --lef "${LEF_FILE}" \
     --gds "${GDS_FILE}"
 
-python3 tools/check_gds_content.py "${GDS_FILE}"
+python3 tools/check_gds_content.py "${GDS_FILE}" --min-real-polygons 0 --require-analog-passive
 
 echo
 echo "Generated files:"

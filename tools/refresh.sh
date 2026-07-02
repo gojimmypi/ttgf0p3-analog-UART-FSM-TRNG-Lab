@@ -1,9 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-rm -f ./gds/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.gds
-rm -f  ./lef/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.lef
-rm -f  ./mag/tt_um_gojimmypi_ttgfa_UART_FSM_TRNG_Lab_analog.mag
-
-./tools/create_mag.sh            2>&1 | tee ./mag/mag.log
-
-./tools/export_magic_gds_lef.sh  2>&1 | tee ./gds/gds.log
+# Regenerate the final analog GDS/LEF from the latest RTL. This replaces the
+# older frame-only refresh path, which could create a misleading placeholder
+# GDS that was not the full hardened design.
+exec ./tools/generate_analog_gds.sh "$@"
