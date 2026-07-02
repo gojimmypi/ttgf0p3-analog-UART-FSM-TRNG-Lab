@@ -186,6 +186,34 @@ async def uart_command_response(
     return await recv_task
 
 
+def set_dut_signal_if_present(dut, signal_name: str, value: int) -> None:
+    try:
+        getattr(dut, signal_name).value = value
+    except AttributeError:
+        pass
+
+
+async def reset_uart_dut(
+    dut,
+    ui_value: int = (1 << UART_RX_BIT),
+    uio_value: int = 0,
+    ua_drive: int = 0,
+    ua_drive_oe: int = 0,
+) -> None:
+    dut.ena.value = 1
+    dut.ui_in.value = ui_value
+    dut.uio_in.value = uio_value
+    set_dut_signal_if_present(dut, "ua_drive", ua_drive)
+    set_dut_signal_if_present(dut, "ua_drive_oe", ua_drive_oe)
+    dut.rst_n.value = 0
+
+    await Timer(100, unit="ns")
+    dut.rst_n.value = 1
+
+    await Timer(100_000, unit="ns")
+    await Timer(SETTLE_TIME_NS, unit="ns")
+
+
 async def uart_expect_ok(dut, command: bytes) -> None:
     response = await uart_command_response(dut, command, max_bytes=3)
 
@@ -195,10 +223,11 @@ async def uart_expect_ok(dut, command: bytes) -> None:
 
 
 async def uart_read_reg(dut, reg_num: int) -> int:
-    command = f"R{reg_num}\r".encode("ascii")
+    reg_name = f"{reg_num:X}"
+    command = f"R{reg_name}\r".encode("ascii")
     response = await uart_command_response(dut, command, max_bytes=6)
 
-    expected_prefix = f"R{reg_num}=".encode("ascii")
+    expected_prefix = f"R{reg_name}=".encode("ascii")
 
     assert response.startswith(expected_prefix), (
         f"Expected {expected_prefix!r} prefix, got {response!r}"
@@ -348,3 +377,102 @@ async def test_trng_health_status_debug_page_select(dut):
         f"expected 0x{health_page_expected:X}, got 0x{health_page_actual:X}, "
         f"status=0x{status:02X}"
     )
+
+
+@cocotb.test()
+async def test_big16_pin_and_analog_registers(dut):
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
+
+    # Keep SPI deselected on uio_in[0], keep UART RX idle high on ui_in[3],
+    # and drive only analog input-style pins from the testbench.
+    expected_ui = 0xA0 | (1 << UART_RX_BIT)
+    expected_uio_in = 0xA1
+    analog_drive_oe = 0x25
+    analog_drive = 0x21
+
+    await reset_uart_dut(
+        dut,
+        ui_value=expected_ui,
+        uio_value=expected_uio_in,
+        ua_drive=analog_drive,
+        ua_drive_oe=analog_drive_oe,
+    )
+
+    tx_idle = get_uart_tx_bit(dut)
+    assert tx_idle == 1, f"UART TX should idle high after reset, got {tx_idle}"
+
+    r8_ui_in = await uart_read_reg(dut, 8)
+    r9_uo_out = await uart_read_reg(dut, 9)
+    ra_uio_in = await uart_read_reg(dut, 10)
+    rb_uio_out = await uart_read_reg(dut, 11)
+    expected_uio_out = int(dut.uio_out.value)
+    rc_uio_oe = await uart_read_reg(dut, 12)
+    expected_uio_oe = int(dut.uio_oe.value)
+    rd_build = await uart_read_reg(dut, 13)
+    re_analog_status = await uart_read_reg(dut, 14)
+    rf_analog_measure = await uart_read_reg(dut, 15)
+
+    assert r8_ui_in == expected_ui, (
+        f"R8 should snapshot ui_in, expected 0x{expected_ui:02X}, "
+        f"got 0x{r8_ui_in:02X}"
+    )
+
+    assert (r9_uo_out & (1 << UART_TX_BIT)) != 0, (
+        f"R9 should snapshot UART TX idle high, got 0x{r9_uo_out:02X}"
+    )
+
+    assert ra_uio_in == expected_uio_in, (
+        f"RA should snapshot uio_in, expected 0x{expected_uio_in:02X}, "
+        f"got 0x{ra_uio_in:02X}"
+    )
+
+    assert rb_uio_out == expected_uio_out, (
+        f"RB should snapshot uio_out, expected 0x{expected_uio_out:02X}, "
+        f"got 0x{rb_uio_out:02X}"
+    )
+
+    assert rc_uio_oe == expected_uio_oe, (
+        f"RC should snapshot uio_oe, expected 0x{expected_uio_oe:02X}, "
+        f"got 0x{rc_uio_oe:02X}"
+    )
+
+    assert rc_uio_oe == 0xF4, f"Expected SPI UIO output-enable map 0xF4, got 0x{rc_uio_oe:02X}"
+
+    known_build_ids = (
+        0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+        0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8E,
+        0xF0,
+    )
+
+    assert rd_build in known_build_ids, (
+        f"Unexpected RD build target ID 0x{rd_build:02X}"
+    )
+
+    assert (re_analog_status & 0x0F) == 0x0D, (
+        "RE should show ua[0]=1, ua[2]=0, compare=1, and ua[5]=1: "
+        f"got 0x{re_analog_status:02X}"
+    )
+
+    assert rf_analog_measure == 0x00, (
+        f"RF should remain 0 while puf_probe driver is disabled, got 0x{rf_analog_measure:02X}"
+    )
+
+    # Exercise analog control writes through the existing register commands.
+    # M03 selects ain_ext & ~cmp_ref_ext on amon_out, and O02 enables ua[3].
+    await uart_expect_ok(dut, b"E1\r")
+    await uart_expect_ok(dut, b"M03\r")
+    await uart_expect_ok(dut, b"O02\r")
+
+    await Timer(20 * CLK_PERIOD_NS, unit="ns")
+    await Timer(SETTLE_TIME_NS, unit="ns")
+
+    ua3_text = str(dut.ua.value[3])
+    assert ua3_text == "1", f"ua[3] monitor output should drive compare=1, got {ua3_text}"
+
+    re_after_enable = await uart_read_reg(dut, 14)
+    assert (re_after_enable & 0x0D) == 0x0D, (
+        "RE should preserve analog input/compare status after enabling amon_out: "
+        f"got 0x{re_after_enable:02X}"
+    )
+
+    await uart_expect_ok(dut, b"E0\r")
