@@ -33,7 +33,7 @@
  * - Bxy<CR>    : stream xy raw bytes, waiting for a fresh TRNG sample before each byte.
  * - Cxy<CR>    : Cxy: stream xy conditioned bytes, waiting for a fresh TRNG sample before each byte.
  * - U3<CR>     : select 921600 UART baud after OK<CR> completes.
- * - V<CR>      : replies Version 1.1.5 7/1/2026<CR>
+ * - V<CR>      : replies Version 1.2.5 7/2/2026<CR>
  * - RD<CR>     : Replies with Build Target ID. 8B == TT demoboard FPGA analog, 4A == GF180 analog
  * - RE<CR>     : read analog pad status
  * - RF<CR>     : read ua[5] passive-structure threshold/decay timing sample
@@ -41,7 +41,7 @@
  * Reply format:
  * - Successful write: OK<CR>
  * - Successful read : Rn=HH<CR>
- * - Version query   : Version 1.1.5 7/1/2026<CR>
+ * - Version query   : Version 1.2.5 7/2/2026<CR>
  * - Parse/error     : ?<CR>
  */
 `default_nettype none

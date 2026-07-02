@@ -2,7 +2,7 @@
 
 <!-- breadcrumb file for testing workflows -->
 
-Version 1.1.5 7/1/2026
+Version 1.2.5 7/2/2026
 
 ## Status
 
