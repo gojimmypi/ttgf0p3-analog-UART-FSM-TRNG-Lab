@@ -194,12 +194,26 @@ module analog_experiment_stub
 
     assign analog_measure = probe_decay_q;
 
+`ifdef ULX3S
+    /*
+     * The ULX3S analog pins are internal-only in top_ulx3s.v.
+     * Avoid internal tri-state drivers so the strict build-log scan
+     * does not fail on Yosys limited tri-state warnings.
+     */
+    assign ua[0] = 1'b0;
+    assign ua[1] = dac_pin_oe ? dac_pin_out : 1'b0;
+    assign ua[2] = 1'b0;
+    assign ua[3] = amon_pin_oe ? amon_pin_out : 1'b0;
+    assign ua[4] = osc_pin_oe ? osc_pin_out : 1'b0;
+    assign ua[5] = (probe_pin_enable & probe_drive_oe_q) ? probe_drive_q : 1'b0;
+`else
     assign ua[0] = 1'bz;
     assign ua[1] = dac_pin_oe ? dac_pin_out : 1'bz;
     assign ua[2] = 1'bz;
     assign ua[3] = amon_pin_oe ? amon_pin_out : 1'bz;
     assign ua[4] = osc_pin_oe ? osc_pin_out : 1'bz;
     assign ua[5] = (probe_pin_enable & probe_drive_oe_q) ? probe_drive_q : 1'bz;
+`endif
 
     wire [1:0] unused_ua;
     assign unused_ua = ua[7:6];

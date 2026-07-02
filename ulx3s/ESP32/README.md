@@ -1,11 +1,31 @@
 # ULX3S ESP32
 
+** REMINDER ** The ESP32 sits _behind_ the FPGA. To program the ESP32, be sure an load an FPGA bitstream that allows this.
+
+See [../ulx3s_build.sh](../ulx3s_build.sh) and [../ulx3s_flash.sh](../ulx3s_flash.sh) scripts.
+
+For example:
+
+```bash
+cd /mnt/c/workspace/ttgf0p3-UART-FSM-TRNG-Lab/test-hw
+
+# may need to remove generated file
+rm  ../src/_tt_fpga_top.v
+
+# Edit board version as needed, tested on older v3.0.7:
+./run_tests.sh  --with-build  --ulx3s-board-version v307  --ignore-combinational-warning  --no-warning-pause  --port /dev/ttyS7 --pause-for-test
+```
+
+When using the `--pause-for-test`, another window can start the interactive UART tests that can run `idf.py -p /dev/ttyS3 -b 115200 monitor` concurrently (see below).
+
+## Build Espressif App
+
 Build with ESP-ISF v5.5
 
 Set the `TT_PROJECT_ROOT` environment variable to the root of the project directory before running the tests or other scripts.
 
 ```bash
-export TT_PROJECT_NAME="ttgf0p3-UART-FSM-TRNG-Lab"
+export TT_PROJECT_NAME="ttgf0p3-analog-UART-FSM-TRNG-Lab"
 export TT_PROJECT_ROOT="/mnt/c/workspace/$TT_PROJECT_NAME"
 ```
 
@@ -17,15 +37,16 @@ run the `show_effective_defines.sh` script:
 ```
 PROJECT=myProjectDirectory
 
+# for example /mnt/c/workspace/ttgf0p3-analog-UART-FSM-TRNG-Lab/scripts
 cd "${myProjectDirectory}/scripts"
 
 ./show_effective_defines.sh  ../src/project_config.v  --header tt_effective_defines.h
 ```
 
-Review the generated `tt_effective_defines.h` and copy to `./ulx3s/ESP32/main/include`
+Review the generated `tt_effective_defines.h` and copy to `../ulx3s/ESP32/main/include`
 
 ```bash
-mv ./tt_effective_defines.h 
+mv ./tt_effective_defines.h ../ulx3s/ESP32/main/include/tt_effective_defines.h
 ```
 
 ## Program with US1

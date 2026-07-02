@@ -121,6 +121,7 @@ BIG16_BUILD_TARGET_IDS = {
     0x00: "unknown",
     0x41: "ASIC SKY130 wrapper",
     0x42: "ASIC GF180 wrapper",
+    0x4A: "ASIC GF180 analog wrapper",
     0x43: "ASIC unknown PDK wrapper",
     0x44: "SKY130 PDK fallback",
     0x45: "GF180 PDK fallback",
@@ -132,6 +133,7 @@ BIG16_BUILD_TARGET_IDS = {
     0x88: "ULX3S 12K FPGA",
     0x89: "ULX3S 85F FPGA",
     0x8A: "TT demoboard FPGA",
+    0x8B: "TT demoboard FPGA analog",
     0x8E: "generic FPGA",
     0xF0: "simulation/test",
 }

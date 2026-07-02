@@ -8,9 +8,9 @@
 #   warning: capture attempt 1 failed: timeout after 228 of 255 bytes after 4 read timeouts
 #
 # May be USB/TTY related. See https://x.com/pocketmt/status/2061909268840780270?s=20
-# > Be careful with the usb to uart adapter you are using on this photo 
-#   (at left). For high speed uart when you do full duplex com with it, 
-#   on large packets it may lose packets. I discovered it when I was using 
+# > Be careful with the usb to uart adapter you are using on this photo
+#   (at left). For high speed uart when you do full duplex com with it,
+#   on large packets it may lose packets. I discovered it when I was using
 #   it at 3V3 with RP2040 trying different configurations of the Uart api.
 
 # Windows: PORT=COM5
@@ -18,7 +18,7 @@
 # Linux:   PORT=/dev/ttyUSB5 or /dev/ttyACM5
 # macOS:   PORT=/dev/tty.usbserial-0005
 
-PORT="${PORT:-/dev/ttyS12}"
+PORT="${PORT:-/dev/ttyS7}"
 
 DEFAULT_FILE_BASE="trng_conditioned_2MiB"
 BYTES=2097152

@@ -67,8 +67,10 @@
     #define TT_REG_UIO_OE                       12U
     #define TT_REG_BUILD                        13U
     #define TT_REG_UNUSED_D                     TT_REG_BUILD
-    #define TT_REG_UNUSED_E                     14U
-    #define TT_REG_UNUSED_F                     15U
+    #define TT_REG_ANALOG_STATUS                14U
+    #define TT_REG_ANALOG_MEASURE               15U
+    #define TT_REG_UNUSED_E                     TT_REG_ANALOG_STATUS
+    #define TT_REG_UNUSED_F                     TT_REG_ANALOG_MEASURE
     #define ULX3S_SPI_REG_COUNT                    16U
 #else
     /* Just the basic list, above */
@@ -78,9 +80,20 @@
 #define TT_BUILD_TARGET_UNKNOWN              0x00U
 #define TT_BUILD_TARGET_ASIC_SKY130          0x41U
 #define TT_BUILD_TARGET_ASIC_GF180           0x42U
-#define TT_BUILD_TARGET_FPGA                 0x81U
-#define TT_BUILD_TARGET_FPGA_ULX3S_12K       0x82U
-#define TT_BUILD_TARGET_FPGA_ULX3S_85F       0x83U
+#define TT_BUILD_TARGET_ASIC_UNKNOWN         0x43U
+#define TT_BUILD_TARGET_PDK_SKY130           0x44U
+#define TT_BUILD_TARGET_PDK_GF180            0x45U
+#define TT_BUILD_TARGET_ASIC_SKY130_MANUAL   0x46U
+#define TT_BUILD_TARGET_ASIC_GF180_MANUAL    0x47U
+#define TT_BUILD_TARGET_ASIC_GF180_ANALOG    0x4AU
+#define TT_BUILD_TARGET_FPGA_ULX3S_GF180     0x85U
+#define TT_BUILD_TARGET_FPGA_ULX3S_SKY130    0x86U
+#define TT_BUILD_TARGET_FPGA_ULX3S_UNKNOWN   0x87U
+#define TT_BUILD_TARGET_FPGA_ULX3S_12K       0x88U
+#define TT_BUILD_TARGET_FPGA_ULX3S_85F       0x89U
+#define TT_BUILD_TARGET_FPGA_DEMOBOARD       0x8AU
+#define TT_BUILD_TARGET_FPGA_DEMOBOARD_ANALOG 0x8BU
+#define TT_BUILD_TARGET_FPGA                 0x8EU
 #define TT_BUILD_TARGET_SIM                  0xF0U
 
 #define TT_BUILD_TARGET_CLASS_MASK           0xF0U
