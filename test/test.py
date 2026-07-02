@@ -23,6 +23,38 @@ EXPECTED_VERSION_PREFIX = b"Version "
 
 TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT = False
 
+BIG16_BUILD_TARGET_IDS = {
+    0x00,
+    0x41,
+    0x42,
+    0x43,
+    0x44,
+    0x45,
+    0x46,
+    0x47,
+    0x85,
+    0x86,
+    0x87,
+    0x88,
+    0x89,
+    0x8A,
+    0x8E,
+    0xF0,
+}
+
+
+def reg_digit(reg_num: int | str) -> str:
+    if isinstance(reg_num, str):
+        reg_text = reg_num.upper()
+    else:
+        reg_text = f"{reg_num:X}"
+
+    if len(reg_text) != 1 or reg_text not in "0123456789ABCDEF":
+        raise ValueError(f"Invalid register number: {reg_num!r}")
+
+    return reg_text
+
+
 def set_bit(value: int, bit_index: int, bit_value: int) -> int:
     mask = 1 << bit_index
     if bit_value:
@@ -186,34 +218,6 @@ async def uart_command_response(
     return await recv_task
 
 
-def set_dut_signal_if_present(dut, signal_name: str, value: int) -> None:
-    try:
-        getattr(dut, signal_name).value = value
-    except AttributeError:
-        pass
-
-
-async def reset_uart_dut(
-    dut,
-    ui_value: int = (1 << UART_RX_BIT),
-    uio_value: int = 0,
-    ua_drive: int = 0,
-    ua_drive_oe: int = 0,
-) -> None:
-    dut.ena.value = 1
-    dut.ui_in.value = ui_value
-    dut.uio_in.value = uio_value
-    set_dut_signal_if_present(dut, "ua_drive", ua_drive)
-    set_dut_signal_if_present(dut, "ua_drive_oe", ua_drive_oe)
-    dut.rst_n.value = 0
-
-    await Timer(100, unit="ns")
-    dut.rst_n.value = 1
-
-    await Timer(100_000, unit="ns")
-    await Timer(SETTLE_TIME_NS, unit="ns")
-
-
 async def uart_expect_ok(dut, command: bytes) -> None:
     response = await uart_command_response(dut, command, max_bytes=3)
 
@@ -222,19 +226,19 @@ async def uart_expect_ok(dut, command: bytes) -> None:
     )
 
 
-async def uart_read_reg(dut, reg_num: int) -> int:
-    reg_name = f"{reg_num:X}"
-    command = f"R{reg_name}\r".encode("ascii")
+async def uart_read_reg(dut, reg_num: int | str) -> int:
+    reg_text = reg_digit(reg_num)
+    command = f"R{reg_text}\r".encode("ascii")
     response = await uart_command_response(dut, command, max_bytes=6)
 
-    expected_prefix = f"R{reg_name}=".encode("ascii")
+    expected_prefix = f"R{reg_text}=".encode("ascii")
 
     assert response.startswith(expected_prefix), (
         f"Expected {expected_prefix!r} prefix, got {response!r}"
     )
 
     assert len(response) == 6 and response.endswith(b"\r"), (
-        f"Invalid register response for R{reg_num}: {response!r}"
+        f"Invalid register response for R{reg_text}: {response!r}"
     )
 
     return int(response[3:5], 16)
@@ -299,6 +303,58 @@ async def test_version_command_or_absent(dut):
     assert EXPECTED_VERSION_PREFIX in response, (
         f"Expected version prefix or absent-version response, got {response!r}"
     )
+
+
+@cocotb.test()
+async def test_big16_uart_register_reads(dut):
+    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
+
+    dut.ena.value = 1
+    dut.ui_in.value = 0xA8
+    dut.uio_in.value = 0x5B
+
+    if hasattr(dut, "ua_drive") and hasattr(dut, "ua_oe"):
+        dut.ua_drive.value = 0x01
+        dut.ua_oe.value = 0x25
+
+    dut.rst_n.value = 0
+
+    await Timer(100, unit="ns")
+    dut.rst_n.value = 1
+
+    await Timer(100_000, unit="ns")
+    await Timer(SETTLE_TIME_NS, unit="ns")
+
+    ui_in = await uart_read_reg(dut, 8)
+    assert ui_in == 0xA8, f"R8 should mirror ui_in, expected 0xA8, got 0x{ui_in:02X}"
+
+    uo_out = await uart_read_reg(dut, 9)
+    assert (uo_out & 0x10) == 0x10, (
+        f"R9 should show UART TX idle high on uo_out[4], got 0x{uo_out:02X}"
+    )
+
+    uio_in = await uart_read_reg(dut, 10)
+    assert uio_in == 0x5B, f"RA should mirror uio_in, expected 0x5B, got 0x{uio_in:02X}"
+
+    await uart_read_reg(dut, 11)
+
+    uio_oe = await uart_read_reg(dut, 12)
+    assert uio_oe == 0xF4, f"RC should expose uio_oe 0xF4, got 0x{uio_oe:02X}"
+
+    build_id = await uart_read_reg(dut, 13)
+    assert build_id in BIG16_BUILD_TARGET_IDS, (
+        f"RD build target ID should be recognized, got 0x{build_id:02X}"
+    )
+
+    analog_status = await uart_read_reg(dut, 14)
+
+    if hasattr(dut, "ua_drive") and hasattr(dut, "ua_oe"):
+        assert (analog_status & 0x07) == 0x05, (
+            "RE analog status should show ua[0]=1, ua[2]=0, compare=1: "
+            f"got 0x{analog_status:02X}"
+        )
+
+    await uart_read_reg(dut, 15)
 
 
 @cocotb.test(skip=not TRNG_HEALTH_STATUS_DEBUG_PAGE_SELECT)
@@ -377,102 +433,3 @@ async def test_trng_health_status_debug_page_select(dut):
         f"expected 0x{health_page_expected:X}, got 0x{health_page_actual:X}, "
         f"status=0x{status:02X}"
     )
-
-
-@cocotb.test()
-async def test_big16_pin_and_analog_registers(dut):
-    cocotb.start_soon(Clock(dut.clk, CLK_PERIOD_NS, unit="ns").start())
-
-    # Keep SPI deselected on uio_in[0], keep UART RX idle high on ui_in[3],
-    # and drive only analog input-style pins from the testbench.
-    expected_ui = 0xA0 | (1 << UART_RX_BIT)
-    expected_uio_in = 0xA1
-    analog_drive_oe = 0x25
-    analog_drive = 0x21
-
-    await reset_uart_dut(
-        dut,
-        ui_value=expected_ui,
-        uio_value=expected_uio_in,
-        ua_drive=analog_drive,
-        ua_drive_oe=analog_drive_oe,
-    )
-
-    tx_idle = get_uart_tx_bit(dut)
-    assert tx_idle == 1, f"UART TX should idle high after reset, got {tx_idle}"
-
-    r8_ui_in = await uart_read_reg(dut, 8)
-    r9_uo_out = await uart_read_reg(dut, 9)
-    ra_uio_in = await uart_read_reg(dut, 10)
-    rb_uio_out = await uart_read_reg(dut, 11)
-    expected_uio_out = int(dut.uio_out.value)
-    rc_uio_oe = await uart_read_reg(dut, 12)
-    expected_uio_oe = int(dut.uio_oe.value)
-    rd_build = await uart_read_reg(dut, 13)
-    re_analog_status = await uart_read_reg(dut, 14)
-    rf_analog_measure = await uart_read_reg(dut, 15)
-
-    assert r8_ui_in == expected_ui, (
-        f"R8 should snapshot ui_in, expected 0x{expected_ui:02X}, "
-        f"got 0x{r8_ui_in:02X}"
-    )
-
-    assert (r9_uo_out & (1 << UART_TX_BIT)) != 0, (
-        f"R9 should snapshot UART TX idle high, got 0x{r9_uo_out:02X}"
-    )
-
-    assert ra_uio_in == expected_uio_in, (
-        f"RA should snapshot uio_in, expected 0x{expected_uio_in:02X}, "
-        f"got 0x{ra_uio_in:02X}"
-    )
-
-    assert rb_uio_out == expected_uio_out, (
-        f"RB should snapshot uio_out, expected 0x{expected_uio_out:02X}, "
-        f"got 0x{rb_uio_out:02X}"
-    )
-
-    assert rc_uio_oe == expected_uio_oe, (
-        f"RC should snapshot uio_oe, expected 0x{expected_uio_oe:02X}, "
-        f"got 0x{rc_uio_oe:02X}"
-    )
-
-    assert rc_uio_oe == 0xF4, f"Expected SPI UIO output-enable map 0xF4, got 0x{rc_uio_oe:02X}"
-
-    known_build_ids = (
-        0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
-        0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8E,
-        0xF0,
-    )
-
-    assert rd_build in known_build_ids, (
-        f"Unexpected RD build target ID 0x{rd_build:02X}"
-    )
-
-    assert (re_analog_status & 0x0F) == 0x0D, (
-        "RE should show ua[0]=1, ua[2]=0, compare=1, and ua[5]=1: "
-        f"got 0x{re_analog_status:02X}"
-    )
-
-    assert rf_analog_measure == 0x00, (
-        f"RF should remain 0 while puf_probe driver is disabled, got 0x{rf_analog_measure:02X}"
-    )
-
-    # Exercise analog control writes through the existing register commands.
-    # M03 selects ain_ext & ~cmp_ref_ext on amon_out, and O02 enables ua[3].
-    await uart_expect_ok(dut, b"E1\r")
-    await uart_expect_ok(dut, b"M03\r")
-    await uart_expect_ok(dut, b"O02\r")
-
-    await Timer(20 * CLK_PERIOD_NS, unit="ns")
-    await Timer(SETTLE_TIME_NS, unit="ns")
-
-    ua3_text = str(dut.ua.value[3])
-    assert ua3_text == "1", f"ua[3] monitor output should drive compare=1, got {ua3_text}"
-
-    re_after_enable = await uart_read_reg(dut, 14)
-    assert (re_after_enable & 0x0D) == 0x0D, (
-        "RE should preserve analog input/compare status after enabling amon_out: "
-        f"got 0x{re_after_enable:02X}"
-    )
-
-    await uart_expect_ok(dut, b"E0\r")

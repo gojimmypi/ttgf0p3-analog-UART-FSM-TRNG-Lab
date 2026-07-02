@@ -41,30 +41,25 @@ module tb ();
   wire [7:0] uio_out;
   wire [7:0] uio_oe;
 `ifdef ANALOG_ENABLED
-  wire [7:0] ua;
+  tri [7:0] ua;
   reg [7:0] ua_drive;
-  reg [7:0] ua_drive_oe;
-  wire VDPWR = 1'b1;
-  wire VGND = 1'b0;
-`else
-  `ifdef GL_TEST
-    wire VPWR = 1'b1;
-    wire VGND = 1'b0;
-  `endif
-`endif
+  reg [7:0] ua_oe;
 
-`ifdef ANALOG_ENABLED
   genvar ua_i;
   generate
-    for (ua_i = 0; ua_i < 8; ua_i = ua_i + 1) begin : gen_ua_drive
-      assign ua[ua_i] = ua_drive_oe[ua_i] ? ua_drive[ua_i] : 1'bz;
+    for (ua_i = 0; ua_i < 8; ua_i = ua_i + 1) begin : tb_ua_drive
+      assign ua[ua_i] = ua_oe[ua_i] ? ua_drive[ua_i] : 1'bz;
     end
   endgenerate
+`endif
 
-  initial begin
-    ua_drive = 8'h00;
-    ua_drive_oe = 8'h00;
-  end
+`ifdef GL_TEST
+    `ifdef ANALOG_ENABLED
+        wire VDPWR = 1'b1;
+    `else
+        wire VPWR = 1'b1;
+    `endif
+        wire VGND = 1'b0;
 `endif
 
 `ifndef TT_TOP_MODULE
@@ -75,15 +70,14 @@ module tb ();
 
 `TT_TOP_MODULE user_project (
 
-      // Include power ports when the selected top module exposes them.
-`ifdef ANALOG_ENABLED
-      .VDPWR(VDPWR),
-      .VGND(VGND),
-`else
-  `ifdef GL_TEST
-      .VPWR(VPWR),
-      .VGND(VGND),
-  `endif
+      // Include power ports for the Gate Level test:
+`ifdef GL_TEST
+    `ifdef ANALOG_ENABLED
+        .VDPWR(VDPWR),
+    `else
+        .VPWR(VPWR),
+    `endif
+        .VGND(VGND),
 `endif
 
       .ui_in  (ui_in),    // Dedicated inputs
@@ -112,7 +106,7 @@ module tb ();
     uio_in = 8'h00;
 `ifdef ANALOG_ENABLED
     ua_drive = 8'h00;
-    ua_drive_oe = 8'h00;
+    ua_oe    = 8'h25;
 `endif
   end
 
